@@ -57,6 +57,17 @@ unifiprotect:
 (string)(Required) The local password you setup under the *Prerequisites* section.<br>
 
 ### Camera
+The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant. 
 
+Edit your *configuration.yaml* file and add the *mbweather* component to the file:
+```yaml
+# Example configuration.yaml entry
+camera:
+  - platform: unifiprotect
+```
 
+The Integration currently supports the following standard Home Assistant services:
+1. `camera.disable_motion_detection` - This will disable motion detection on the specified camera
+2. `camera.enable_motion_detection` - This will enable motion detection on the specified camera
 
+I am planning on adding the `camera.snapshot` service in a future release

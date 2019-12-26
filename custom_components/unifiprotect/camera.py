@@ -129,7 +129,3 @@ class UnifiVideoCamera(Camera):
     async def stream_source(self):
         """ Return the Stream Source. """
         return self._stream_source
-
-    def update(self):
-
-

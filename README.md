@@ -70,6 +70,8 @@ The Integration currently supports the following standard Home Assistant service
 1. `camera.disable_motion_detection` - This will disable motion detection on the specified camera
 2. `camera.enable_motion_detection` - This will enable motion detection on the specified camera
 
+**Note:** When using the above services, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
+
 I am planning on adding the `camera.snapshot` service in a future release
 
 ### Binary Sensor
@@ -82,6 +84,7 @@ binary_sensor:
   - platform: unifiprotect
 ```
 There is a little delay for when this will be triggered, as the way the data is retrieved is through the Unifi Protect event log, and that has a small delay before updated.
+
 **Note:** This will only work if Recording state is set to `motion` or `always` as there is nothing written to the event log, if recording is disabled.
 
 ### Sensor
@@ -94,7 +97,7 @@ sensor:
   - platform: unifiprotect
 ```
 The sensor can have 3 different values:
-1. `never` - There will no recording on the camera
+1. `never` - There will be no recording on the camera
 2. `motion` - Recording will happen only when motion is detected
 3. `always` - The camera will record everything, and motion events will be logged in Unfi Protect
 

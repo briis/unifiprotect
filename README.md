@@ -1,6 +1,4 @@
 # Unifi Protect for Home Assistant
-Unifi Protect Integration for Home Assistant
-
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
 This is a Home Assistant Integration for Ubiquiti's Unifi Protect Surveillance system.

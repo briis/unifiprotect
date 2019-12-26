@@ -1,0 +1,4 @@
+{
+  "name": "Unifi Protect Integration for Home Assistant",
+  "domains": ["binary_sensor", "sensor", "camera"]
+}

@@ -1,0 +1,8 @@
+{
+    "domain": "unifiprotect",
+    "name": "Unifi Protect",
+    "documentation": "https://github.com/briis/unifiprotect",
+    "requirements": [],
+    "dependencies": [],
+    "codeowners": ["@briis"]
+}

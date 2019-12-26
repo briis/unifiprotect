@@ -7,7 +7,7 @@ Basically what this does, is integrating the Camera feeds from Unifi Protect in 
 
 Once setup you will have the Camera feed from Unifi Protect going into Home Assistant, and you can have Binay Motion Sensors if recording is enabled in Unifi Protect. A sensor indicating the recording state, is also created for each camera if enabled in Home Assistant.
 
-**Note:** Please read the README.md file on Github before installing, as there are some Prerequisites that need to be met, before this will work properly.
+**Note:** Please read the [README.md file on Github](https://github.com/briis/unifiprotect/blob/master/README.md) before installing, as there are some Prerequisites that need to be met, before this will work properly.
 
 ## Configuration
 Start by configuring the core platform. No matter which of the entities you activate, this has to be configured. The core platform by itself does nothing else than establish a link the *Unifi Protect NVR*, so by activating this you will not see any entities being created in Home Assistant.

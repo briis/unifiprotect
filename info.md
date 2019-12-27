@@ -39,13 +39,13 @@ camera:
   - platform: unifiprotect
 ```
 
-The Integration currently supports the following standard Home Assistant services:
+The Integration supports the standard camera services. Not all have been testet but the following will work:
 1. `camera.disable_motion_detection` - This will disable motion detection on the specified camera
 2. `camera.enable_motion_detection` - This will enable motion detection on the specified camera
+3. `camera.snapshot` - Take a snapshot of the current image on the specified camera
+4. `camera.record` - Record the current stream to a file
 
-**Note:** When using the above services, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
-
-I am planning on adding the `camera.snapshot` service in a future release
+**Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
 
 ### Binary Sensor
 If this component is enabled a Binary Motion Sensor for each camera configured, will be created.

@@ -52,14 +52,6 @@ def setup(hass, config):
         nvrobject = nvr.protectRemote(host,port,username,password,use_ssl)
         hass.data[DATA_UFP] = nvrobject
 
-        async def async_save_snapshot(call):
-            """Call save video service handler."""
-            await async_handle_save_snapshot_service(hass, call)
-
-            hass.services.register(
-                DOMAIN, SERVICE_SAVE_SNAPSHOT, async_save_snapshot, schema=SERVICE_SAVE_SNAPSHOT_SCHEMA
-            )
-
     except nvr.NotAuthorized:
         _LOGGER.error("Authorization failure while connecting to NVR")
         return False

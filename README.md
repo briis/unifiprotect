@@ -37,7 +37,7 @@ This Integration is not yet part of the default HACS store, but will be once I a
 ## Configuration
 Start by configuring the core platform. No matter which of the entities you activate, this has to be configured. The core platform by itself does nothing else than establish a link the *Unifi Protect NVR*, so by activating this you will not see any entities being created in Home Assistant.
 
-Edit your *configuration.yaml* file and add the *mbweather* component to the file:
+Edit your *configuration.yaml* file and add the *unifiprotect* component to the file:
 ```yaml
 # Example configuration.yaml entry
 unifiprotect:
@@ -57,7 +57,7 @@ unifiprotect:
 ### Camera
 The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant. 
 
-Edit your *configuration.yaml* file and add the *mbweather* component to the file:
+Edit your *configuration.yaml* file and add the *unifiprotect* component to the file:
 ```yaml
 # Example configuration.yaml entry
 camera:

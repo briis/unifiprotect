@@ -70,7 +70,7 @@ The Integration supports the standard camera services. Not all have been testet 
 3. `camera.snapshot` - Take a snapshot of the current image on the specified camera
 4. `camera.record` - Record the current stream to a file
 
-**Note:** When using the above services, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
+**Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
 
 I am planning on adding the `camera.snapshot` service in a future release
 

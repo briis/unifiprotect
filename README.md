@@ -72,8 +72,6 @@ The Integration supports the standard camera services. Not all have been testet 
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
 
-I am planning on adding the `camera.snapshot` service in a future release
-
 ### Binary Sensor
 If this component is enabled a Binary Motion Sensor for each camera configured, will be created.
 

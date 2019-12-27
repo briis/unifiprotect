@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 unifiprotect.code-workspace
 .DS_Store
+.vscode/settings.json

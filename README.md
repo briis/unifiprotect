@@ -57,6 +57,8 @@ unifiprotect:
 ### Camera
 The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant. 
 
+**Remember** if you already setup the camera using another platform, like the `Generic IP Platform` then remember to remove those first as cameras with the same name cannot co-exist.
+
 Edit your *configuration.yaml* file and add the *unifiprotect* component to the file:
 ```yaml
 # Example configuration.yaml entry

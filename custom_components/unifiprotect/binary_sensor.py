@@ -17,6 +17,9 @@ DEPENDENCIES = ['unifiprotect']
 
 SCAN_INTERVAL = timedelta(seconds=5)
 
+ATTR_THUMBNAIL = "thumbnail"
+ATTR_LAST_MOTION = "last_motion"
+
 # sensor_type [ description, unit, icon ]
 SENSOR_TYPES = {
     'motion': ['Motion', 'motion', 'motionDetected']
@@ -51,6 +54,8 @@ class UfpBinarySensor(BinarySensorDevice):
         self._sensor_type = sensor_type
         self._nvrdata = nvrdata
         self._state = False
+        self._thumbnail = None
+        self._last_motion = None
         self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
         self.remove_timer = None
@@ -73,6 +78,8 @@ class UfpBinarySensor(BinarySensorDevice):
 
         attrs[ATTR_ATTRIBUTION] = ATTRIBUTION
         attrs['brand'] = DEFAULT_BRAND
+        attrs[ATTR_THUMBNAIL] = self._thumbnail
+        attrs[ATTR_LAST_MOTION] = self._last_motion 
         attrs['friendly_name'] = self._name
 
         return attrs
@@ -95,6 +102,8 @@ class UfpBinarySensor(BinarySensorDevice):
                 else:
                     is_motion = False
 
+                self._last_motion = event['start']
+                self._thumbnail = event['thumbnail']
                 break
         self._state = is_motion
 

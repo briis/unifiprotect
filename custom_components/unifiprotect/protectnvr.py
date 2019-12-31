@@ -258,16 +258,13 @@ class protectRemote(object):
         """ Returns a Thumbnail image of a recording event. """
 
         access_key = self._get_api_access_key()
-        img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/thumbnails/" + str(tuid) + "?accessKey=" + access_key + "&h=68&w=121"
+        img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/thumbnails/" + str(tuid) + "?accessKey=" + access_key + "&h=240&w=427"
         response = self.req.get(img_uri, verify=self._verify_ssl)
         if response.status_code == 200:
-            # output = open("thumbnail.png","wb")
-            # output.write(response.content)
-            # output.close()
             return response.content
         else:
             print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
-            # return None
+            return None
 
     def get_snapshot_image(self, tuid):
         """ Returns a Snapshot image of a recording event. """
@@ -277,11 +274,8 @@ class protectRemote(object):
         img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/cameras/" + str(tuid) + "/snapshot?accessKey=" + access_key + "&ts=" + str(ts)
         response = self.req.get(img_uri, verify=self._verify_ssl)
         if response.status_code == 200:
-            # output = open("snapshot.png","wb")
-            # output.write(response.content)
-            # output.close()
             return response.content
         else:
-            # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
             return None
 

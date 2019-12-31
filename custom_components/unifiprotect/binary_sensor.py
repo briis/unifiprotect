@@ -59,7 +59,7 @@ class UfpBinarySensor(BinarySensorDevice):
         self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
         self.remove_timer = None
-        _LOGGER.info('UfpBinarySensor: %s created', self._name)
+        _LOGGER.debug('UfpBinarySensor: %s created', self._name)
 
     @property
     def unique_id(self):

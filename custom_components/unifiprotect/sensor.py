@@ -54,7 +54,7 @@ class UnifiProtectSensor(Entity):
         self._icon = 'mdi:{}'.format(SENSOR_TYPES.get(self._sensor_type)[2])
         self._state = device['recording_mode']
         self._attr = SENSOR_TYPES.get(self._sensor_type)[3]
-        _LOGGER.info('UnifiProtectSensor: %s created', self._name)
+        _LOGGER.debug('UnifiProtectSensor: %s created', self._name)
 
     @property
     def unique_id(self):

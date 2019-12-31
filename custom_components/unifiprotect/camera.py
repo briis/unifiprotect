@@ -5,8 +5,8 @@ import asyncio
 import requests
 import voluptuous as vol
 
-from homeassistant.components.camera import SUPPORT_STREAM, PLATFORM_SCHEMA, Camera
-from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD
+from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, PLATFORM_SCHEMA, CAMERA_SERVICE_SNAPSHOT, ATTR_FILENAME, Camera
+from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, ATTR_ENTITY_ID
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND
@@ -15,8 +15,11 @@ _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ['unifiprotect']
 
+SERVICE_REQUEST_THUMBNAIL_TO_FILE = 'upv_request_thumbnail_to_file'
+
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
+    component = hass.data[DOMAIN]
 
     try:
         # Exceptions may be raised in all method calls to the nvr library.
@@ -43,6 +46,13 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
             for camera in cameras
         ]
     )
+
+    #Services
+    component.async_register_entity_service(
+        SERVICE_REQUEST_THUMBNAIL_TO_FILE, CAMERA_SERVICE_SNAPSHOT,
+        unifiprotect_thumbnail_to_file_service_handler
+    )
+
     return True
 
 class UnifiVideoCamera(Camera):
@@ -70,6 +80,11 @@ class UnifiVideoCamera(Camera):
     def supported_features(self):
         """Return supported features for this camera."""
         return self._supported_features
+
+    @property
+    def unique_id(self):
+        """Return a unique ID."""
+        return self._uuid
 
     @property
     def name(self):
@@ -120,6 +135,13 @@ class UnifiVideoCamera(Camera):
             self.async_camera_image(), self.hass.loop
         ).result()
 
+    def request_thumbnail(self):
+        image = self._nvr.get_thumbnail_image('e-5e0b1ea4007bc303e70005e6')
+        return image
+
+    def async_request_thumbnail(self):
+        return self.hass.async_add_job(self.request_thumbnail)
+
     async def async_camera_image(self):
         """ Return the Camera Image. """
         last_image = self._nvr.get_snapshot_image(self._uuid)
@@ -129,3 +151,33 @@ class UnifiVideoCamera(Camera):
     async def stream_source(self):
         """ Return the Stream Source. """
         return self._stream_source
+
+async def unifiprotect_thumbnail_to_file_service_handler(camera, service):
+    _LOGGER.info("{0} thumbnail to file".format(camera.unique_id))
+
+    hass = camera.hass
+    filename = service.data[ATTR_FILENAME]
+    filename.hass = hass
+
+    snapshot_file = filename.async_render(variables={ATTR_ENTITY_ID: camera})
+
+    # check if we allow to access to that file
+    if not hass.config.is_allowed_path(snapshot_file):
+        _LOGGER.error("Can't write %s, no access to path!", snapshot_file)
+        return
+
+    image = await camera.async_request_thumbnail()
+    _LOGGER.info("Image Length: " + str(len(image)))
+
+    def _write_image(to_file, image_data):
+        with open(to_file, 'wb') as img_file:
+            img_file.write(image_data)
+
+    try:
+        await hass.async_add_executor_job(_write_image, snapshot_file, image)
+        hass.bus.fire('aarlo_snapshot_ready', {
+            'entity_id': 'aarlo.' + camera.unique_id,
+            'file': snapshot_file
+        })
+    except OSError as err:
+        _LOGGER.error("Can't write image to file: %s", err)

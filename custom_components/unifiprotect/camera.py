@@ -6,7 +6,7 @@ import requests
 import voluptuous as vol
 
 from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, PLATFORM_SCHEMA, CAMERA_SERVICE_SNAPSHOT, ATTR_FILENAME, Camera
-from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, ATTR_ENTITY_ID
+from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_FILENAME, ATTR_ENTITY_ID
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND
@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ['unifiprotect']
 
-SERVICE_REQUEST_THUMBNAIL_TO_FILE = 'upv_request_thumbnail_to_file'
+SERVICE_SAVE_THUMBNAIL = 'unifiprotect_save_thumbnail'
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
@@ -47,11 +47,10 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         ]
     )
 
-    #Services
     component.async_register_entity_service(
-        SERVICE_REQUEST_THUMBNAIL_TO_FILE, CAMERA_SERVICE_SNAPSHOT,
-        unifiprotect_thumbnail_to_file_service_handler
+        SERVICE_SAVE_THUMBNAIL, CAMERA_SERVICE_SNAPSHOT, save_thumbnail_service
     )
+
 
     return True
 
@@ -136,7 +135,7 @@ class UnifiVideoCamera(Camera):
         ).result()
 
     def request_thumbnail(self):
-        image = self._nvr.get_thumbnail_image('e-5e0b1ea4007bc303e70005e6')
+        image = self._nvr.get_thumbnail(self._uuid)
         return image
 
     def async_request_thumbnail(self):
@@ -152,7 +151,7 @@ class UnifiVideoCamera(Camera):
         """ Return the Stream Source. """
         return self._stream_source
 
-async def unifiprotect_thumbnail_to_file_service_handler(camera, service):
+async def save_thumbnail_service(camera, service):
     _LOGGER.info("{0} thumbnail to file".format(camera.unique_id))
 
     hass = camera.hass
@@ -167,7 +166,9 @@ async def unifiprotect_thumbnail_to_file_service_handler(camera, service):
         return
 
     image = await camera.async_request_thumbnail()
-    _LOGGER.info("Image Length: " + str(len(image)))
+    if image is None:
+        _LOGGER.warning("Last recording not found for Camera " + camera.name)
+        return False
 
     def _write_image(to_file, image_data):
         with open(to_file, 'wb') as img_file:
@@ -175,8 +176,8 @@ async def unifiprotect_thumbnail_to_file_service_handler(camera, service):
 
     try:
         await hass.async_add_executor_job(_write_image, snapshot_file, image)
-        hass.bus.fire('aarlo_snapshot_ready', {
-            'entity_id': 'aarlo.' + camera.unique_id,
+        hass.bus.fire('unifiprotect_thumbnail_ready', {
+            'entity_id': 'unifiprotect.' + camera.unique_id,
             'file': snapshot_file
         })
     except OSError as err:

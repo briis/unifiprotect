@@ -1,8 +1,9 @@
-
-camera.upv_request_thumbnail_to_file:
-  description: Request the lates motion thumbnail from a camera and write it to a file
+unifiprotect_save_thumbnail:
+  description: 'Request the lates motion thumbnail from a camera and write it to a file'
   fields:
     entity_id:
-      description: string (required) camera to get thumbnail from
+      description: 'string (required) camera to get thumbnail from'
+      example: 'camera.outdoor'
     filename:
-      description: string (required) where to save the thumbnail
+      description: 'string (required) where to save the thumbnail'
+      example: '/config/www/thumbnail.png'

@@ -1,9 +1,11 @@
 # Changelog
 
 ## Version 0.0.6
-* Added 2 new Attributes to the `Binary Motion` Sensors.
-  * **thumbnail** - contains an id for the latest thumbnail image created for an event. Can be used in combination with a new Camera Services that is being worked on
-  * **last_motion** - Writes the time when the last motion has occured
+* `Binary Motion`:
+  * Added new attribute Writes **last_motion** that shows time when the last motion has occured
+* `Camera`:
+  * Added new service `camera.unifiprotect_save_thumbnail`. When calling this services the Thumbnail of the last recorded motion will be saved to disk, and could then be used in an automation, to send to a phone via the `notify` platform. Requires `entity_id` and `filename` as attributes.
 * `Core Module`
   * changed size of the thumbnail image when being created.
-  * cleaned up the code, removing obsolete parts
+  * Fixed error when no *Last Motion* record exist
+  * cleaned up the code, removing obsolete parts.

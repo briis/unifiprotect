@@ -1,5 +1,5 @@
 # Unifi Protect for Home Assistant
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/briis/unifiprotect?include_prereleases&style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/briis/unifiprotect?include_prereleases&style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 This is a Home Assistant Integration for Ubiquiti's Unifi Protect Surveillance system.
 
@@ -32,7 +32,7 @@ protectnvr.py
 ```
 
 ## HACS Installation
-This Integration is not yet part of the default HACS store, but will be once I am convinced it is stable. But it still supports HACS. Just go to settings in HACS and add `briis/unifiprotect` as a Custom Repository. Use *Integration* as Category.
+This Integration is part of the default HACS store. Search for *unifiprotect* under *Integrations* and install from there.
 
 ## Configuration
 Start by configuring the core platform. No matter which of the entities you activate, this has to be configured. The core platform by itself does nothing else than establish a link the *Unifi Protect NVR*, so by activating this you will not see any entities being created in Home Assistant.

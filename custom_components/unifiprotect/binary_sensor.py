@@ -95,8 +95,6 @@ class UfpBinarySensor(BinarySensorDevice):
                 else:
                     is_motion = False
 
-                self._last_motion = event['start']
-                self._thumbnail = event['thumbnail']
                 break
         self._state = is_motion
 

@@ -18,6 +18,8 @@ DEPENDENCIES = ['unifiprotect']
 
 SCAN_INTERVAL = timedelta(seconds=5)
 
+ATTR_CAMERA_TYPE = 'camera_type'
+
 SENSOR_TYPES = {
     'motion_recording': ['Motion Recording', None, 'motion-sensor', 'motion_recording']
 }
@@ -53,6 +55,7 @@ class UnifiProtectSensor(Entity):
         self._nvrdata = nvrdata
         self._icon = 'mdi:{}'.format(SENSOR_TYPES.get(self._sensor_type)[2])
         self._state = device['recording_mode']
+        self._camera_type = device['type']
         self._attr = SENSOR_TYPES.get(self._sensor_type)[3]
         _LOGGER.debug('UnifiProtectSensor: %s created', self._name)
 
@@ -88,6 +91,7 @@ class UnifiProtectSensor(Entity):
 
         attrs[ATTR_ATTRIBUTION] = ATTRIBUTION
         attrs['brand'] = DEFAULT_BRAND
+        attrs[ATTR_CAMERA_TYPE] = self._camera_type
         attrs['friendly_name'] = self._name
 
         return attrs

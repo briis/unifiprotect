@@ -133,8 +133,8 @@ class protectRemote(object):
             # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
             return None
 
-    # get Motion Events
     def _get_motion_events(self, lookback=86400):
+        """Load the Event Log and loop through items to find motion events."""
         _startTime = datetime.datetime.now() - datetime.timedelta(seconds=lookback)
         _endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
         start_time = int(time.mktime(_startTime.timetuple()))

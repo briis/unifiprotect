@@ -92,7 +92,7 @@ class UfpBinarySensor(BinarySensorDevice):
     def update(self):
         """ Updates Motions State."""
 
-        event_list_sorted = sorted(self._nvrdata.events, key=lambda k: k['start'], reverse=True)        
+        event_list_sorted = sorted(self._nvrdata.motion_events, key=lambda k: k['start'], reverse=True)        
         is_motion = None
 
         for event in event_list_sorted:

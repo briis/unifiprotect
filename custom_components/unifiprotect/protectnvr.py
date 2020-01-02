@@ -50,6 +50,12 @@ class protectRemote(object):
         return self._api_event_list
 
     @property
+    def motion_events(self):
+        """ Returns a JSON formatted list of Events. """
+        self._api_event_list = self._get_motion_events(60)
+        return self._api_event_list
+
+    @property
     def snapshot(self, cuid):
         """Returns Snapshot Image."""
         self._snapshot = self.get_snapshot_image(cuid)
@@ -128,8 +134,8 @@ class protectRemote(object):
             return None
 
     # get Motion Events
-    def _get_motion_events(self):
-        _startTime = datetime.datetime.now() - datetime.timedelta(seconds=10000)
+    def _get_motion_events(self, lookback=86400):
+        _startTime = datetime.datetime.now() - datetime.timedelta(seconds=lookback)
         _endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
         start_time = int(time.mktime(_startTime.timetuple()))
         end_time = int(time.mktime(_endTime.timetuple()))

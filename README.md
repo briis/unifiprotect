@@ -32,7 +32,7 @@ protectnvr.py
 ```
 
 ## HACS Installation
-This Integration is part of the default HACS store. Search for *unifiprotect* under *Integrations* and install from there.
+This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.
 
 ## Configuration
 Start by configuring the core platform. No matter which of the entities you activate, this has to be configured. The core platform by itself does nothing else than establish a link the *Unifi Protect NVR*, so by activating this you will not see any entities being created in Home Assistant.

@@ -101,7 +101,7 @@ In order to use the Sensors, add the following to your *configuration.yaml* file
 sensor:
   - platform: unifiprotect
 ```
-The sensor can have 3 different values:
+The sensor can have 3 different states:
 1. `never` - There will be no recording on the camera
 2. `motion` - Recording will happen only when motion is detected
 3. `always` - The camera will record everything, and motion events will be logged in Unfi Protect

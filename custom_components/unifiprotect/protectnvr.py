@@ -50,6 +50,12 @@ class protectRemote(object):
         return self._api_event_list
 
     @property
+    def motion_events(self):
+        """ Returns a JSON formatted list of Events. """
+        self._api_event_list = self._get_motion_events(60)
+        return self._api_event_list
+
+    @property
     def snapshot(self, cuid):
         """Returns Snapshot Image."""
         self._snapshot = self.get_snapshot_image(cuid)
@@ -113,7 +119,10 @@ class protectRemote(object):
                 else: 
                     online = False
                 # Get the last time motion occured
-                lastmotion = datetime.datetime.fromtimestamp(int(camera['lastMotion'])/1000).strftime('%Y-%m-%d %H:%M:%S')
+                if (camera['lastMotion'] is None):
+                    lastmotion = None
+                else:
+                    lastmotion = datetime.datetime.fromtimestamp(int(camera['lastMotion'])/1000).strftime('%Y-%m-%d %H:%M:%S')
                 # Get when the camera came online
                 upsince = datetime.datetime.fromtimestamp(int(camera['upSince'])/1000).strftime('%Y-%m-%d %H:%M:%S')
                 camera_list.append({"index": str(index), "name": str(camera['name']), "id": str(camera['id']), "type": str(camera['type']), "recording_mode": str(camera['recordingSettings']['mode']), "rtsp": rtsp, 'snapshot': snapshot, 'up_since': upsince, 'last_motion': lastmotion, 'online': online})
@@ -124,9 +133,9 @@ class protectRemote(object):
             # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
             return None
 
-    # get Motion Events
-    def _get_motion_events(self):
-        _startTime = datetime.datetime.now() - datetime.timedelta(seconds=10000)
+    def _get_motion_events(self, lookback=86400):
+        """Load the Event Log and loop through items to find motion events."""
+        _startTime = datetime.datetime.now() - datetime.timedelta(seconds=lookback)
         _endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
         start_time = int(time.mktime(_startTime.timetuple()))
         end_time = int(time.mktime(_endTime.timetuple()))
@@ -254,20 +263,41 @@ class protectRemote(object):
                 break
         return recording_mode
 
-    def get_thumbnail_image(self, tuid):
-        """ Returns a Thumbnail image of a recording event. """
+    def get_thumbnail_by_eventid(self, tuid):
+        """Returns the last recorded Thumbnail, based on Event ID."""
 
         access_key = self._get_api_access_key()
-        img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/thumbnails/" + str(tuid) + "?accessKey=" + access_key + "&h=68&w=121"
+        img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/thumbnails/" + str(tuid) + "?accessKey=" + access_key + "&h=240&w=427"
         response = self.req.get(img_uri, verify=self._verify_ssl)
         if response.status_code == 200:
-            # output = open("thumbnail.png","wb")
-            # output.write(response.content)
-            # output.close()
             return response.content
         else:
             print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
-            # return None
+            return None
+
+    def get_thumbnail(self, cuid):
+        """Returns the last recorded Thumbnail, based on Camera ID."""
+        event_list = self.events
+        event_list_sorted = sorted(event_list, key=lambda k: k['start'], reverse=True)
+        
+        thumbnail_id = None
+        for event in event_list_sorted:
+            if (cuid  == event['camera']):
+                thumbnail_id = event['thumbnail']
+                break
+        
+        if thumbnail_id is not None:
+            access_key = self._get_api_access_key()
+            img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/thumbnails/" + str(thumbnail_id) + "?accessKey=" + access_key + "&h=240&w=427"
+            response = self.req.get(img_uri, verify=self._verify_ssl)
+            if response.status_code == 200:
+                return response.content
+            else:
+                print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+                return None
+        else:
+            return None
+
 
     def get_snapshot_image(self, tuid):
         """ Returns a Snapshot image of a recording event. """
@@ -277,11 +307,8 @@ class protectRemote(object):
         img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/cameras/" + str(tuid) + "/snapshot?accessKey=" + access_key + "&ts=" + str(ts)
         response = self.req.get(img_uri, verify=self._verify_ssl)
         if response.status_code == 200:
-            # output = open("snapshot.png","wb")
-            # output.write(response.content)
-            # output.close()
             return response.content
         else:
-            # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
             return None
 

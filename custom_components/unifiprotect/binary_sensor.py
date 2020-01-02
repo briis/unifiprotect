@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ['unifiprotect']
 
-SCAN_INTERVAL = timedelta(seconds=5)
+SCAN_INTERVAL = timedelta(seconds=3)
 
 # sensor_type [ description, unit, icon ]
 SENSOR_TYPES = {
@@ -54,7 +54,7 @@ class UfpBinarySensor(BinarySensorDevice):
         self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
         self.remove_timer = None
-        _LOGGER.info('UfpBinarySensor: %s created', self._name)
+        _LOGGER.debug('UfpBinarySensor: %s created', self._name)
 
     @property
     def unique_id(self):
@@ -85,7 +85,7 @@ class UfpBinarySensor(BinarySensorDevice):
     def update(self):
         """ Updates Motions State."""
 
-        event_list_sorted = sorted(self._nvrdata.events, key=lambda k: k['start'], reverse=True)        
+        event_list_sorted = sorted(self._nvrdata.motion_events, key=lambda k: k['start'], reverse=True)        
         is_motion = None
 
         for event in event_list_sorted:
@@ -95,6 +95,8 @@ class UfpBinarySensor(BinarySensorDevice):
                 else:
                     is_motion = False
 
+                self._last_motion = event['start']
+                self._thumbnail = event['thumbnail']
                 break
         self._state = is_motion
 

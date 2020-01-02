@@ -32,7 +32,7 @@ protectnvr.py
 ```
 
 ## HACS Installation
-This Integration is not yet part of the default HACS store, but will be once I am convinced it is stable. But it still supports HACS. Just go to settings in HACS and add `briis/unifiprotect` as a Custom Repository. Use *Integration* as Category.
+This Integration is part of the default HACS store. Search for *unifiprotect* under *Integrations* and install from there.
 
 ## Configuration
 Start by configuring the core platform. No matter which of the entities you activate, this has to be configured. The core platform by itself does nothing else than establish a link the *Unifi Protect NVR*, so by activating this you will not see any entities being created in Home Assistant.
@@ -66,11 +66,16 @@ camera:
   - platform: unifiprotect
 ```
 
-The Integration supports the standard camera services. Not all have been testet but the following will work:
-1. `camera.disable_motion_detection` - This will disable motion detection on the specified camera
-2. `camera.enable_motion_detection` - This will enable motion detection on the specified camera
-3. `camera.snapshot` - Take a snapshot of the current image on the specified camera
-4. `camera.record` - Record the current stream to a file
+The Integration adds specific *Unifi Protect* services and supports the standard camera services. Not all have been testet but the following are working:
+
+Service | Parameters | Description
+:------------ | :------------ | :-------------
+`camera.disable_motion_detection` | `entity_id` - camera to disable motion on | Disable motion detection on the specified camera
+`camera.enable_motion_detection` | `entity_id` - camera to enable motion on | Enable motion detection on the specified camera
+`camera.snapshot` | `entity_id` - Name of entity to create snapshots from.<br>`filename` - Filename to store snapshot in | Take a snapshot of the current image on the specified camera and stor in a file
+`camera.record` | `entity_id` - camera to record from<br>`filename` - Template of a Filename. Variable is entity_id. Must be mp4.<br>`duration` - (Optional) Target recording length (in seconds).<br>`lookback` - (Optional) Target lookback period (in seconds) to include in addition to duration. Only available if there is currently an active HLS stream. | Record the current stream to a file
+`camera.unifiprotect_save_thumbnail` | `entity_id` - Name of entity to retrieve thumbnail from.<br>`filename` - Filename to store thumbnail in | Get the thumbnail image of the last recording event (If any), from the specified camera
+
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
 
@@ -96,7 +101,7 @@ In order to use the Sensors, add the following to your *configuration.yaml* file
 sensor:
   - platform: unifiprotect
 ```
-The sensor can have 3 different values:
+The sensor can have 3 different states:
 1. `never` - There will be no recording on the camera
 2. `motion` - Recording will happen only when motion is detected
 3. `always` - The camera will record everything, and motion events will be logged in Unfi Protect

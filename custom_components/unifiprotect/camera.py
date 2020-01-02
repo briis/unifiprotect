@@ -118,6 +118,7 @@ class UnifiVideoCamera(Camera):
         
         self._motion_status = 'motion'
         self._isrecording = True
+        _LOGGER.debug("Motion Detection Enabled for Camera: " + self._name)
 
     def disable_motion_detection(self):
         """Disable motion detection in camera."""
@@ -127,6 +128,7 @@ class UnifiVideoCamera(Camera):
         
         self._motion_status = 'never'
         self._isrecording = False
+        _LOGGER.debug("Motion Detection Disabled for Camera: " + self._name)
 
     def camera_image(self):
         """Return bytes of camera image."""

@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.7
+* Fixed NoneType error when one or more cameras are offline at the time of Home Assistant start
+* Minor code clean-up
+
 ## Version 0.0.6
 * `binary_sensor_`:
   * Changed default SCAN_INTERVAL to 3 seconds to optimize Motion Detection

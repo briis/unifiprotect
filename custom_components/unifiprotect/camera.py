@@ -42,7 +42,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
     async_add_entities(
         [
-            UnifiVideoCamera(hass, nvrobject, camera['id'], camera["name"], camera["rtsp"], camera["recording_mode"], camera["type"])
+            UnifiVideoCamera(hass, nvrobject, camera['id'], camera["name"], camera["rtsp"], camera["recording_mode"], camera["type"], camera['up_since'], camera['last_motion'])
             for camera in cameras
         ]
     )
@@ -57,7 +57,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class UnifiVideoCamera(Camera):
     """A Ubiquiti Unifi Video Camera."""
 
-    def __init__(self, hass, camera, uuid, name, stream_source, recording_mode, model):
+    def __init__(self, hass, camera, uuid, name, stream_source, recording_mode, model, up_since, last_motion):
         """Initialize an Unifi camera."""
         super().__init__()
         self.hass = hass
@@ -65,6 +65,8 @@ class UnifiVideoCamera(Camera):
         self._uuid = uuid
         self._name = name
         self._model = model
+        self._up_since = up_since
+        self._last_motion = last_motion
         self._motion_status = recording_mode
         self._stream_source = stream_source
         self._isrecording = False
@@ -98,7 +100,7 @@ class UnifiVideoCamera(Camera):
     @property
     def brand(self):
         """The Cameras Brand."""
-        return "Ubiquiti"
+        return DEFAULT_BRAND
 
     @property
     def model(self):
@@ -109,6 +111,15 @@ class UnifiVideoCamera(Camera):
     def is_recording(self):
         """Return true if the device is recording."""
         return self._isrecording
+
+    @property
+    def device_state_attributes(self):
+        """Add additional Attributes to Camera."""
+        attrs = {}
+        attrs['uptime'] = self._up_since
+        attrs['last_motion'] = self._last_motion
+        
+        return attrs
 
     def enable_motion_detection(self):
         """Enable motion detection in camera."""

@@ -9,7 +9,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.exceptions import PlatformNotReady
 from homeassistant.helpers.entity import Entity
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 _LOGGER = logging.getLogger(__name__)
 

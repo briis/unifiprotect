@@ -119,12 +119,10 @@ class protectRemote(object):
                 else: 
                     online = False
                 # Get the last time motion occured
-                if (camera['lastMotion'] is None):
-                    lastmotion = None
-                else:
-                    lastmotion = datetime.datetime.fromtimestamp(int(camera['lastMotion'])/1000).strftime('%Y-%m-%d %H:%M:%S')
+                lastmotion = None if camera['lastMotion'] is None else datetime.datetime.fromtimestamp(int(camera['lastMotion'])/1000).strftime('%Y-%m-%d %H:%M:%S')
                 # Get when the camera came online
-                upsince = datetime.datetime.fromtimestamp(int(camera['upSince'])/1000).strftime('%Y-%m-%d %H:%M:%S')
+                upsince = 'Offline' if camera['upSince'] is None else  datetime.datetime.fromtimestamp(int(camera['upSince'])/1000).strftime('%Y-%m-%d %H:%M:%S')
+
                 camera_list.append({"index": str(index), "name": str(camera['name']), "id": str(camera['id']), "type": str(camera['type']), "recording_mode": str(camera['recordingSettings']['mode']), "rtsp": rtsp, 'snapshot': snapshot, 'up_since': upsince, 'last_motion': lastmotion, 'online': online})
                 index += 1
 

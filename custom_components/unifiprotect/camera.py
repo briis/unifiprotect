@@ -127,7 +127,7 @@ class UnifiVideoCamera(Camera):
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
         attrs = {}
-        attrs['uptime'] = self._up_since
+        attrs['up_since'] = self._up_since
         attrs['last_motion'] = self._last_motion
         attrs['online'] = self._online
         

@@ -2,9 +2,14 @@
 
 ## Version 0.0.8
 * `camera`:
-  * Added Attribute *online* - Is true when the camera is Online else shows false
-  * Added Attribute *uptime* - showing time when camera went Online, or Offline if Camera is not connected
+  * Attributes updated more frequently
+  * Fixed missing import of *core* component
+  * Added Attribute *online* - Is true when the camera is Online else shows false. This attribute can be used to check if the camera is available before performing automations.
+  * Added Attribute *up_since* - showing time when camera went Online, or Offline if Camera is not connected
   * Added Attribute *last_motion* - showing time within the last 24 hours, when motion was detected, if any.
+  * If the camera is not online, the recording state will now correctly be *idle*
+* `core`:
+  * Fixed missing string conversion of error code
 
 ## Version 0.0.7
 * Fixed NoneType error when one or more cameras are offline at the time of Home Assistant start

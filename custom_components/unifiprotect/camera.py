@@ -1,6 +1,7 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
 import asyncio
+from datetime import timedelta
 
 import requests
 import voluptuous as vol
@@ -9,18 +10,23 @@ from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, PLATFORM_SCH
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_FILENAME, ATTR_ENTITY_ID
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
-from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
+from homeassistant.helpers.entity_component import EntityComponent
+from . import ATTRIBUTION, DOMAIN, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
 
 
 _LOGGER = logging.getLogger(__name__)
 
+SCAN_INTERVAL = timedelta(seconds=30)
+
 DEPENDENCIES = ['unifiprotect']
 
-SERVICE_SAVE_THUMBNAIL = 'unifiprotect_save_thumbnail'
+SERVICE_SAVE_THUMBNAIL = 'save_thumbnail'
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
-    component = hass.data[DOMAIN]
+    component = hass.data[DOMAIN] = EntityComponent(
+        _LOGGER, DOMAIN, hass, SCAN_INTERVAL
+    )
 
     try:
         # Exceptions may be raised in all method calls to the nvr library.
@@ -80,6 +86,11 @@ class UnifiVideoCamera(Camera):
             self._isrecording = True
 
     @property
+    def should_poll(self):
+        """Poll Cameras to update attributes."""
+        return True
+
+    @property
     def supported_features(self):
         """Return supported features for this camera."""
         return self._supported_features
@@ -123,6 +134,22 @@ class UnifiVideoCamera(Camera):
         attrs['online'] = self._online
         
         return attrs
+
+    def update(self):
+        """ Updates Attribute States."""
+
+        caminfo = self._nvr.cameras
+        for camera in caminfo:
+            if (self._uuid == camera['id']):
+                self._online = camera['online']
+                self._up_since = camera['up_since']
+                self._last_motion = camera['last_motion']
+                self._motion_status = camera['recording_mode']
+                if (self._motion_status != 'never' and self._online):
+                    self._isrecording = True
+                else:
+                    self._isrecording = False
+                break
 
     def enable_motion_detection(self):
         """Enable motion detection in camera."""

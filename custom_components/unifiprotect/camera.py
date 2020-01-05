@@ -11,22 +11,20 @@ from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, C
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_component import EntityComponent
-from . import ATTRIBUTION, DOMAIN, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
+from homeassistant.util import Throttle
+from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
 
 
 _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = timedelta(seconds=30)
-
 DEPENDENCIES = ['unifiprotect']
 
-SERVICE_SAVE_THUMBNAIL = 'save_thumbnail'
+SERVICE_SAVE_THUMBNAIL = "unifiprotect_save_thumbnail"
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
-    component = hass.data[DOMAIN] = EntityComponent(
-        _LOGGER, DOMAIN, hass, SCAN_INTERVAL
-    )
+    component = hass.data[DOMAIN]
 
     try:
         # Exceptions may be raised in all method calls to the nvr library.
@@ -182,6 +180,7 @@ class UnifiVideoCamera(Camera):
         return image
 
     def async_request_thumbnail(self):
+        _LOGGER.debug(self._uuid)
         return self.hass.async_add_job(self.request_thumbnail)
 
     async def async_camera_image(self):
@@ -195,7 +194,6 @@ class UnifiVideoCamera(Camera):
         return self._stream_source
 
 async def save_thumbnail_service(camera, service):
-    _LOGGER.info("{0} thumbnail to file".format(camera.unique_id))
 
     hass = camera.hass
     filename = service.data[ATTR_FILENAME]

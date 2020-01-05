@@ -62,4 +62,3 @@ def setup(hass, config):
         _LOGGER.error("Unable to connect to NVR: %s", str(ex))
         raise PlatformNotReady
     return True
-

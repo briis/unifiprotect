@@ -42,7 +42,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
     async_add_entities(
         [
-            UnifiVideoCamera(hass, nvrobject, camera['id'], camera["name"], camera["rtsp"], camera["recording_mode"], camera["type"], camera['up_since'], camera['last_motion'])
+            UnifiVideoCamera(hass, nvrobject, camera['id'], camera["name"], camera["rtsp"], camera["recording_mode"], camera["type"], camera['up_since'], camera['last_motion'], camera['online'])
             for camera in cameras
         ]
     )
@@ -57,7 +57,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class UnifiVideoCamera(Camera):
     """A Ubiquiti Unifi Video Camera."""
 
-    def __init__(self, hass, camera, uuid, name, stream_source, recording_mode, model, up_since, last_motion):
+    def __init__(self, hass, camera, uuid, name, stream_source, recording_mode, model, up_since, last_motion, online):
         """Initialize an Unifi camera."""
         super().__init__()
         self.hass = hass
@@ -67,6 +67,7 @@ class UnifiVideoCamera(Camera):
         self._model = model
         self._up_since = up_since
         self._last_motion = last_motion
+        self._online = online
         self._motion_status = recording_mode
         self._stream_source = stream_source
         self._isrecording = False
@@ -118,6 +119,7 @@ class UnifiVideoCamera(Camera):
         attrs = {}
         attrs['uptime'] = self._up_since
         attrs['last_motion'] = self._last_motion
+        attrs['online'] = self._online
         
         return attrs
 

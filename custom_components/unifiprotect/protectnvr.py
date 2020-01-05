@@ -94,16 +94,11 @@ class protectRemote(object):
         bootstrap_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/bootstrap"
         response = self.req.get(bootstrap_uri, headers={'Authorization': 'Bearer ' + self._api_auth_bearer_token}, verify=self._verify_ssl)
         if response.status_code == 200:
-            # print("Successfully retrieved data from /api/bootstrap")
             json_response = response.json()
             cameras = json_response['cameras']
-            # print(json.dumps(cameras))
 
-            # print("Cameras found:")
-            index = 0
             camera_list = []
             for camera in cameras:
-                # print(str(camera['name']) + " (" + str(camera['id']) + ")")
                 # Add rtsp streaming url if enabled
                 rtsp = None
                 channels = camera['channels']
@@ -123,8 +118,7 @@ class protectRemote(object):
                 # Get when the camera came online
                 upsince = 'Offline' if camera['upSince'] is None else  datetime.datetime.fromtimestamp(int(camera['upSince'])/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-                camera_list.append({"index": str(index), "name": str(camera['name']), "id": str(camera['id']), "type": str(camera['type']), "recording_mode": str(camera['recordingSettings']['mode']), "rtsp": rtsp, 'snapshot': snapshot, 'up_since': upsince, 'last_motion': lastmotion, 'online': online})
-                index += 1
+                camera_list.append({"name": str(camera['name']), "id": str(camera['id']), "type": str(camera['type']), "recording_mode": str(camera['recordingSettings']['mode']), "rtsp": rtsp, 'snapshot': snapshot, 'up_since': upsince, 'last_motion': lastmotion, 'online': online})
 
             return camera_list
         else:

@@ -9,7 +9,8 @@ from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, PLATFORM_SCH
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_FILENAME, ATTR_ENTITY_ID
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
-from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND
+from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
+
 
 _LOGGER = logging.getLogger(__name__)
 

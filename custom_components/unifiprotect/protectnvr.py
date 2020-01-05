@@ -71,9 +71,9 @@ class protectRemote(object):
             authorization_header = response.headers['Authorization']
             return authorization_header
         else:
-            if response.status in (401, 403):
+            if response.status_code in (401, 403):
                 raise NotAuthorized('Unifi Protect reported authorization failure')
-            if response.status / 100 != 2:
+            if response.status_code / 100 != 2:
                 raise NvrError('Request failed: %s' % response.status)
 
     def _get_api_access_key(self):

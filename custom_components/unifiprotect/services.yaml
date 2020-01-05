@@ -1,4 +1,4 @@
-unifiprotect_save_thumbnail:
+save_thumbnail:
   description: 'Request the lates motion thumbnail from a camera and write it to a file'
   fields:
     entity_id:

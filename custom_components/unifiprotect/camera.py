@@ -10,8 +10,6 @@ from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, PLATFORM_SCH
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_FILENAME, ATTR_ENTITY_ID
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.entity_component import EntityComponent
-from homeassistant.util import Throttle
 from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
 
 

@@ -115,7 +115,7 @@ class protectRemote(object):
                 snapshot = 'http://' + str(camera['host']) + '/snap.jpeg'
                 # Get if camera is online
                 if (camera['state'] == 'CONNECTED'): 
-                    online = True 
+                    online = True
                 else: 
                     online = False
                 # Get the last time motion occured
@@ -128,7 +128,7 @@ class protectRemote(object):
 
             return camera_list
         else:
-            # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            # print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 
     def _get_motion_events(self, lookback=86400):
@@ -159,7 +159,7 @@ class protectRemote(object):
 
             return event_list
         else:
-            # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            # print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 
 
@@ -270,7 +270,7 @@ class protectRemote(object):
         if response.status_code == 200:
             return response.content
         else:
-            print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 
     def get_thumbnail(self, cuid):
@@ -291,7 +291,7 @@ class protectRemote(object):
             if response.status_code == 200:
                 return response.content
             else:
-                print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+                print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
                 return None
         else:
             return None
@@ -307,6 +307,6 @@ class protectRemote(object):
         if response.status_code == 200:
             return response.content
         else:
-            print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 

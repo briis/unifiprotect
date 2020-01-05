@@ -1,6 +1,7 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
 import asyncio
+from datetime import timedelta
 
 import requests
 import voluptuous as vol
@@ -9,13 +10,15 @@ from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, PLATFORM_SCH
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_FILENAME, ATTR_ENTITY_ID
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
-from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND
+from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
+
 
 _LOGGER = logging.getLogger(__name__)
 
+SCAN_INTERVAL = timedelta(seconds=30)
 DEPENDENCIES = ['unifiprotect']
 
-SERVICE_SAVE_THUMBNAIL = 'unifiprotect_save_thumbnail'
+SERVICE_SAVE_THUMBNAIL = "unifiprotect_save_thumbnail"
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
@@ -42,7 +45,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
     async_add_entities(
         [
-            UnifiVideoCamera(hass, nvrobject, camera['id'], camera["name"], camera["rtsp"], camera["recording_mode"], camera["type"])
+            UnifiVideoCamera(hass, nvrobject, camera['id'], camera["name"], camera["rtsp"], camera["recording_mode"], camera["type"], camera['up_since'], camera['last_motion'], camera['online'])
             for camera in cameras
         ]
     )
@@ -57,7 +60,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class UnifiVideoCamera(Camera):
     """A Ubiquiti Unifi Video Camera."""
 
-    def __init__(self, hass, camera, uuid, name, stream_source, recording_mode, model):
+    def __init__(self, hass, camera, uuid, name, stream_source, recording_mode, model, up_since, last_motion, online):
         """Initialize an Unifi camera."""
         super().__init__()
         self.hass = hass
@@ -65,6 +68,9 @@ class UnifiVideoCamera(Camera):
         self._uuid = uuid
         self._name = name
         self._model = model
+        self._up_since = up_since
+        self._last_motion = last_motion
+        self._online = online
         self._motion_status = recording_mode
         self._stream_source = stream_source
         self._isrecording = False
@@ -72,8 +78,13 @@ class UnifiVideoCamera(Camera):
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
 
-        if (recording_mode != 'never'):
+        if (recording_mode != 'never' and self._online):
             self._isrecording = True
+
+    @property
+    def should_poll(self):
+        """Poll Cameras to update attributes."""
+        return True
 
     @property
     def supported_features(self):
@@ -98,7 +109,7 @@ class UnifiVideoCamera(Camera):
     @property
     def brand(self):
         """The Cameras Brand."""
-        return "Ubiquiti"
+        return DEFAULT_BRAND
 
     @property
     def model(self):
@@ -109,6 +120,32 @@ class UnifiVideoCamera(Camera):
     def is_recording(self):
         """Return true if the device is recording."""
         return self._isrecording
+
+    @property
+    def device_state_attributes(self):
+        """Add additional Attributes to Camera."""
+        attrs = {}
+        attrs['up_since'] = self._up_since
+        attrs['last_motion'] = self._last_motion
+        attrs['online'] = self._online
+        
+        return attrs
+
+    def update(self):
+        """ Updates Attribute States."""
+
+        caminfo = self._nvr.cameras
+        for camera in caminfo:
+            if (self._uuid == camera['id']):
+                self._online = camera['online']
+                self._up_since = camera['up_since']
+                self._last_motion = camera['last_motion']
+                self._motion_status = camera['recording_mode']
+                if (self._motion_status != 'never' and self._online):
+                    self._isrecording = True
+                else:
+                    self._isrecording = False
+                break
 
     def enable_motion_detection(self):
         """Enable motion detection in camera."""
@@ -141,6 +178,7 @@ class UnifiVideoCamera(Camera):
         return image
 
     def async_request_thumbnail(self):
+        _LOGGER.debug(self._uuid)
         return self.hass.async_add_job(self.request_thumbnail)
 
     async def async_camera_image(self):
@@ -154,7 +192,6 @@ class UnifiVideoCamera(Camera):
         return self._stream_source
 
 async def save_thumbnail_service(camera, service):
-    _LOGGER.info("{0} thumbnail to file".format(camera.unique_id))
 
     hass = camera.hass
     filename = service.data[ATTR_FILENAME]

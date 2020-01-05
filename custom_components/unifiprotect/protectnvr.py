@@ -71,9 +71,9 @@ class protectRemote(object):
             authorization_header = response.headers['Authorization']
             return authorization_header
         else:
-            if response.status in (401, 403):
+            if response.status_code in (401, 403):
                 raise NotAuthorized('Unifi Protect reported authorization failure')
-            if response.status / 100 != 2:
+            if response.status_code / 100 != 2:
                 raise NvrError('Request failed: %s' % response.status)
 
     def _get_api_access_key(self):
@@ -94,16 +94,11 @@ class protectRemote(object):
         bootstrap_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/bootstrap"
         response = self.req.get(bootstrap_uri, headers={'Authorization': 'Bearer ' + self._api_auth_bearer_token}, verify=self._verify_ssl)
         if response.status_code == 200:
-            # print("Successfully retrieved data from /api/bootstrap")
             json_response = response.json()
             cameras = json_response['cameras']
-            # print(json.dumps(cameras))
 
-            # print("Cameras found:")
-            index = 0
             camera_list = []
             for camera in cameras:
-                # print(str(camera['name']) + " (" + str(camera['id']) + ")")
                 # Add rtsp streaming url if enabled
                 rtsp = None
                 channels = camera['channels']
@@ -115,7 +110,7 @@ class protectRemote(object):
                 snapshot = 'http://' + str(camera['host']) + '/snap.jpeg'
                 # Get if camera is online
                 if (camera['state'] == 'CONNECTED'): 
-                    online = True 
+                    online = True
                 else: 
                     online = False
                 # Get the last time motion occured
@@ -123,12 +118,11 @@ class protectRemote(object):
                 # Get when the camera came online
                 upsince = 'Offline' if camera['upSince'] is None else  datetime.datetime.fromtimestamp(int(camera['upSince'])/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-                camera_list.append({"index": str(index), "name": str(camera['name']), "id": str(camera['id']), "type": str(camera['type']), "recording_mode": str(camera['recordingSettings']['mode']), "rtsp": rtsp, 'snapshot': snapshot, 'up_since': upsince, 'last_motion': lastmotion, 'online': online})
-                index += 1
+                camera_list.append({"name": str(camera['name']), "id": str(camera['id']), "type": str(camera['type']), "recording_mode": str(camera['recordingSettings']['mode']), "rtsp": rtsp, 'snapshot': snapshot, 'up_since': upsince, 'last_motion': lastmotion, 'online': online})
 
             return camera_list
         else:
-            # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            # print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 
     def _get_motion_events(self, lookback=86400):
@@ -159,7 +153,7 @@ class protectRemote(object):
 
             return event_list
         else:
-            # print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            # print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 
 
@@ -270,7 +264,7 @@ class protectRemote(object):
         if response.status_code == 200:
             return response.content
         else:
-            print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 
     def get_thumbnail(self, cuid):
@@ -291,7 +285,7 @@ class protectRemote(object):
             if response.status_code == 200:
                 return response.content
             else:
-                print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+                print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
                 return None
         else:
             return None
@@ -307,6 +301,6 @@ class protectRemote(object):
         if response.status_code == 200:
             return response.content
         else:
-            print("Error Code: " + response.status_code + " - Error Status: " + response.reason)
+            print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 

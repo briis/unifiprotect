@@ -2,7 +2,7 @@
 
 ## Version 0.0.8
 * `camera`:
-  * Attributes updated more frequently
+  * Attributes update more frequently, to show recording mode and online status. Let me know if this causes any issues, as I achieve this by asking the Cameras to poll status every 30 seconds, and that is usually the case for a camera entity. In my own tests I have not seen any problems.
   * Fixed missing import of *core* component
   * Added Attribute *online* - Is true when the camera is Online else shows false. This attribute can be used to check if the camera is available before performing automations.
   * Added Attribute *up_since* - showing time when camera went Online, or Offline if Camera is not connected

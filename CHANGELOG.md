@@ -2,8 +2,9 @@
 
 ## Version 0.0.8
 * `camera`:
-  * Added Attributes *uptime* - showing time when camera went Online, or Offline if Camera is not connected
-  * Added Attributes *last_motion* - showing time within the last 24 hours, when motion was detected, if any.
+  * Added Attribute *online* - Is true when the camera is Online else shows false
+  * Added Attribute *uptime* - showing time when camera went Online, or Offline if Camera is not connected
+  * Added Attribute *last_motion* - showing time within the last 24 hours, when motion was detected, if any.
 
 ## Version 0.0.7
 * Fixed NoneType error when one or more cameras are offline at the time of Home Assistant start

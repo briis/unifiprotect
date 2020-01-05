@@ -75,7 +75,7 @@ class UnifiVideoCamera(Camera):
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
 
-        if (recording_mode != 'never'):
+        if (recording_mode != 'never' and self._online):
             self._isrecording = True
 
     @property

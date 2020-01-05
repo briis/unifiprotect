@@ -10,6 +10,7 @@
   * If the camera is not online, the recording state will now correctly be *idle*
 * `core`:
   * Fixed missing string conversion of error code
+  * Fixed bug in error reporting, when Authentication Failed
 
 ## Version 0.0.7
 * Fixed NoneType error when one or more cameras are offline at the time of Home Assistant start

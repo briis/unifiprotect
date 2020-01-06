@@ -61,6 +61,7 @@ def setup(hass, config):
     try:
         nvrobject = nvr.protectRemote(host,port,username,password,use_ssl)
         hass.data[DATA_UFP] = nvrobject
+        _LOGGER.debug("Connected to Unifi Protect Platform")
                 
     except nvr.NotAuthorized:
         _LOGGER.error("Authorization failure while connecting to NVR")

@@ -34,7 +34,7 @@ The Integration will add all Cameras currently connected to Unifi Protect. If yo
 
 **Remember** 
 * if you already setup the camera using another platform, like the `Generic IP Platform` then remove those before you setup this Platform, as cameras with the same name cannot co-exist.
-* Also, if you are running your Home Assistant installation on a Mac, you might need to enable `stream:` in your `configuration.yaml` to be able to do live streaming.
+* Also, if you are running your Home Assistant installation directly on a Mac, you might need to enable `stream:` in your `configuration.yaml` to be able to do live streaming.
 
 Edit your *configuration.yaml* file and add the *unifiprotect* component to the file:
 ```yaml

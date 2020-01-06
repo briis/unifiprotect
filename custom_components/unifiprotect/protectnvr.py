@@ -238,7 +238,7 @@ class protectRemote(object):
 
         header = {'Authorization': 'Bearer ' + self._api_auth_bearer_token,'Content-Type': 'application/json'}
 
-        response = requests.patch(cam_uri, headers=header, verify=self._verify_ssl, json=data)
+        response = self.req.patch(cam_uri, headers=header, verify=self._verify_ssl, json=data)
         if response.status_code == 200:
             return True
         else:

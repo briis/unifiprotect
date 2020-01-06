@@ -109,6 +109,7 @@ async def async_handle_save_thumbnail_service(hass, call):
         # We got an image, now write the image to disk
         with open(filename, 'wb') as img_file:
             img_file.write(image_data)
+            _LOGGER.debug("Thumbnail Image written to %s", filename)
 
     try:
         await hass.async_add_executor_job(_write_thumbnail, camera_uuid, filename, image_width)

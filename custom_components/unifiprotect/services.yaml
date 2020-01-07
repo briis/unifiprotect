@@ -1,4 +1,4 @@
-unifiprotect_save_thumbnail:
+save_thumbnail_image:
   description: 'Request the lates motion thumbnail from a camera and write it to a file'
   fields:
     entity_id:
@@ -7,3 +7,6 @@ unifiprotect_save_thumbnail:
     filename:
       description: 'string (required) where to save the thumbnail'
       example: '/config/www/thumbnail.png'
+    image_width:
+      description: 'string (optional) width of Thumbnail image in pixels'
+      example: '640'

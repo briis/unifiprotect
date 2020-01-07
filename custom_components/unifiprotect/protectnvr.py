@@ -238,7 +238,7 @@ class protectRemote(object):
 
         header = {'Authorization': 'Bearer ' + self._api_auth_bearer_token,'Content-Type': 'application/json'}
 
-        response = requests.patch(cam_uri, headers=header, verify=self._verify_ssl, json=data)
+        response = self.req.patch(cam_uri, headers=header, verify=self._verify_ssl, json=data)
         if response.status_code == 200:
             return True
         else:
@@ -267,7 +267,7 @@ class protectRemote(object):
             print("Error Code: " + str(response.status_code) + " - Error Status: " + response.reason)
             return None
 
-    def get_thumbnail(self, cuid):
+    def get_thumbnail(self, cuid, width=640):
         """Returns the last recorded Thumbnail, based on Camera ID."""
         event_list = self.events
         event_list_sorted = sorted(event_list, key=lambda k: k['start'], reverse=True)
@@ -279,8 +279,9 @@ class protectRemote(object):
                 break
         
         if thumbnail_id is not None:
+            height = float(width)/1.8
             access_key = self._get_api_access_key()
-            img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/thumbnails/" + str(thumbnail_id) + "?accessKey=" + access_key + "&h=240&w=427"
+            img_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/thumbnails/" + str(thumbnail_id) + "?accessKey=" + access_key + "&h=" + str(height) + "&w=" + str(width)
             response = self.req.get(img_uri, verify=self._verify_ssl)
             if response.status_code == 200:
                 return response.content

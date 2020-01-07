@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.0.9
+* `camera`:
+  * **BREAKING CHANGE** The service `camera.unifiprotect_save_thumbnail` has been removed, and has been replaced by a new Service you can read more about below. The implementation was not done according to Home Assistant standards, so I decided to rewrite it. If you use this Service in any automation, please replace it with the new Service.
+  * A new Service with the name of `unifiprotect.save_thumbnail_image` has been created. This Service does exactly the same as the old service, but now it conforms to Home Assistant standards, and when you select it in the *Services* area under *Developer Tools* you will now see a proper Service Description. A new optional parameter has been added called `image_width`. Here you can specify the width of the image in pixels, and the height will then be scaled propotionally.
+* `core`:
+  * The function `set_camera_recording` was not using the *request.session*, resulting in occasional authentication errors.
+
 ## Version 0.0.8
 * `camera`:
   * Attributes update more frequently, to show recording mode and online status. Let me know if this causes any issues, as I achieve this by asking the Cameras to poll status every 30 seconds, and that is usually the case for a camera entity. In my own tests I have not seen any problems.

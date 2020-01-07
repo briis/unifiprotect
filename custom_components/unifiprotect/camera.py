@@ -6,8 +6,8 @@ from datetime import timedelta
 import requests
 import voluptuous as vol
 
-from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, PLATFORM_SCHEMA, CAMERA_SERVICE_SNAPSHOT, ATTR_FILENAME, Camera
-from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_FILENAME, ATTR_ENTITY_ID
+from homeassistant.components.camera import DOMAIN, SUPPORT_STREAM, Camera
+from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, CONF_USERNAME, CONF_PASSWORD, CONF_NAME
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
@@ -16,13 +16,11 @@ from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
 _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = timedelta(seconds=30)
-DEPENDENCIES = ['unifiprotect']
 
-SERVICE_SAVE_THUMBNAIL = "unifiprotect_save_thumbnail"
+DEPENDENCIES = ['unifiprotect']
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
-    component = hass.data[DOMAIN]
 
     try:
         # Exceptions may be raised in all method calls to the nvr library.
@@ -50,11 +48,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         ]
     )
 
-    component.async_register_entity_service(
-        SERVICE_SAVE_THUMBNAIL, CAMERA_SERVICE_SNAPSHOT, save_thumbnail_service
-    )
-
-
     return True
 
 class UnifiVideoCamera(Camera):
@@ -80,6 +73,8 @@ class UnifiVideoCamera(Camera):
 
         if (recording_mode != 'never' and self._online):
             self._isrecording = True
+            
+        _LOGGER.debug("Camera %s added to Home Assistant", self._name)
 
     @property
     def should_poll(self):
@@ -128,6 +123,7 @@ class UnifiVideoCamera(Camera):
         attrs['up_since'] = self._up_since
         attrs['last_motion'] = self._last_motion
         attrs['online'] = self._online
+        attrs['uuid'] = self._uuid
         
         return attrs
 
@@ -173,14 +169,6 @@ class UnifiVideoCamera(Camera):
             self.async_camera_image(), self.hass.loop
         ).result()
 
-    def request_thumbnail(self):
-        image = self._nvr.get_thumbnail(self._uuid)
-        return image
-
-    def async_request_thumbnail(self):
-        _LOGGER.debug(self._uuid)
-        return self.hass.async_add_job(self.request_thumbnail)
-
     async def async_camera_image(self):
         """ Return the Camera Image. """
         last_image = self._nvr.get_snapshot_image(self._uuid)
@@ -190,34 +178,3 @@ class UnifiVideoCamera(Camera):
     async def stream_source(self):
         """ Return the Stream Source. """
         return self._stream_source
-
-async def save_thumbnail_service(camera, service):
-
-    hass = camera.hass
-    filename = service.data[ATTR_FILENAME]
-    filename.hass = hass
-
-    snapshot_file = filename.async_render(variables={ATTR_ENTITY_ID: camera})
-
-    # check if we allow to access to that file
-    if not hass.config.is_allowed_path(snapshot_file):
-        _LOGGER.error("Can't write %s, no access to path!", snapshot_file)
-        return
-
-    image = await camera.async_request_thumbnail()
-    if image is None:
-        _LOGGER.warning("Last recording not found for Camera " + camera.name)
-        return False
-
-    def _write_image(to_file, image_data):
-        with open(to_file, 'wb') as img_file:
-            img_file.write(image_data)
-
-    try:
-        await hass.async_add_executor_job(_write_image, snapshot_file, image)
-        hass.bus.fire('unifiprotect_thumbnail_ready', {
-            'entity_id': 'unifiprotect.' + camera.unique_id,
-            'file': snapshot_file
-        })
-    except OSError as err:
-        _LOGGER.error("Can't write image to file: %s", err)

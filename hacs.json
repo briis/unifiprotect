@@ -3,3 +3,4 @@
     "domains": ["binary_sensor", "sensor", "camera"],
     "iot_class": "Local Polling"
 }
+

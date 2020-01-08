@@ -31,7 +31,6 @@ CONF_IMAGE_WIDTH = "image_width"
 SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
 
 DOMAIN = "unifiprotect"
-DEFAULT_ENTITY_NAMESPACE = "unifprotect"
 DEFAULT_PASSWORD = "ubnt"
 DEFAULT_PORT = 7443
 DEFAULT_SSL = False

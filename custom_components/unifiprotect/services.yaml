@@ -6,7 +6,7 @@ save_thumbnail_image:
       example: 'camera.outdoor'
     filename:
       description: 'string (required) where to save the thumbnail'
-      example: '/config/www/thumbnail_{{ entity_id.name }}.png'
+      example: '/config/www/thumbnail.png'
     image_width:
       description: 'string (optional) width of Thumbnail image in pixels'
       example: '640'

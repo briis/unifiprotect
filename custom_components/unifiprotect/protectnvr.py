@@ -59,7 +59,7 @@ class ProtectServer(object):
 
     @property
     def motion_events(self):
-        """ Returns a JSON formatted list of Events. """
+        """ Returns a JSON formatted list of Events for the last minute. """
         self._api_event_list = self._get_motion_events(60)
         return self._api_event_list
 

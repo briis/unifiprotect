@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.0.10
+* `New Items`:
+  * Added new Icon to the Sensor, and now the Icon is changing based on Recording Mode state, so it is clear to see if motion recording is on or off
+* `Fixes`:
+  * Code clean-up and now all code conforms to PEP standards
+
 ## Version 0.0.9
 * `camera`:
   * **BREAKING CHANGE** The service `camera.unifiprotect_save_thumbnail` has been removed, and has been replaced by a new Service you can read more about below. The implementation was not done according to Home Assistant standards, so I decided to rewrite it. If you use this Service in any automation, please replace it with the new Service.

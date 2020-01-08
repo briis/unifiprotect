@@ -18,7 +18,7 @@ SCAN_INTERVAL = timedelta(seconds=5)
 ATTR_CAMERA_TYPE = "camera_type"
 
 SENSOR_TYPES = {
-    "motion_recording": ["Motion Recording", None, "motion-sensor", "motion_recording"]
+    "motion_recording": ["Motion Recording", None, "camcorder", "motion_recording"]
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -107,6 +107,7 @@ class UnifiProtectSensor(Entity):
             if self._device["id"] == camera["id"]:
                 recstate = camera["recording_mode"]
                 break
-
+        
+        self._icon = "mdi:camcorder" if recstate != "never" else "mdi:camcorder-off"
         self._state = recstate
 

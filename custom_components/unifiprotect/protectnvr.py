@@ -35,7 +35,6 @@ class ProtectServer(object):
         self._access_key = None
         self._api_camera_list = None
         self._api_event_list = None
-        self._snapshot = None
 
         # disable InsecureRequestWarning for unverified HTTPS requests
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -63,11 +62,6 @@ class ProtectServer(object):
         """ Returns a JSON formatted list of Events. """
         self._api_event_list = self._get_motion_events(60)
         return self._api_event_list
-
-    @property
-    def snapshot(self, cuid):
-        """Returns Snapshot Image."""
-        self._snapshot = self.get_snapshot_image(cuid)
 
     # API Authentication
     # get bearer token using username and password of local user
@@ -143,8 +137,6 @@ class ProtectServer(object):
                             + str(channel["rtspAlias"])
                         )
                         break
-                # Add the snapshot url - must enabled anonymous snapshot on camera
-                snapshot = "http://" + str(camera["host"]) + "/snap.jpeg"
                 # Get if camera is online
                 if camera["state"] == "CONNECTED":
                     online = True
@@ -174,7 +166,6 @@ class ProtectServer(object):
                         "type": str(camera["type"]),
                         "recording_mode": str(camera["recordingSettings"]["mode"]),
                         "rtsp": rtsp,
-                        "snapshot": snapshot,
                         "up_since": upsince,
                         "last_motion": lastmotion,
                         "online": online,

@@ -45,3 +45,4 @@
   * changed size of the thumbnail image when being created.
   * fixed error when no *Last Motion* record exist
   * cleaned up the code, removing obsolete parts.
+  

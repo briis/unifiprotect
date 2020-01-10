@@ -1,8 +1,9 @@
 """Unifi Protect API Wrapper."""
 import requests
 import urllib3
+from datetime import date
+from datetime import datetime
 import time
-import datetime
 
 
 class Invalid(Exception):
@@ -63,9 +64,9 @@ class ProtectServer(object):
         self._api_event_list = self._get_motion_events(60)
         return self._api_event_list
 
-    # API Authentication
-    # get bearer token using username and password of local user
     def _get_api_auth_bearer_token(self):
+        """get bearer token using username and password of local user."""
+        
         auth_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/auth"
         response = self.req.post(
             auth_uri,
@@ -83,6 +84,8 @@ class ProtectServer(object):
                 raise NvrError("Request failed: %s" % response.status)
 
     def _get_api_access_key(self):
+        """get API Access Key."""
+        
         access_key_uri = (
             "https://"
             + str(self._host)
@@ -111,6 +114,8 @@ class ProtectServer(object):
 
     # get camera list
     def _get_camera_list(self):
+        """Get a list of Cameras connected to the NVR."""
+        
         bootstrap_uri = (
             "https://" + str(self._host) + ":" + str(self._port) + "/api/bootstrap"
         )
@@ -179,6 +184,7 @@ class ProtectServer(object):
 
     def _get_motion_events(self, lookback=86400):
         """Load the Event Log and loop through items to find motion events."""
+        
         event_start = datetime.datetime.now() - datetime.timedelta(seconds=lookback)
         event_end = datetime.datetime.now() + datetime.timedelta(seconds=10)
         start_time = int(time.mktime(event_start.timetuple()))
@@ -237,9 +243,8 @@ class ProtectServer(object):
 
     def update_motion(self, cuid):
         """ Returns Last Motion Status for selected Camera."""
-        # Get Motion Events
+        
         event_list = self._get_motion_events()
-        # Loop Through Cameras, and see if there is motion
         event_list_sorted = sorted(event_list, key=lambda k: k["start"], reverse=True)
         is_motion = None
 
@@ -255,7 +260,7 @@ class ProtectServer(object):
 
     def get_motion_devices(self):
         """Returns a list with Cameras and current Motion Status."""
-        # Get Cameras
+        
         bootstrap_uri = (
             "https://" + str(self._host) + ":" + str(self._port) + "/api/bootstrap"
         )
@@ -349,6 +354,24 @@ class ProtectServer(object):
             return True
         else:
             return False
+        
+    def get_motion_events_today(self, camera_id):
+        """Return number of Motion Events for the day for a camera."""
+        
+        today = date.today()
+        epoch_day_start = int(time.mktime(datetime.combine(today, datetime.min.time()).timetuple()))*1000
+        epoch_day_end = int(time.mktime(datetime.combine(today, datetime.max.time()).timetuple()))*1000
+
+        event_uri = "https://%s:%s/api/events?end=%s&start=%s&type=motion" % (self._host, self._port, epoch_day_end, epoch_day_start)
+
+        response = self.req.get(event_uri, headers={'Authorization': 'Bearer ' + self._api_auth_bearer_token}, verify=self._verify_ssl)
+        if response.status_code == 200:
+            event_counter = 0
+            events = response.json()
+            for event in events:
+                if (camera_id == event['camera']):
+                    event_counter += 1
+            return event_counter
 
     def get_camera_recording(self, uuid):
         """ Returns the Camera Recording Mode. """

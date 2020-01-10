@@ -355,7 +355,7 @@ class ProtectServer(object):
         else:
             return False
         
-    def get_motion_events_today(self, camera_id):
+    def get_motion_events_today(self):
         """Return number of Motion Events for the day for a camera."""
         
         today = date.today()
@@ -366,12 +366,21 @@ class ProtectServer(object):
 
         response = self.req.get(event_uri, headers={'Authorization': 'Bearer ' + self._api_auth_bearer_token}, verify=self._verify_ssl)
         if response.status_code == 200:
-            event_counter = 0
             events = response.json()
-            for event in events:
-                if (camera_id == event['camera']):
-                    event_counter += 1
-            return event_counter
+            counter_dict = {}
+            array_size = len(events)
+            uniqueCameras = []
+
+            for i in range(0,array_size,1):
+                if(events[i]["camera"] not in uniqueCameras):
+                    uniqueCameras.append(events[i]['camera'])
+                    counter_dict.update({"%s" % (events[i]["camera"]): 1})
+                else:
+                    cam_id = "%s" % (events[i]["camera"])
+                    counter = counter_dict[cam_id] + 1
+                    counter_dict[cam_id] = counter
+
+            return counter_dict
 
     def get_camera_recording(self, uuid):
         """ Returns the Camera Recording Mode. """

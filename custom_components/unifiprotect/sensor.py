@@ -18,7 +18,8 @@ SCAN_INTERVAL = timedelta(seconds=5)
 ATTR_CAMERA_TYPE = "camera_type"
 
 SENSOR_TYPES = {
-    "motion_recording": ["Motion Recording", None, "camcorder", "motion_recording"]
+    "motion_recording": ["Motion Recording", None, "camcorder", "motion_recording"],
+    "motion_count": ["Motion Count Today", None, "counter", "motion_count"]
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -49,14 +50,17 @@ class UnifiProtectSensor(Entity):
     """A Unifi Protect Binary Sensor."""
 
     def __init__(self, name, device, sensor_type, nvrdata):
-        """Initialize an Arlo sensor."""
+        """Initialize an Unifi Protect sensor."""
         self._name = name
         self._unique_id = self._name.lower().replace(" ", "_")
         self._device = device
         self._sensor_type = sensor_type
         self._nvrdata = nvrdata
         self._icon = "mdi:{}".format(SENSOR_TYPES.get(self._sensor_type)[2])
-        self._state = device["recording_mode"]
+        if SENSOR_TYPES.get(self._sensor_type)[3] == 'motion_recording':
+            self._state = device["recording_mode"]
+        elif SENSOR_TYPES.get(self._sensor_type)[3] == 'motion_count':
+            self._state = 0
         self._camera_type = device["type"]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[3]
         _LOGGER.debug("UnifiProtectSensor: %s created", self._name)
@@ -101,13 +105,22 @@ class UnifiProtectSensor(Entity):
     def update(self):
         """ Updates Motions State."""
 
-        recstate = None
-        caminfo = self._nvrdata.cameras
-        for camera in caminfo:
-            if self._device["id"] == camera["id"]:
-                recstate = camera["recording_mode"]
-                break
+        if SENSOR_TYPES.get(self._sensor_type)[3] == 'motion_recording':
+            recstate = None
+            caminfo = self._nvrdata.cameras
+            for camera in caminfo:
+                if self._device["id"] == camera["id"]:
+                    recstate = camera["recording_mode"]
+                    break
+
+            self._icon = "mdi:camcorder" if recstate != "never" else "mdi:camcorder-off"
+            self._state = recstate
+        elif SENSOR_TYPES.get(self._sensor_type)[3] == 'motion_count':
+            motion_count = 0
+            motion_counter = self._nvrdata.get_motion_events_today()
+            
+            if self._device["id"] in motion_counter:
+                motion_count = motion_counter[self._device["id"]]
+            self._state = motion_count
         
-        self._icon = "mdi:camcorder" if recstate != "never" else "mdi:camcorder-off"
-        self._state = recstate
 

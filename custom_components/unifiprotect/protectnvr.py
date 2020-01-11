@@ -2,7 +2,7 @@
 import requests
 import urllib3
 from datetime import date
-from datetime import datetime
+import datetime
 import time
 
 
@@ -359,8 +359,8 @@ class ProtectServer(object):
         """Return number of Motion Events for the day for a camera."""
         
         today = date.today()
-        epoch_day_start = int(time.mktime(datetime.combine(today, datetime.min.time()).timetuple()))*1000
-        epoch_day_end = int(time.mktime(datetime.combine(today, datetime.max.time()).timetuple()))*1000
+        epoch_day_start = int(time.mktime(datetime.datetime.combine(today, datetime.datetime.min.time()).timetuple()))*1000
+        epoch_day_end = int(time.mktime(datetime.datetime.combine(today, datetime.datetime.max.time()).timetuple()))*1000
 
         event_uri = "https://%s:%s/api/events?end=%s&start=%s&type=motion" % (self._host, self._port, epoch_day_end, epoch_day_start)
 

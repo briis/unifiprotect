@@ -7,48 +7,34 @@ import requests
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.exceptions import PlatformNotReady
-from . import DATA_UFP, DEFAULT_BRAND, protectnvr as nvr
-
+from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(seconds=30)
+ATTR_CAMERA_ID = "camera_id"
+ATTR_UP_SINCE = "up_since"
+ATTR_LAST_MOTION = "last_motion"
+ATTR_ONLINE = "online"
+
+SCAN_INTERVAL = timedelta(seconds=1)
 
 DEPENDENCIES = ["unifiprotect"]
-
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
 
-    try:
-        # Exceptions may be raised in all method calls to the nvr library.
-        nvrobject = hass.data.get(DATA_UFP)
-        cameras = nvrobject.cameras
+    upv_object = hass.data[UPV_DATA]
+    if not upv_object:
+        return
 
-        cameras = [camera for camera in cameras]
-    except nvr.NotAuthorized:
-        _LOGGER.error("Authorization failure while connecting to NVR")
-        return False
-    except nvr.NvrError as ex:
-        _LOGGER.error("NVR refuses to talk to me: %s", str(ex))
-        raise PlatformNotReady
-    except requests.exceptions.ConnectionError as ex:
-        _LOGGER.error("Unable to connect to NVR: %s", str(ex))
-        raise PlatformNotReady
+    cameras = [camera for camera in upv_object.devices]
 
     async_add_entities(
         [
             UnifiVideoCamera(
                 hass,
-                nvrobject,
-                camera["id"],
-                camera["name"],
-                camera["rtsp"],
-                camera["recording_mode"],
-                camera["type"],
-                camera["up_since"],
-                camera["last_motion"],
-                camera["online"],
+                upv_object,
+                camera
             )
             for camera in cameras
         ]
@@ -60,37 +46,27 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class UnifiVideoCamera(Camera):
     """A Ubiquiti Unifi Video Camera."""
 
-    def __init__(
-        self,
-        hass,
-        camera,
-        uuid,
-        name,
-        stream_source,
-        recording_mode,
-        model,
-        up_since,
-        last_motion,
-        online,
-    ):
+    def __init__(self, hass, upv_object, camera):
         """Initialize an Unifi camera."""
         super().__init__()
         self.hass = hass
-        self._nvr = camera
-        self._uuid = uuid
-        self._name = name
-        self._model = model
-        self._up_since = up_since
-        self._last_motion = last_motion
-        self._online = online
-        self._motion_status = recording_mode
-        self._stream_source = stream_source
+        self.upv_object = upv_object
+        self._camera_id = camera
+        self._camera = self.upv_object.devices[camera]
+
+        self._name = self._camera["name"]
+        self._model = self._camera["type"]
+        self._up_since = self._camera["up_since"]
+        self._last_motion = self._camera["last_motion"]
+        self._online = self._camera["online"]
+        self._motion_status = self._camera["recording_mode"]
+        self._stream_source = self._camera["rtsp"]
         self._isrecording = False
         self._camera = None
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
 
-        if recording_mode != "never" and self._online:
+        if self._motion_status != "never" and self._online:
             self._isrecording = True
 
         _LOGGER.debug("Camera %s added to Home Assistant", self._name)
@@ -108,7 +84,7 @@ class UnifiVideoCamera(Camera):
     @property
     def unique_id(self):
         """Return a unique ID."""
-        return self._uuid
+        return self._camera_id
 
     @property
     def name(self):
@@ -139,32 +115,30 @@ class UnifiVideoCamera(Camera):
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
         attrs = {}
-        attrs["up_since"] = self._up_since
-        attrs["last_motion"] = self._last_motion
-        attrs["online"] = self._online
-        attrs["uuid"] = self._uuid
+        attrs[ATTR_UP_SINCE] = self._up_since
+        attrs[ATTR_LAST_MOTION] = self._last_motion
+        attrs[ATTR_ONLINE] = self._online
+        attrs[ATTR_CAMERA_ID] = self._camera_id
 
         return attrs
 
     def update(self):
         """ Updates Attribute States."""
+        data = self.upv_object.devices
+        camera = data[self._camera_id]
 
-        caminfo = self._nvr.cameras
-        for camera in caminfo:
-            if self._uuid == camera["id"]:
-                self._online = camera["online"]
-                self._up_since = camera["up_since"]
-                self._last_motion = camera["last_motion"]
-                self._motion_status = camera["recording_mode"]
-                if self._motion_status != "never" and self._online:
-                    self._isrecording = True
-                else:
-                    self._isrecording = False
-                break
+        self._online = camera["online"]
+        self._up_since = camera["up_since"]
+        self._last_motion = camera["last_motion"]
+        self._motion_status = camera["recording_mode"]
+        if self._motion_status != "never" and self._online:
+            self._isrecording = True
+        else:
+            self._isrecording = False
 
     def enable_motion_detection(self):
         """Enable motion detection in camera."""
-        ret = self._nvr.set_camera_recording(self._uuid, "motion")
+        ret = self.upv_object.set_camera_recording(self._camera_id, "motion")
         if not ret:
             return
 
@@ -174,7 +148,7 @@ class UnifiVideoCamera(Camera):
 
     def disable_motion_detection(self):
         """Disable motion detection in camera."""
-        ret = self._nvr.set_camera_recording(self._uuid, "never")
+        ret = self.upv_object.set_camera_recording(self._camera_id, "never")
         if not ret:
             return
 
@@ -190,7 +164,7 @@ class UnifiVideoCamera(Camera):
 
     async def async_camera_image(self):
         """ Return the Camera Image. """
-        last_image = self._nvr.get_snapshot_image(self._uuid)
+        last_image = self.upv_object.get_snapshot_image(self._camera_id)
         self._last_image = last_image
         return self._last_image
 

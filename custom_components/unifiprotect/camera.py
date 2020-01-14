@@ -61,6 +61,7 @@ class UnifiVideoCamera(Camera):
         self._online = self._camera["online"]
         self._motion_status = self._camera["recording_mode"]
         self._stream_source = self._camera["rtsp"]
+        self._thumbnail = self._camera["motion_thumbnail"]
         self._isrecording = False
         self._camera = None
         self._last_image = None
@@ -119,6 +120,7 @@ class UnifiVideoCamera(Camera):
         attrs[ATTR_LAST_MOTION] = self._last_motion
         attrs[ATTR_ONLINE] = self._online
         attrs[ATTR_CAMERA_ID] = self._camera_id
+        attrs["thumbnail_id"] = self._thumbnail
 
         return attrs
 
@@ -135,6 +137,7 @@ class UnifiVideoCamera(Camera):
             self._isrecording = True
         else:
             self._isrecording = False
+        self._thumbnail = camera["motion_thumbnail"]
 
     def enable_motion_detection(self):
         """Enable motion detection in camera."""

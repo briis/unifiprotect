@@ -222,8 +222,9 @@ class UpvServer:
                 camera_id = event["camera"]
                 self.device_data[camera_id]["motion_start"] = start_time
                 self.device_data[camera_id]["motion_score"] = event["score"]
-                self.device_data[camera_id]["motion_thumbnail"] = event["thumbnail"]
                 self.device_data[camera_id]["motion_on"] = motion_on
+                if event["thumbnail"] is not None: # Only update if there is a new Motion Event
+                    self.device_data[camera_id]["motion_thumbnail"] = event["thumbnail"]
 
     def get_thumbnail(self, camera_id, width=640):
         """Returns the last recorded Thumbnail, based on Camera ID."""

@@ -129,14 +129,14 @@ async def async_handle_save_thumbnail_service(hass, call):
     # Get the Camera ID from Entity_id
     entity_id = call.data[ATTR_ENTITY_ID]
     entity_state = hass.states.get(entity_id[0])
-    camera_uuid = entity_state.attributes["uuid"]
-    if camera_uuid is None:
+    camera_id = entity_state.attributes["camera_id"]
+    if camera_id is None:
         _LOGGER.error("Unable to get Camera ID for selected Camera")
         return
 
     # Get other input from the service call
     filename = call.data[CONF_FILENAME]
-    image_width = call.data[CONF_IMAGE_WIDTH]
+    image_width = call.data[CONF_THUMB_WIDTH]
 
     if not hass.config.is_allowed_path(filename):
         _LOGGER.error("Can't write %s, no access to path!", filename)
@@ -144,7 +144,7 @@ async def async_handle_save_thumbnail_service(hass, call):
 
     def _write_thumbnail(camera_id, filename, image_width):
         """Call thumbnail write."""
-        image_data = hass.data[DATA_UFP].get_thumbnail(camera_id, image_width)
+        image_data = hass.data[UPV_DATA].get_thumbnail(camera_id, image_width)
         if image_data is None:
             _LOGGER.warning(
                 "Last recording not found for Camera %s",
@@ -158,7 +158,7 @@ async def async_handle_save_thumbnail_service(hass, call):
 
     try:
         await hass.async_add_executor_job(
-            _write_thumbnail, camera_uuid, filename, image_width
+            _write_thumbnail, camera_id, filename, image_width
         )
     except OSError as err:
         _LOGGER.error("Can't write image to file: %s", err)

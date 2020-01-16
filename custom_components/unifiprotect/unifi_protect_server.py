@@ -60,6 +60,7 @@ class UpvServer:
         auth_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/auth"
         response = self.req.post(
             auth_uri,
+            headers={"Connection": "keep-alive"},
             json={"username": self._username, "password": self._password},
             verify=self._verify_ssl,
         )
@@ -230,6 +231,8 @@ class UpvServer:
 
     def get_thumbnail(self, camera_id, width=640):
         """Returns the last recorded Thumbnail, based on Camera ID."""
+
+        self._get_motion_events()
 
         thumbnail_id = self.device_data[camera_id]["motion_thumbnail"]
 

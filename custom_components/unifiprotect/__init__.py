@@ -139,7 +139,6 @@ async def async_handle_save_thumbnail_service(hass, call):
     # Get the Camera ID from Entity_id
     entity_id = call.data[ATTR_ENTITY_ID]
     entity_state = hass.states.get(entity_id[0])
-    _LOGGER.debug("THUMBHANDLER: %s - %s" % (entity_id, entity_state))
     camera_id = entity_state.attributes[ATTR_CAMERA_ID]
     if camera_id is None:
         _LOGGER.error("Unable to get Camera ID for selected Camera")
@@ -148,12 +147,6 @@ async def async_handle_save_thumbnail_service(hass, call):
     # Get other input from the service call
     filename = call.data[CONF_FILENAME]
     image_width = call.data[CONF_THUMB_WIDTH]
-    _LOGGER.debug(
-        "THUMBHANDLER: Filename: "
-        + str(filename)
-        + " - image_width: "
-        + str(image_width)
-    )
 
     if not hass.config.is_allowed_path(filename):
         _LOGGER.error("Can't write %s, no access to path!", filename)

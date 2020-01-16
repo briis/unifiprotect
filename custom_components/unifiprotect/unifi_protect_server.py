@@ -1,12 +1,10 @@
 """Unifi Protect Server Wrapper."""
 
-import aiohttp
-import asyncio
 import datetime
-import json
 import requests
 import time
 import urllib3
+
 
 class Invalid(Exception):
     """Invalid return from Authorization Request."""
@@ -28,8 +26,10 @@ class NvrError(Exception):
 
 class UpvServer:
     """Updates device States and Attributes."""
-    
-    def __init__(self, host, port, username, password, verify_ssl=False, minimum_score=40):
+
+    def __init__(
+        self, host, port, username, password, verify_ssl=False, minimum_score=40
+    ):
         self._host = host
         self._port = port
         self._username = username
@@ -38,26 +38,25 @@ class UpvServer:
         self._minimum_score = minimum_score
         self.access_key = None
         self.device_data = {}
-        
+
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.req = requests.session()
         self._api_auth_bearer_token = self._get_api_auth_bearer_token()
         self.update()
 
-
     @property
     def devices(self):
         """ Returns a JSON formatted list of Devices. """
         return self.device_data
-    
+
     def update(self):
         """Updates the status of devices."""
         self._get_camera_list()
         self._get_motion_events(10)
-    
+
     def _get_api_auth_bearer_token(self):
         """get bearer token using username and password of local user."""
-        
+
         auth_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/auth"
         response = self.req.post(
             auth_uri,
@@ -75,7 +74,7 @@ class UpvServer:
 
     def _get_api_access_key(self):
         """get API Access Key."""
-        
+
         access_key_uri = (
             "https://"
             + str(self._host)
@@ -93,11 +92,13 @@ class UpvServer:
             access_key = json_response["accessKey"]
             return access_key
         else:
-            raise NvrError("Request failed: %s - Reason: %s" % (response.status, response.reason))
+            raise NvrError(
+                "Request failed: %s - Reason: %s" % (response.status, response.reason)
+            )
 
     def _get_camera_list(self):
         """Get a list of Cameras connected to the NVR."""
-        
+
         bootstrap_uri = (
             "https://" + str(self._host) + ":" + str(self._port) + "/api/bootstrap"
         )
@@ -109,7 +110,7 @@ class UpvServer:
         if response.status_code == 200:
             json_response = response.json()
             cameras = json_response["cameras"]
-            
+
             for camera in cameras:
 
                 # Get if camera is online
@@ -149,7 +150,7 @@ class UpvServer:
                                 + str(channel["rtspAlias"])
                             )
                             break
-                
+
                     item = {
                         str(camera["id"]): {
                             "name": str(camera["name"]),
@@ -163,7 +164,7 @@ class UpvServer:
                             "motion_score": 0,
                             "motion_thumbnail": None,
                             "motion_on": False,
-                            "motion_events_today": 0
+                            "motion_events_today": 0,
                         }
                     }
                     self.device_data.update(item)
@@ -176,11 +177,11 @@ class UpvServer:
 
     def _get_motion_events(self, lookback=86400):
         """Load the Event Log and loop through items to find motion events."""
-        
+
         event_start = datetime.datetime.now() - datetime.timedelta(seconds=lookback)
         event_end = datetime.datetime.now() + datetime.timedelta(seconds=10)
-        start_time = int(time.mktime(event_start.timetuple()))*1000
-        end_time = int(time.mktime(event_end.timetuple()))*1000
+        start_time = int(time.mktime(event_start.timetuple())) * 1000
+        end_time = int(time.mktime(event_end.timetuple())) * 1000
 
         event_uri = (
             "https://"
@@ -202,7 +203,6 @@ class UpvServer:
         if response.status_code == 200:
             # print("Successfully retrieved data from /api/events")
             events = response.json()
-            event_list = []
             for event in events:
                 # print("Event for camera: " + str(event['camera']))
                 if event["start"]:
@@ -218,12 +218,14 @@ class UpvServer:
                         motion_on = True
                     else:
                         motion_on = False
-                
+
                 camera_id = event["camera"]
                 self.device_data[camera_id]["motion_start"] = start_time
                 self.device_data[camera_id]["motion_score"] = event["score"]
                 self.device_data[camera_id]["motion_on"] = motion_on
-                if event["thumbnail"] is not None: # Only update if there is a new Motion Event
+                if (
+                    event["thumbnail"] is not None
+                ):  # Only update if there is a new Motion Event
                     self.device_data[camera_id]["motion_thumbnail"] = event["thumbnail"]
 
     def get_thumbnail(self, camera_id, width=640):
@@ -252,7 +254,10 @@ class UpvServer:
             if response.status_code == 200:
                 return response.content
             else:
-                raise NvrError("Thumbnail Request failed: %s - Reason: %s" % (response.status, response.reason))
+                raise NvrError(
+                    "Thumbnail Request failed: %s - Reason: %s"
+                    % (response.status, response.reason)
+                )
         else:
             return None
 
@@ -320,4 +325,8 @@ class UpvServer:
         if response.status_code == 200:
             return True
         else:
-            raise NvrError("Set Recording Mode failed: %s - Reason: %s" % (response.status, response.reason))
+            raise NvrError(
+                "Set Recording Mode failed: %s - Reason: %s"
+                % (response.status, response.reason)
+            )
+

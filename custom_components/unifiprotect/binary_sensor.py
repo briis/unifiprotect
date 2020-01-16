@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 DEPENDENCIES = ["unifiprotect"]
 
 # Update Frequently as we are only reading from Memory
-SCAN_INTERVAL = timedelta(seconds=1)
+SCAN_INTERVAL = timedelta(seconds=2)
 
 ATTR_BRAND = "brand"
 

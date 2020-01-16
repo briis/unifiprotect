@@ -4,6 +4,7 @@ from datetime import timedelta
 import logging
 import voluptuous as vol
 import requests
+
 # from . import protectnvr as nvr
 from . import unifi_protect_server as upv
 
@@ -32,7 +33,12 @@ __version__ = "0.1.0"
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_THUMB_WIDTH = "thumb_width"
+ATTR_CAMERA_ID = "camera_id"
+ATTR_UP_SINCE = "up_since"
+ATTR_LAST_MOTION = "last_motion"
+ATTR_ONLINE = "online"
+
+CONF_THUMB_WIDTH = "image_width"
 CONF_MIN_SCORE = "minimum_score"
 
 DEFAULT_ATTRIBUTION = "Data provided by Ubiquiti's Unifi Protect Server"
@@ -57,7 +63,9 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Required(CONF_PASSWORD): cv.string,
                 vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
                 vol.Optional(CONF_SSL, default=DEFAULT_SSL): cv.boolean,
-                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): cv.time_period,
+                vol.Optional(
+                    CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
+                ): cv.time_period,
                 vol.Optional(CONF_THUMB_WIDTH, default=DEFAULT_THUMB_WIDTH): int,
                 vol.Optional(CONF_MIN_SCORE, default=DEFAULT_MIN_SCORE): int,
             }
@@ -87,15 +95,17 @@ def setup(hass, config):
     scan_interval = conf[CONF_SCAN_INTERVAL]
 
     try:
-        hass.data[UPV_DATA] = upv.UpvServer(host, port, username, password, use_ssl, minimum_score)
+        hass.data[UPV_DATA] = upv.UpvServer(
+            host, port, username, password, use_ssl, minimum_score
+        )
         # nvrobject = nvr.ProtectServer(host, port, username, password, use_ssl)
         # hass.data[DATA_UFP] = nvrobject
         _LOGGER.debug("Connected to Unifi Protect Platform")
 
-    except nvr.NotAuthorized:
+    except upv.NotAuthorized:
         _LOGGER.error("Authorization failure while connecting to NVR")
         return False
-    except nvr.NvrError as ex:
+    except upv.NvrError as ex:
         _LOGGER.error("NVR refuses to talk to me: %s", str(ex))
         raise PlatformNotReady
     except requests.exceptions.ConnectionError as ex:
@@ -129,7 +139,8 @@ async def async_handle_save_thumbnail_service(hass, call):
     # Get the Camera ID from Entity_id
     entity_id = call.data[ATTR_ENTITY_ID]
     entity_state = hass.states.get(entity_id[0])
-    camera_id = entity_state.attributes["camera_id"]
+    _LOGGER.debug("THUMBHANDLER: %s - %s" % (entity_id, entity_state))
+    camera_id = entity_state.attributes[ATTR_CAMERA_ID]
     if camera_id is None:
         _LOGGER.error("Unable to get Camera ID for selected Camera")
         return
@@ -137,6 +148,12 @@ async def async_handle_save_thumbnail_service(hass, call):
     # Get other input from the service call
     filename = call.data[CONF_FILENAME]
     image_width = call.data[CONF_THUMB_WIDTH]
+    _LOGGER.debug(
+        "THUMBHANDLER: Filename: "
+        + str(filename)
+        + " - image_width: "
+        + str(image_width)
+    )
 
     if not hass.config.is_allowed_path(filename):
         _LOGGER.error("Can't write %s, no access to path!", filename)

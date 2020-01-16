@@ -7,6 +7,6 @@ save_thumbnail_image:
     filename:
       description: 'string (required) where to save the thumbnail'
       example: '/config/www/thumbnail.png'
-    thumb_width:
+    image_width:
       description: 'string (optional) width of Thumbnail image in pixels'
       example: '640'

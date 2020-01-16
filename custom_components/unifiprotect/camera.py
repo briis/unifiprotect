@@ -3,22 +3,24 @@ import logging
 import asyncio
 from datetime import timedelta
 
-import requests
-
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
-from homeassistant.exceptions import PlatformNotReady
-from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND
+from homeassistant.const import ATTR_ATTRIBUTION
+from . import (
+    UPV_DATA,
+    DEFAULT_ATTRIBUTION,
+    DEFAULT_BRAND,
+    ATTR_CAMERA_ID,
+    ATTR_UP_SINCE,
+    ATTR_LAST_MOTION,
+    ATTR_ONLINE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-ATTR_CAMERA_ID = "camera_id"
-ATTR_UP_SINCE = "up_since"
-ATTR_LAST_MOTION = "last_motion"
-ATTR_ONLINE = "online"
-
-SCAN_INTERVAL = timedelta(seconds=1)
+SCAN_INTERVAL = timedelta(seconds=10)
 
 DEPENDENCIES = ["unifiprotect"]
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
@@ -30,14 +32,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     cameras = [camera for camera in upv_object.devices]
 
     async_add_entities(
-        [
-            UnifiVideoCamera(
-                hass,
-                upv_object,
-                camera
-            )
-            for camera in cameras
-        ]
+        [UnifiVideoCamera(hass, upv_object, camera) for camera in cameras]
     )
 
     return True
@@ -116,11 +111,12 @@ class UnifiVideoCamera(Camera):
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
         attrs = {}
+        attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_UP_SINCE] = self._up_since
         attrs[ATTR_LAST_MOTION] = self._last_motion
         attrs[ATTR_ONLINE] = self._online
         attrs[ATTR_CAMERA_ID] = self._camera_id
-        attrs["thumbnail_id"] = self._thumbnail
+        # attrs["thumbnail_id"] = self._thumbnail
 
         return attrs
 
@@ -137,7 +133,7 @@ class UnifiVideoCamera(Camera):
             self._isrecording = True
         else:
             self._isrecording = False
-        self._thumbnail = camera["motion_thumbnail"]
+        # self._thumbnail = camera["motion_thumbnail"]
 
     def enable_motion_detection(self):
         """Enable motion detection in camera."""

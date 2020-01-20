@@ -1,12 +1,21 @@
 # Changelog
 
+## Version 0.1.0
+
+In this release you will not see a lot of new functionality. There has been a lot of change in the backend of the system as this release introduces a complete new Unifi Protect Server Wrapper. The previous implementation had a lot of calls to the Protect Server, but with this new wrapper, I have drastically reduced those calls, as all data is now stored in a memory dataset, and the wrapper just updates this dataset. With that in place we can now call an update from HASS more often, without overstretching the Protect Server. The update of the dataset is run as an Async event from the main loop. So after this update, you can delete the file `protectnvr.py`, this has been replaced by `unifi_protect_server.py` (You can just leave it where it is, but it is no longer used)
+
+* `New Items`:
+  * Added new Configuration Option `minimum_score`. (int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored  
+
 ## Version 0.0.10
+
 * `New Items`:
   * Added new Icon to the Sensor, and now the Icon is changing based on Recording Mode state, so it is clear to see if motion recording is on or off
 * `Fixes`:
   * Code clean-up and now all code conforms to PEP standards
 
 ## Version 0.0.9
+
 * `camera`:
   * **BREAKING CHANGE** The service `camera.unifiprotect_save_thumbnail` has been removed, and has been replaced by a new Service you can read more about below. The implementation was not done according to Home Assistant standards, so I decided to rewrite it. If you use this Service in any automation, please replace it with the new Service.
   * A new Service with the name of `unifiprotect.save_thumbnail_image` has been created. This Service does exactly the same as the old service, but now it conforms to Home Assistant standards, and when you select it in the *Services* area under *Developer Tools* you will now see a proper Service Description. A new optional parameter has been added called `image_width`. Here you can specify the width of the image in pixels, and the height will then be scaled propotionally.
@@ -14,6 +23,7 @@
   * The function `set_camera_recording` was not using the *request.session*, resulting in occasional authentication errors.
 
 ## Version 0.0.8
+
 * `camera`:
   * Attributes update more frequently, to show recording mode and online status. Let me know if this causes any issues, as I achieve this by asking the Cameras to poll status every 30 seconds, and that is usually the case for a camera entity. In my own tests I have not seen any problems.
   * Fixed missing import of *core* component
@@ -26,10 +36,12 @@
   * Fixed bug in error reporting, when Authentication Failed
 
 ## Version 0.0.7
+
 * Fixed NoneType error when one or more cameras are offline at the time of Home Assistant start
 * Minor code clean-up
 
 ## Version 0.0.6
+
 * `binary_sensor`:
   * Changed default SCAN_INTERVAL to 3 seconds to optimize Motion Detection
 * `camera`:
@@ -40,3 +52,4 @@
   * changed size of the thumbnail image when being created.
   * fixed error when no *Last Motion* record exist
   * cleaned up the code, removing obsolete parts.
+  

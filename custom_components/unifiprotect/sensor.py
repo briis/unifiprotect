@@ -4,18 +4,20 @@ import voluptuous as vol
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.const import ATTR_ATTRIBUTION, CONF_MONITORED_CONDITIONS
+from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME, CONF_MONITORED_CONDITIONS
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 from homeassistant.helpers.entity import Entity
-from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND
+from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ["unifiprotect"]
 
-SCAN_INTERVAL = timedelta(seconds=5)
+# Update Frequently as we are only reading from Memory
+SCAN_INTERVAL = timedelta(seconds=2)
 
 ATTR_CAMERA_TYPE = "camera_type"
+ATTR_BRAND = "brand"
 
 SENSOR_TYPES = {
     "motion_recording": ["Motion Recording", None, "camcorder", "motion_recording"]
@@ -32,15 +34,15 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
     """Set up an Unifi Protect sensor."""
-    cameradata = hass.data.get(DATA_UFP)
-    if not cameradata:
+    data = hass.data[UPV_DATA]
+    if not data:
         return
 
     sensors = []
     for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
-        for camera in cameradata.cameras:
-            name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], camera["name"])
-            sensors.append(UnifiProtectSensor(name, camera, sensor_type, cameradata))
+        for camera in data.devices:
+            # name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], camera["name"])
+            sensors.append(UnifiProtectSensor(data, camera, sensor_type))
 
     async_add_entities(sensors, True)
 
@@ -48,16 +50,17 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
 class UnifiProtectSensor(Entity):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, name, device, sensor_type, nvrdata):
-        """Initialize an Arlo sensor."""
-        self._name = name
+    def __init__(self, data, camera, sensor_type):
+        """Initialize an Unifi Protect sensor."""
+        self.data = data
+        self._camera_id = camera
+        self._camera = self.data.devices[camera]
+        self._name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], self._camera["name"])
         self._unique_id = self._name.lower().replace(" ", "_")
-        self._device = device
         self._sensor_type = sensor_type
-        self._nvrdata = nvrdata
         self._icon = "mdi:{}".format(SENSOR_TYPES.get(self._sensor_type)[2])
-        self._state = device["recording_mode"]
-        self._camera_type = device["type"]
+        self._state = None
+        self._camera_type = self._camera["type"]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[3]
         _LOGGER.debug("UnifiProtectSensor: %s created", self._name)
 
@@ -91,23 +94,15 @@ class UnifiProtectSensor(Entity):
         """Return the device state attributes."""
         attrs = {}
 
-        attrs[ATTR_ATTRIBUTION] = ATTRIBUTION
-        attrs["brand"] = DEFAULT_BRAND
+        attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
+        attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_CAMERA_TYPE] = self._camera_type
-        attrs["friendly_name"] = self._name
+        attrs[ATTR_FRIENDLY_NAME] = self._name
 
         return attrs
 
     def update(self):
         """ Updates Motions State."""
 
-        recstate = None
-        caminfo = self._nvrdata.cameras
-        for camera in caminfo:
-            if self._device["id"] == camera["id"]:
-                recstate = camera["recording_mode"]
-                break
-        
-        self._icon = "mdi:camcorder" if recstate != "never" else "mdi:camcorder-off"
-        self._state = recstate
-
+        self._state = self._camera["recording_mode"]
+        self._icon = "mdi:camcorder" if self._state != "never" else "mdi:camcorder-off"

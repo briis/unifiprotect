@@ -1,8 +1,12 @@
 """Unifi Protect Platform."""
+
+from datetime import timedelta
 import logging
 import voluptuous as vol
 import requests
-from . import protectnvr as nvr
+
+# from . import protectnvr as nvr
+from . import unifi_protect_server as upv
 
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
@@ -12,28 +16,43 @@ from homeassistant.const import (
     CONF_USERNAME,
     CONF_PASSWORD,
     CONF_FILENAME,
+    CONF_SCAN_INTERVAL,
     ATTR_ENTITY_ID,
 )
 import homeassistant.helpers.config_validation as cv
 from homeassistant.exceptions import PlatformNotReady
 from homeassistant.helpers.entity import Entity
 
-__version__ = "0.0.10"
+from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
+
+__version__ = "0.1.0"
 
 _LOGGER = logging.getLogger(__name__)
 
-ATTRIBUTION = "Data provided by Unifi Protect NVR"
-DATA_UFP = "data_ufp"
-DEFAULT_BRAND = "Ubiquiti"
-DEFAULT_THUMB_WIDTH = "640"
-CONF_IMAGE_WIDTH = "image_width"
+ATTR_CAMERA_ID = "camera_id"
+ATTR_UP_SINCE = "up_since"
+ATTR_LAST_MOTION = "last_motion"
+ATTR_ONLINE = "online"
 
-SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
+CONF_THUMB_WIDTH = "image_width"
+CONF_MIN_SCORE = "minimum_score"
+
+DEFAULT_ATTRIBUTION = "Data provided by Ubiquiti's Unifi Protect Server"
+DEFAULT_BRAND = "Ubiquiti"
+DEFAULT_MIN_SCORE = 0
+DEFAULT_PORT = 7443
+DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
+DEFAULT_SSL = False
+DEFAULT_THUMB_WIDTH = 640
 
 DOMAIN = "unifiprotect"
-DEFAULT_PASSWORD = "ubnt"
-DEFAULT_PORT = 7443
-DEFAULT_SSL = False
+UPV_DATA = DOMAIN
+
+SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -41,9 +60,14 @@ CONFIG_SCHEMA = vol.Schema(
             {
                 vol.Required(CONF_HOST): cv.string,
                 vol.Required(CONF_USERNAME): cv.string,
-                vol.Optional(CONF_PASSWORD, default=DEFAULT_PASSWORD): cv.string,
+                vol.Required(CONF_PASSWORD): cv.string,
                 vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
                 vol.Optional(CONF_SSL, default=DEFAULT_SSL): cv.boolean,
+                vol.Optional(
+                    CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
+                ): cv.time_period,
+                vol.Optional(CONF_THUMB_WIDTH, default=DEFAULT_THUMB_WIDTH): int,
+                vol.Optional(CONF_MIN_SCORE, default=DEFAULT_MIN_SCORE): int,
             }
         )
     },
@@ -54,7 +78,7 @@ SAVE_THUMBNAIL_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_FILENAME): cv.string,
-        vol.Optional(CONF_IMAGE_WIDTH, default=DEFAULT_THUMB_WIDTH): cv.string,
+        vol.Optional(CONF_THUMB_WIDTH, default=DEFAULT_THUMB_WIDTH): cv.string,
     }
 )
 
@@ -67,16 +91,21 @@ def setup(hass, config):
     password = conf.get(CONF_PASSWORD)
     port = conf.get(CONF_PORT)
     use_ssl = conf.get(CONF_SSL)
+    minimum_score = conf.get(CONF_MIN_SCORE)
+    scan_interval = conf[CONF_SCAN_INTERVAL]
 
     try:
-        nvrobject = nvr.ProtectServer(host, port, username, password, use_ssl)
-        hass.data[DATA_UFP] = nvrobject
+        hass.data[UPV_DATA] = upv.UpvServer(
+            host, port, username, password, use_ssl, minimum_score
+        )
+        # nvrobject = nvr.ProtectServer(host, port, username, password, use_ssl)
+        # hass.data[DATA_UFP] = nvrobject
         _LOGGER.debug("Connected to Unifi Protect Platform")
 
-    except nvr.NotAuthorized:
+    except upv.NotAuthorized:
         _LOGGER.error("Authorization failure while connecting to NVR")
         return False
-    except nvr.NvrError as ex:
+    except upv.NvrError as ex:
         _LOGGER.error("NVR refuses to talk to me: %s", str(ex))
         raise PlatformNotReady
     except requests.exceptions.ConnectionError as ex:
@@ -94,6 +123,14 @@ def setup(hass, config):
         schema=SAVE_THUMBNAIL_SCHEMA,
     )
 
+    async def _async_systems_update(now):
+        """Refresh internal state for all systems."""
+        hass.data[UPV_DATA].update()
+
+        async_dispatcher_send(hass, DOMAIN)
+
+    async_track_time_interval(hass, _async_systems_update, scan_interval)
+
     return True
 
 
@@ -102,14 +139,14 @@ async def async_handle_save_thumbnail_service(hass, call):
     # Get the Camera ID from Entity_id
     entity_id = call.data[ATTR_ENTITY_ID]
     entity_state = hass.states.get(entity_id[0])
-    camera_uuid = entity_state.attributes["uuid"]
-    if camera_uuid is None:
+    camera_id = entity_state.attributes[ATTR_CAMERA_ID]
+    if camera_id is None:
         _LOGGER.error("Unable to get Camera ID for selected Camera")
         return
 
     # Get other input from the service call
     filename = call.data[CONF_FILENAME]
-    image_width = call.data[CONF_IMAGE_WIDTH]
+    image_width = call.data[CONF_THUMB_WIDTH]
 
     if not hass.config.is_allowed_path(filename):
         _LOGGER.error("Can't write %s, no access to path!", filename)
@@ -117,7 +154,7 @@ async def async_handle_save_thumbnail_service(hass, call):
 
     def _write_thumbnail(camera_id, filename, image_width):
         """Call thumbnail write."""
-        image_data = hass.data[DATA_UFP].get_thumbnail(camera_id, image_width)
+        image_data = hass.data[UPV_DATA].get_thumbnail(camera_id, image_width)
         if image_data is None:
             _LOGGER.warning(
                 "Last recording not found for Camera %s",
@@ -131,7 +168,7 @@ async def async_handle_save_thumbnail_service(hass, call):
 
     try:
         await hass.async_add_executor_job(
-            _write_thumbnail, camera_uuid, filename, image_width
+            _write_thumbnail, camera_id, filename, image_width
         )
     except OSError as err:
         _LOGGER.error("Can't write image to file: %s", err)

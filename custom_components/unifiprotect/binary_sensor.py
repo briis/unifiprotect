@@ -5,15 +5,18 @@ from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.binary_sensor import BinarySensorDevice
-from homeassistant.const import ATTR_ATTRIBUTION, CONF_MONITORED_CONDITIONS
+from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME, CONF_MONITORED_CONDITIONS
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
-from . import ATTRIBUTION, DATA_UFP, DEFAULT_BRAND
+from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ["unifiprotect"]
 
-SCAN_INTERVAL = timedelta(seconds=3)
+# Update Frequently as we are only reading from Memory
+SCAN_INTERVAL = timedelta(seconds=2)
+
+ATTR_BRAND = "brand"
 
 # sensor_type [ description, unit, icon ]
 SENSOR_TYPES = {"motion": ["Motion", "motion", "motionDetected"]}
@@ -29,14 +32,14 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
     """Set up an Unifi Protect binary sensor."""
-    cameradata = hass.data.get(DATA_UFP)
-    if not cameradata:
+    data = hass.data[UPV_DATA]
+    if not data:
         return
 
     sensors = []
     for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
-        for camera in cameradata.cameras:
-            sensors.append(UfpBinarySensor(camera, sensor_type, cameradata))
+        for camera in data.devices:
+            sensors.append(UfpBinarySensor(data, camera, sensor_type))
 
     async_add_entities(sensors, True)
 
@@ -44,23 +47,28 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
 class UfpBinarySensor(BinarySensorDevice):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, device, sensor_type, nvrdata):
+    def __init__(self, data, camera, sensor_type):
         """Initialize an Arlo sensor."""
-        self._name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], device["name"])
+        self.data = data
+        self._camera_id = camera
+        self._camera = self.data.devices[camera]
+        self._name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], self._camera["name"])
         self._unique_id = self._name.lower().replace(" ", "_")
-        self._device = device
         self._sensor_type = sensor_type
-        self._nvrdata = nvrdata
         self._state = False
         self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
-        self.remove_timer = None
         _LOGGER.debug("UfpBinarySensor: %s created", self._name)
 
     @property
     def unique_id(self):
         """Return a unique ID."""
         return self._unique_id
+
+    @property
+    def is_on(self):
+        """Return true if the binary sensor is on."""
+        return self._state is True
 
     @property
     def device_class(self):
@@ -72,32 +80,14 @@ class UfpBinarySensor(BinarySensorDevice):
         """Return the device state attributes."""
         attrs = {}
 
-        attrs[ATTR_ATTRIBUTION] = ATTRIBUTION
-        attrs["brand"] = DEFAULT_BRAND
-        attrs["friendly_name"] = self._name
+        attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
+        attrs[ATTR_BRAND] = DEFAULT_BRAND
+        attrs[ATTR_FRIENDLY_NAME] = self._name
 
         return attrs
-
-    @property
-    def is_on(self):
-        """Return true if the binary sensor is on."""
-        return self._state is True
 
     def update(self):
         """ Updates Motions State."""
 
-        event_list_sorted = sorted(
-            self._nvrdata.motion_events, key=lambda k: k["start"], reverse=True
-        )
-        is_motion = None
-
-        for event in event_list_sorted:
-            if self._device["id"] == event["camera"]:
-                if event["end"] is None:
-                    is_motion = True
-                else:
-                    is_motion = False
-
-                break
-        self._state = is_motion
+        self._state = self._camera["motion_on"]
 

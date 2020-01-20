@@ -7,6 +7,9 @@ In this release you will not see a lot of new functionality. There has been a lo
 * `New Items`:
   * Added new Configuration Option `minimum_score`. (int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored  
 
+* `Changes`:
+  * A lot of changes to all modules, due to new Unifi Protect Wrapper.
+
 ## Version 0.0.10
 
 * `New Items`:

@@ -2,8 +2,10 @@
 
 ## Version 0.1.0
 
+In this release you will not see a lot of new functionality. There has been a lot of change in the backend of the system as this release introduces a complete new Unifi Protect Server Wrapper. The previous implementation had a lot of calls to the Protect Server, but with this new wrapper, I have drastically reduced those calls, as all data is now stored in a memory dataset, and the wrapper just updates this dataset. With that in place we can now call an update from HASS more often, without overstretching the Protect Server. The update of the dataset is run as an Async event from the main loop. So after this update, you can delete the file `protectnvr.py`, this has been replaced by `unifi_protect_server.py` (You can just leave it where it is, but it is no longer used)
+
 * `New Items`:
-  * Added new Configuration Option `minimum_score`. With this option you can supply an integer between 0 and 100. This
+  * Added new Configuration Option `minimum_score`. (int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored\
 
 ## Version 0.0.10
 

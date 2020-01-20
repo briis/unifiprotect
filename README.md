@@ -18,7 +18,7 @@ Before you install this Integration you need to ensure that the following two se
 
 ![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png) ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
-**Note:** This has been testet on Unifi Protect Controller version 1.13.0-beta.16, and I cannot guarantee that this will work on a lower version than that.
+**Note:** This has been testet on Unifi Protect Controller with version 1.13.0-beta.16 and higher. I cannot guarantee that this will work on a lower version than that.
 
 ## Manual Installation
 

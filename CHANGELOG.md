@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.1.0
+
+* `New Items`:
+  * Added new Configuration Option `minimum_score`. With this option you can supply an integer between 0 and 100. This
+
 ## Version 0.0.10
 
 * `New Items`:

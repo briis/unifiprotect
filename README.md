@@ -14,7 +14,7 @@ Basically what this does, is integrating the Camera feeds from Unifi Protect in 
 Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
 
 1. **Local User needs to be added** Open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select and existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.\
-2. **RTSP Stream** Select each camera under the CAMERAS tab, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one. The integration will pick the one with the highest resolution.\
+2. **RTSP Stream** Select each camera under the CAMERAS tab, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one. The integration will pick the one with the highest resolution.  
 
 ![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png) ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
@@ -57,26 +57,26 @@ unifiprotect:
   minimum_score: <minimum score before motion detection is activated>
 ```
 
-**host**:\
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`\
+**host**:  
+(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`  
 
-**username**:\
-(string)(Required) The local username you setup under the *Prerequisites* section.\
+**username**:  
+(string)(Required) The local username you setup under the *Prerequisites* section.  
 
-**password**\
-(string)(Required) The local password you setup under the *Prerequisites* section.\
+**password**  
+(string)(Required) The local password you setup under the *Prerequisites* section.  
 
-**image_width**\
-(int)(Optional) The width of the Thumbnail Image. Default is 640px\
+**image_width**  
+(int)(Optional) The width of the Thumbnail Image. Default is 640px  
 
-**minimum_score**\
-(int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored\
+**minimum_score**  
+(int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored  
 
 ### Camera
 
-The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant. 
+The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant.
 
-**Remember**\
+#### Remember
 
 * if you already setup the camera using another platform, like the `Generic IP Platform` then remove those before you setup this Platform, as cameras with the same name cannot co-exist.
 * Also, if you are running your Home Assistant installation directly on a Mac, you might need to enable `stream:` in your `configuration.yaml` to be able to do live streaming.

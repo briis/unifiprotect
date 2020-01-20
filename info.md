@@ -26,26 +26,26 @@ unifiprotect:
   minimum_score: <minimum score before motion detection is activated>
 ```
 
-**host**:\
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`\
+**host**:  
+(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`  
 
-**username**:\
-(string)(Required) The local username you setup under the *Prerequisites* section.\
+**username**:  
+(string)(Required) The local username you setup under the *Prerequisites* section.  
 
-**password**\
-(string)(Required) The local password you setup under the *Prerequisites* section.\
+**password**  
+(string)(Required) The local password you setup under the *Prerequisites* section.  
 
-**image_width**\
-(int)(Optional) The width of the Thumbnail Image. Default is 640px\
+**image_width**  
+(int)(Optional) The width of the Thumbnail Image. Default is 640px  
 
-**minimum_score**\
-(int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored\
+**minimum_score**  
+(int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored  
 
 ### Camera
 
-The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant. 
+The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant.  
 
-**Remember**\
+#### Remember
 
 * if you already setup the camera using another platform, like the `Generic IP Platform` then remove those before you setup this Platform, as cameras with the same name cannot co-exist.
 * Also, if you are running your Home Assistant installation directly on a Mac, you might need to enable `stream:` in your `configuration.yaml` to be able to do live streaming.
@@ -103,4 +103,3 @@ The sensor can have 3 different states:
 1. `never` - There will be no recording on the camera
 2. `motion` - Recording will happen only when motion is detected
 3. `always` - The camera will record everything, and motion events will be logged in Unfi Protect
-

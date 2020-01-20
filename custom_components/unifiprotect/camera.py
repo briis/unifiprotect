@@ -116,7 +116,6 @@ class UnifiVideoCamera(Camera):
         attrs[ATTR_LAST_MOTION] = self._last_motion
         attrs[ATTR_ONLINE] = self._online
         attrs[ATTR_CAMERA_ID] = self._camera_id
-        # attrs["thumbnail_id"] = self._thumbnail
 
         return attrs
 

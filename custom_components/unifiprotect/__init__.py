@@ -29,7 +29,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 _LOGGER = logging.getLogger(__name__)
 

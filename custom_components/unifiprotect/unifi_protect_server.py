@@ -326,6 +326,7 @@ class UpvServer:
             cam_uri, headers=header, verify=self._verify_ssl, json=data
         )
         if response.status_code == 200:
+            self.device_data[camera_id]["recording_mode"] = mode
             return True
         else:
             raise NvrError(

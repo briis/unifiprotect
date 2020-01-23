@@ -41,7 +41,6 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
     sensors = []
     for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
         for camera in data.devices:
-            # name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], camera["name"])
             sensors.append(UnifiProtectSensor(data, camera, sensor_type))
 
     async_add_entities(sensors, True)

@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.1.1
+
+Minor update
+
+* `New`:
+  * Added a new attribute to each binary_sensor, called *minimum_score*. This displayes the score of the last motion recording.
+
 ## Version 0.1.0
 
 In this release you will not see a lot of new functionality. There has been a lot of change in the backend of the system as this release introduces a complete new Unifi Protect Server Wrapper. The previous implementation had a lot of calls to the Protect Server, but with this new wrapper, I have drastically reduced those calls, as all data is now stored in a memory dataset, and the wrapper just updates this dataset. With that in place we can now call an update from HASS more often, without overstretching the Protect Server. The update of the dataset is run as an Async event from the main loop. So after this update, you can delete the file `protectnvr.py`, this has been replaced by `unifi_protect_server.py` (You can just leave it where it is, but it is no longer used)

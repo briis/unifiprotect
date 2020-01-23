@@ -17,6 +17,7 @@ DEPENDENCIES = ["unifiprotect"]
 SCAN_INTERVAL = timedelta(seconds=2)
 
 ATTR_BRAND = "brand"
+ATTR_MOTION_SCORE = "motion_score"
 
 # sensor_type [ description, unit, icon ]
 SENSOR_TYPES = {"motion": ["Motion", "motion", "motionDetected"]}
@@ -55,6 +56,7 @@ class UfpBinarySensor(BinarySensorDevice):
         self._name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], self._camera["name"])
         self._unique_id = self._name.lower().replace(" ", "_")
         self._sensor_type = sensor_type
+        self._motion_score = self._camera["motion_score"]
         self._state = False
         self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
@@ -83,6 +85,7 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
+        attrs[ATTR_MOTION_SCORE] = self._motion_score
 
         return attrs
 
@@ -90,4 +93,5 @@ class UfpBinarySensor(BinarySensorDevice):
         """ Updates Motions State."""
 
         self._state = self._camera["motion_on"]
+        self._motion_score = self._camera["motion_score"]
 

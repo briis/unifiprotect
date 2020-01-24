@@ -103,3 +103,15 @@ The sensor can have 3 different states:
 1. `never` - There will be no recording on the camera
 2. `motion` - Recording will happen only when motion is detected
 3. `always` - The camera will record everything, and motion events will be logged in Unfi Protect
+
+### Switch
+
+If this component is enabled a Switch to enable or disable motion recording for each camera, will be created.
+
+In order to use the Switch, add the following to your *configuration.yaml* file:
+
+```yaml
+# Example configuration.yaml entry
+switch:
+  - platform: unifiprotect
+```

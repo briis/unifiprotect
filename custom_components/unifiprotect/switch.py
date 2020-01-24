@@ -9,19 +9,19 @@ from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchDevice
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME, CONF_MONITORED_CONDITIONS, STATE_OFF, STATE_ON
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 
-from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND
+from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ["unifiprotect"]
 
-SCAN_INTERVAL = timedelta(seconds=2)
+SCAN_INTERVAL = timedelta(seconds=3)
 
 ATTR_CAMERA_TYPE = "camera_type"
 ATTR_BRAND = "brand"
 
 SWITCH_TYPES = {
-    "recording": ["Recording", None, "camcorder", "motion_recording"]
+    "recording": ["Recording", "camcorder", "motion_recording"]
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -46,19 +46,20 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
     async_add_entities(switches, True)
 
 class UnifiProtectSwitch(SwitchDevice):
-    """A Unifi Protect Binary Sensor."""
+    """A Unifi Protect Switch."""
 
     def __init__(self, data, camera, switch_type):
-        """Initialize an Unifi Protect sensor."""
+        """Initialize an Unifi Protect Switch."""
         self.data = data
         self._camera_id = camera
         self._camera = self.data.devices[camera]
-        self._name = "{0} {1}".format(SWITCH_TYPES[switch_type][0], self._camera["name"])
+        self._name = "{0} {1} {2}".format(DOMAIN.capitalize(), SWITCH_TYPES[switch_type][0], self._camera["name"])
+#        self._friendly_name = "{0} {1}".format(SWITCH_TYPES[switch_type][0], self._camera["name"])
         self._unique_id = self._name.lower().replace(" ", "_")
-        self._icon = "mdi:{}".format(SWITCH_TYPES.get(switch_type)[2])
+        self._icon = "mdi:{}".format(SWITCH_TYPES.get(switch_type)[1])
         self._state = STATE_OFF
         self._camera_type = self._camera["type"]
-        self._attr = SWITCH_TYPES.get(switch_type)[3]
+        self._attr = SWITCH_TYPES.get(switch_type)[2]
         _LOGGER.debug("UnifiProtectSwitch: %s created", self._name)
 
     @property
@@ -94,7 +95,7 @@ class UnifiProtectSwitch(SwitchDevice):
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_CAMERA_TYPE] = self._camera_type
-        attrs[ATTR_FRIENDLY_NAME] = self._name
+#        attrs[ATTR_FRIENDLY_NAME] = self._friendly_name
 
         return attrs
 

@@ -54,7 +54,6 @@ class UnifiProtectSwitch(SwitchDevice):
         self._camera_id = camera
         self._camera = self.data.devices[camera]
         self._name = "{0} {1} {2}".format(DOMAIN.capitalize(), SWITCH_TYPES[switch_type][0], self._camera["name"])
-#        self._friendly_name = "{0} {1}".format(SWITCH_TYPES[switch_type][0], self._camera["name"])
         self._unique_id = self._name.lower().replace(" ", "_")
         self._icon = "mdi:{}".format(SWITCH_TYPES.get(switch_type)[1])
         self._state = STATE_OFF
@@ -95,7 +94,6 @@ class UnifiProtectSwitch(SwitchDevice):
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_CAMERA_TYPE] = self._camera_type
-#        attrs[ATTR_FRIENDLY_NAME] = self._friendly_name
 
         return attrs
 

@@ -5,7 +5,6 @@ import logging
 import voluptuous as vol
 import requests
 
-# from . import protectnvr as nvr
 from . import unifi_protect_server as upv
 
 from homeassistant.const import (
@@ -29,7 +28,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -98,8 +97,6 @@ def setup(hass, config):
         hass.data[UPV_DATA] = upv.UpvServer(
             host, port, username, password, use_ssl, minimum_score
         )
-        # nvrobject = nvr.ProtectServer(host, port, username, password, use_ssl)
-        # hass.data[DATA_UFP] = nvrobject
         _LOGGER.debug("Connected to Unifi Protect Platform")
 
     except upv.NotAuthorized:

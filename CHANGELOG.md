@@ -2,8 +2,8 @@
 
 ## Version 0.1.2
 
-* `New`:
-  * Added a new *Switch* component. If enabled the system will create a switch for each camera, that can enable or disable the motion recording. You can already do this by running the services `camera.enable_motion_detection` and `camera.disable_motion_detection` but this gives a convenient way to do it from the Frontend. See the [Github README.md](https://github.com/briis/unifiprotect/blob/master/README.md) for setup instructions.
+* **New**: Added a new *Switch* component. If enabled the system will create a switch for each camera, that can enable or disable the motion recording. You can already do this by running the services `camera.enable_motion_detection` and `camera.disable_motion_detection` but this gives a convenient way to do it from the Frontend. See the [Github README.md](https://github.com/briis/unifiprotect/blob/master/README.md) for setup instructions.
+* **Change**: Cleaned up some unused code
 
 ## Version 0.1.1
 

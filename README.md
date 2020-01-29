@@ -33,6 +33,7 @@ manifest.json
 sensor.py
 binary_sensor.py
 camera.py
+switch.py
 unifi_protect_server.py
 services.yaml
 ```

@@ -19,6 +19,7 @@ Before you install this Integration you need to ensure that the following two se
 ![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png) ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
 **Note:**  
+
 * This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.0-beta.16 and higher. I cannot guarantee that this will work on a lower version than that.
 * It is **not working** with *UnifiOS* that is currently being shipped with the Unifi Dream Machine Pro in the US. I have no access to a system like that, so I don't know when and if, that can be supported.
 

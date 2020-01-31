@@ -28,7 +28,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN
 
 SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
+SERVICE_ENABLE_ALWAYS_RECORDING = "enable_always_recording"
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -81,6 +82,11 @@ SAVE_THUMBNAIL_SCHEMA = vol.Schema(
     }
 )
 
+ENABLE_ALWAYS_RECORDING_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+    }
+)
 
 def setup(hass, config):
     """Set up the Unifi Protect component."""
@@ -113,11 +119,22 @@ def setup(hass, config):
         """Call save video service handler."""
         await async_handle_save_thumbnail_service(hass, call)
 
+    async def async_enable_always_recording(call):
+        """Call Enable Always Recording."""
+        await async_handle_enable_always_recording(hass, call)
+
     hass.services.register(
         DOMAIN,
         SERVICE_SAVE_THUMBNAIL,
         async_save_thumbnail,
         schema=SAVE_THUMBNAIL_SCHEMA,
+    )
+
+    hass.services.register(
+        DOMAIN,
+        SERVICE_ENABLE_ALWAYS_RECORDING,
+        async_enable_always_recording,
+        schema=ENABLE_ALWAYS_RECORDING_SCHEMA,
     )
 
     async def _async_systems_update(now):
@@ -130,6 +147,22 @@ def setup(hass, config):
 
     return True
 
+async def async_handle_enable_always_recording(hass, call):
+    """Handle enable Always recording."""
+    entity_id = call.data[ATTR_ENTITY_ID]
+    entity_state = hass.states.get(entity_id[0])
+    camera_id = entity_state.attributes[ATTR_CAMERA_ID]
+    if camera_id is None:
+        _LOGGER.error("Unable to get Camera ID for selected Camera")
+        return
+
+    def _enable_always_recording(camera_id):
+        """Communicate with Camera and enable service."""
+        hass.data[UPV_DATA].set_camera_recording(camera_id, "always")
+
+    await hass.async_add_executor_job(
+        _enable_always_recording, camera_id
+    )
 
 async def async_handle_save_thumbnail_service(hass, call):
     """Handle save thumbnail service calls."""

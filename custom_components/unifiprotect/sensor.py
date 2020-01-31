@@ -7,7 +7,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME, CONF_MONITORED_CONDITIONS
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 from homeassistant.helpers.entity import Entity
-from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND
+from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, TYPE_RECORD_NEVER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -104,4 +104,4 @@ class UnifiProtectSensor(Entity):
         """ Updates Motions State."""
 
         self._state = self._camera["recording_mode"]
-        self._icon = "mdi:camcorder" if self._state != "never" else "mdi:camcorder-off"
+        self._icon = "mdi:camcorder" if self._state != TYPE_RECORD_NEVER else "mdi:camcorder-off"

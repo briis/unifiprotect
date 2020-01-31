@@ -50,6 +50,10 @@ DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
 DEFAULT_SSL = False
 DEFAULT_THUMB_WIDTH = 640
 
+TYPE_RECORD_MOTION = "motion"
+TYPE_RECORD_ALLWAYS = "always"
+TYPE_RECORD_NEVER = "never"
+
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN
 

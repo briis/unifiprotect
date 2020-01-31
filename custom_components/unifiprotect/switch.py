@@ -9,7 +9,7 @@ from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchDevice
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME, CONF_MONITORED_CONDITIONS, STATE_OFF, STATE_ON
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 
-from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
+from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN, TYPE_RECORD_ALLWAYS, TYPE_RECORD_MOTION, TYPE_RECORD_NEVER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +21,8 @@ ATTR_CAMERA_TYPE = "camera_type"
 ATTR_BRAND = "brand"
 
 SWITCH_TYPES = {
-    "recording": ["Recording", "camcorder", "motion_recording"]
+    "record_motion": ["Record Motion", "camcorder", "record_motion"],
+    "record_always": ["Record Always", "camcorder", "record_always"]
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -59,6 +60,7 @@ class UnifiProtectSwitch(SwitchDevice):
         self._state = STATE_OFF
         self._camera_type = self._camera["type"]
         self._attr = SWITCH_TYPES.get(switch_type)[2]
+        self._switch_type = SWITCH_TYPES.get(switch_type)[2]
         _LOGGER.debug("UnifiProtectSwitch: %s created", self._name)
 
     @property
@@ -99,17 +101,24 @@ class UnifiProtectSwitch(SwitchDevice):
 
     def turn_on(self, **kwargs):
         """Turn the device on."""
-        _LOGGER.debug("Turning on Motion Detection ")
-        self.data.set_camera_recording(self._camera_id, "motion")
+        if self._switch_type == "record_motion":
+            _LOGGER.debug("Turning on Motion Detection")
+            self.data.set_camera_recording(self._camera_id, TYPE_RECORD_MOTION)
+        else:
+            _LOGGER.debug("Turning on Constant Recording")
+            self.data.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
 
     def turn_off(self, **kwargs):
         """Turn the device off."""
-        _LOGGER.debug("Turning off Motion Detection ")
-        self.data.set_camera_recording(self._camera_id, "never")
+        _LOGGER.debug("Turning off Recording")
+        self.data.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
 
     def update(self):
         """Update Motion Detection state."""
-        enabled = True if self._camera["recording_mode"] != "never" else False
+        if self._switch_type == "record_motion":
+            enabled = True if self._camera["recording_mode"] == TYPE_RECORD_MOTION else False
+        else:
+            enabled = True if self._camera["recording_mode"] == TYPE_RECORD_ALLWAYS else False
         _LOGGER.debug("enabled: %s", enabled)
         self._state = STATE_ON if enabled else STATE_OFF
 

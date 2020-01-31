@@ -10,9 +10,12 @@ save_thumbnail_image:
     image_width:
       description: 'string (optional) width of Thumbnail image in pixels'
       example: '640'
-enable_always_recording:
-  description: 'Set recording mode for the camera to Always'
+set_recording_mode:
+  description: 'Set recording mode for the camera'
   fields:
     entity_id:
       description: 'string (required) camera to enable recording on'
       example: 'camera.outdoor'
+    recording_mode:
+      description: '(Optional) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording'
+      example: always

@@ -3,7 +3,7 @@
 ## Version 0.1.3
 
 * **Breaking Change** The Switch component has changed due to implementation of a new Switch. The previous switch name `switch.unifiprotect_recording_[camera Name]` does no longer exist. It has been replaced by two new switches `switch.unifiprotect_record_motion_[Camera Name]` and `switch.unifiprotect_record_always_[Camera Name]`. This first set recording mode to *motion* and the second set recording mode to *always*. They are mutually exclusive, so turning on one, will turn off the other.
-* **New**: Added new Service `unifiprotect.enable_always_recording`. When called, this service set recording mode for the chosen camera to *Always*, meaning that camera records all the time. Motion detection is still active with this mode set. 
+* **New**: Added new Service `unifiprotect.enable_always_recording`. When called, this service set recording mode for the chosen camera to *Always*, meaning that camera records all the time. Motion detection is still active with this mode set.
 * **Change**: Cleaned up some unused code
 
 ## Version 0.1.2

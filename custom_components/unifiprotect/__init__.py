@@ -160,6 +160,8 @@ async def async_handle_set_recording_mode(hass, call):
         return
     
     rec_mode = call.data[CONF_RECORDING_MODE].lower()
+    if rec_mode not in {"always", "motion", "never"}:
+        rec_mode = "motion"
 
     def _set_recording_mode(camera_id, recording_mode):
         """Communicate with Camera and set recording mode."""

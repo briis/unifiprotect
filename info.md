@@ -1,5 +1,7 @@
 # Unifi Protect for Home Assistant
 
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/briis/unifiprotect?include_prereleases&style=flat-square)
+
 This is a Home Assistant Integration for Ubiquiti's Unifi Protect Surveillance system.
 
 This Home Assistant integration is inspired by [danielfernau's video downloader program](https://github.com/danielfernau/unifi-protect-video-downloader) and the Authorization implementation is copied from there.

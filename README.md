@@ -102,6 +102,7 @@ Service | Parameters | Description
 `camera.snapshot` | `entity_id` - Name of entity to create snapshots from.<br>`filename` - Filename to store snapshot in | Take a snapshot of the current image on the specified camera and stor in a file
 `camera.record` | `entity_id` - camera to record from<br>`filename` - Template of a Filename. Variable is entity_id. Must be mp4.<br>`duration` - (Optional) Target recording length (in seconds).<br>`lookback` - (Optional) Target lookback period (in seconds) to include in addition to duration. Only available if there is currently an active HLS stream. | Record the current stream to a file
 `unifiprotect.save_thumbnail_image` | `entity_id` - Name of entity to retrieve thumbnail from.<br>`filename` - Filename to store thumbnail in<br>`image_width` - (Optional) Width of the image in pixels. Height will be scaled proportionally. Default is 640. | Get the thumbnail image of the last recording event (If any), from the specified camera
+`unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, motion or never< | Set the recording mode for each Camera.
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
 
@@ -141,7 +142,7 @@ The sensor can have 3 different states:
 
 ### Switch
 
-If this component is enabled a Switch to enable or disable motion recording for each camera, will be created.
+If this component is enabled two Switches are created per Camera. One to enable or disable motion recording and one to enable or disable constant recording for each camera.
 
 In order to use the Switch, add the following to your *configuration.yaml* file:
 

@@ -28,7 +28,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,19 +39,26 @@ ATTR_ONLINE = "online"
 
 CONF_THUMB_WIDTH = "image_width"
 CONF_MIN_SCORE = "minimum_score"
+CONF_RECORDING_MODE = "recording_mode"
 
 DEFAULT_ATTRIBUTION = "Data provided by Ubiquiti's Unifi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_MIN_SCORE = 0
 DEFAULT_PORT = 7443
+DEFAULT_RECORDING_MODE = "motion"
 DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
 DEFAULT_SSL = False
 DEFAULT_THUMB_WIDTH = 640
+
+TYPE_RECORD_MOTION = "motion"
+TYPE_RECORD_ALLWAYS = "always"
+TYPE_RECORD_NEVER = "never"
 
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN
 
 SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
+SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -81,6 +88,12 @@ SAVE_THUMBNAIL_SCHEMA = vol.Schema(
     }
 )
 
+SET_RECORDING_MODE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Optional(CONF_RECORDING_MODE, default=DEFAULT_RECORDING_MODE): cv.string,
+    }
+)
 
 def setup(hass, config):
     """Set up the Unifi Protect component."""
@@ -113,11 +126,22 @@ def setup(hass, config):
         """Call save video service handler."""
         await async_handle_save_thumbnail_service(hass, call)
 
+    async def async_set_recording_mode(call):
+        """Call Set Recording Mode."""
+        await async_handle_set_recording_mode(hass, call)
+
     hass.services.register(
         DOMAIN,
         SERVICE_SAVE_THUMBNAIL,
         async_save_thumbnail,
         schema=SAVE_THUMBNAIL_SCHEMA,
+    )
+
+    hass.services.register(
+        DOMAIN,
+        SERVICE_SET_RECORDING_MODE,
+        async_set_recording_mode,
+        schema=SET_RECORDING_MODE_SCHEMA,
     )
 
     async def _async_systems_update(now):
@@ -130,6 +154,26 @@ def setup(hass, config):
 
     return True
 
+async def async_handle_set_recording_mode(hass, call):
+    """Handle enable Always recording."""
+    entity_id = call.data[ATTR_ENTITY_ID]
+    entity_state = hass.states.get(entity_id[0])
+    camera_id = entity_state.attributes[ATTR_CAMERA_ID]
+    if camera_id is None:
+        _LOGGER.error("Unable to get Camera ID for selected Camera")
+        return
+    
+    rec_mode = call.data[CONF_RECORDING_MODE].lower()
+    if rec_mode not in {"always", "motion", "never"}:
+        rec_mode = "motion"
+
+    def _set_recording_mode(camera_id, recording_mode):
+        """Communicate with Camera and set recording mode."""
+        hass.data[UPV_DATA].set_camera_recording(camera_id, recording_mode)
+
+    await hass.async_add_executor_job(
+        _set_recording_mode, camera_id, rec_mode
+    )
 
 async def async_handle_save_thumbnail_service(hass, call):
     """Handle save thumbnail service calls."""

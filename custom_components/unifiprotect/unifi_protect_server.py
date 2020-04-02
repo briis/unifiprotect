@@ -178,6 +178,7 @@ class UpvServer:
                     self.device_data[camera_id]["online"] = online
                     self.device_data[camera_id]["up_since"] = upsince
                     self.device_data[camera_id]["recording_mode"] = recording_mode
+                    self.device_data[camera_id]["ir_mode"] = ir_mode
 
     def _get_motion_events(self, lookback=86400):
         """Load the Event Log and loop through items to find motion events."""

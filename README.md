@@ -57,6 +57,7 @@ unifiprotect:
   host: <Internal ip address of your Unifi Protect NVR>
   username: <your local Unifi Protect username>
   password: <Your local Unifi Protect Password>
+  port: <Port used to communicate with your Unifi Protect NVR>
   image_width: <Size of the Thumbnail Image>
   minimum_score: <minimum score before motion detection is activated>
 ```
@@ -70,8 +71,11 @@ unifiprotect:
 **password**  
 (string)(Required) The local password you setup under the *Prerequisites* section.  
 
+**port**  
+(int)(Optional) The port used to communicate with the NVR. Default is 7443.
+
 **image_width**  
-(int)(Optional) The width of the Thumbnail Image. Default is 640px  
+(int)(Optional) The width of the Thumbnail Image. Default is 640px
 
 **minimum_score**  
 (int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored  

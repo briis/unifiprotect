@@ -33,7 +33,7 @@ ATTR_BRAND = "brand"
 SWITCH_TYPES = {
     "record_motion": ["Record Motion", "camcorder", "record_motion"],
     "record_always": ["Record Always", "camcorder", "record_always"],
-    "ir_mode": ["IR Mode", "brightness-4", "ir_mode"],
+    "ir_mode": ["IR Active", "brightness-4", "ir_mode"],
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(

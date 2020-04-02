@@ -334,3 +334,24 @@ class UpvServer:
                 % (response.status, response.reason)
             )
 
+    def set_camera_ir(self, uuid, mode):
+        """ Sets the camera infrared settings to what is supplied with 'mode'. 
+            Valid inputs for mode: auto, on, autoFilterOnly
+        """
+
+        cam_uri = "https://" + str(self._host) + ":" + str(self._port) + "/cameras/" + str(uuid)
+
+        data =  {
+            "ispSettings": {
+                "irLedMode":mode,
+                "irLedLevel":255
+                }
+        }
+
+        header = {'Authorization': 'Bearer ' + self._api_auth_bearer_token,'Content-Type': 'application/json'}
+
+        response = requests.patch(cam_uri, headers=header, verify=self._verify_ssl, json=data)
+        if response.status_code == 200:
+            return True
+        else:
+            return False

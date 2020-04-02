@@ -337,12 +337,12 @@ class UpvServer:
                 % (response.status, response.reason)
             )
 
-    def set_camera_ir(self, uuid, mode):
+    def set_camera_ir(self, camera_id, mode):
         """ Sets the camera infrared settings to what is supplied with 'mode'. 
             Valid inputs for mode: auto, on, autoFilterOnly
         """
 
-        cam_uri = "https://" + str(self._host) + ":" + str(self._port) + "/cameras/" + str(uuid)
+        cam_uri = "https://" + str(self._host) + ":" + str(self._port) + "/cameras/" + str(camera_id)
 
         data =  {
             "ispSettings": {

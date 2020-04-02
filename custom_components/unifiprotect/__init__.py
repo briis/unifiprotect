@@ -53,6 +53,9 @@ DEFAULT_THUMB_WIDTH = 640
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
 TYPE_RECORD_NEVER = "never"
+TYPE_IR_AUTO = "auto"
+TYPE_IR_ON = "on"
+TYPE_IR_OFF = "autoFilterOnly"
 
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN

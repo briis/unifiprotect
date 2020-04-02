@@ -121,6 +121,8 @@ class UpvServer:
                     online = False
                 # Get Recording Mode
                 recording_mode = str(camera["recordingSettings"]["mode"])
+                # Get Infrared Mode
+                ir_mode = str(camera["ispSettings"]["irLedMode"])
                 # Get the last time motion occured
                 lastmotion = (
                     None
@@ -157,6 +159,7 @@ class UpvServer:
                             "name": str(camera["name"]),
                             "type": str(camera["type"]),
                             "recording_mode": recording_mode,
+                            "ir_mode": ir_mode,
                             "rtsp": rtsp,
                             "up_since": upsince,
                             "last_motion": lastmotion,
@@ -352,6 +355,10 @@ class UpvServer:
 
         response = requests.patch(cam_uri, headers=header, verify=self._verify_ssl, json=data)
         if response.status_code == 200:
+            self.device_data[camera_id]["ir_mode"] = mode
             return True
         else:
-            return False
+            raise NvrError(
+                "Set IR Mode failed: %s - Reason: %s"
+                % (response.status, response.reason)
+            )

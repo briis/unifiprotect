@@ -142,9 +142,13 @@ The sensor can have 3 different states:
 
 ### Switch
 
-If this component is enabled two Switches are created per Camera. One to enable or disable motion recording and one to enable or disable constant recording for each camera.
+If this component is enabled three Switches are created per Camera.
 
-In order to use the Switch, add the following to your *configuration.yaml* file:
+1. Enable or disable motion recording
+2. Enable or disable constant recording
+3. Enable or disable Infrared on the Camera
+
+In order to use the Switch component, add the following to your *configuration.yaml* file:
 
 ```yaml
 # Example configuration.yaml entry

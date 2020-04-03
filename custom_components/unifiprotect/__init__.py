@@ -42,16 +42,6 @@ CONF_MIN_SCORE = "minimum_score"
 CONF_RECORDING_MODE = "recording_mode"
 CONF_IR_MODE = "ir_mode"
 
-DEFAULT_ATTRIBUTION = "Data provided by Ubiquiti's Unifi Protect Server"
-DEFAULT_BRAND = "Ubiquiti"
-DEFAULT_MIN_SCORE = 0
-DEFAULT_PORT = 7443
-DEFAULT_RECORDING_MODE = "motion"
-DEFAULT_IR_MODE = "auto"
-DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
-DEFAULT_SSL = False
-DEFAULT_THUMB_WIDTH = 640
-
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
 TYPE_RECORD_NEVER = "never"
@@ -59,6 +49,16 @@ TYPE_IR_AUTO = "auto"
 TYPE_IR_ON = "always_on"
 TYPE_IR_LED_OFF = "led_off"
 TYPE_IR_OFF = "always_off"
+
+DEFAULT_ATTRIBUTION = "Data provided by Ubiquiti's Unifi Protect Server"
+DEFAULT_BRAND = "Ubiquiti"
+DEFAULT_MIN_SCORE = 0
+DEFAULT_PORT = 7443
+DEFAULT_RECORDING_MODE = "motion"
+DEFAULT_IR_MODE = TYPE_IR_AUTO
+DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
+DEFAULT_SSL = False
+DEFAULT_THUMB_WIDTH = 640
 
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN

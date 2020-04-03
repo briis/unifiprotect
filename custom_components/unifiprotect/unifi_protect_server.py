@@ -342,7 +342,7 @@ class UpvServer:
         """ Sets the camera infrared settings to what is supplied with 'mode'. 
             Valid inputs for mode: auto, on, autoFilterOnly
         """
-        if mode == "led_only":
+        if mode == "led_off":
             mode = "autoFilterOnly"
         elif mode == "always_on":
             mode = "on"

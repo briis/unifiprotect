@@ -56,9 +56,9 @@ TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
 TYPE_RECORD_NEVER = "never"
 TYPE_IR_AUTO = "auto"
-TYPE_IR_ON = "on"
+TYPE_IR_ON = "always_on"
 TYPE_IR_LED_OFF = "led_off"
-TYPE_IR_OFF = "off"
+TYPE_IR_OFF = "always_off"
 
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN
@@ -210,7 +210,7 @@ async def async_handle_set_ir_mode(hass, call):
         return
     
     ir_mode = call.data[CONF_IR_MODE].lower()
-    if ir_mode not in {"always", "auto", "off", "led_off"}:
+    if ir_mode not in {"always_on", "auto", "always_off", "led_off"}:
         ir_mode = "auto"
 
     def _set_ir_mode(camera_id, ir_mode):

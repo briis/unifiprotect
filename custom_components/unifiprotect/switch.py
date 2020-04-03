@@ -60,9 +60,14 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
         return
 
     ir_on = config.get(CONF_IR_ON)
+    if ir_on == "always_on":
+        ir_on = "on"
+
     ir_off = config.get(CONF_IR_OFF)
     if ir_off == "led_off":
         ir_off = "autoFilterOnly"
+    elif ir_off == "always_off":
+        ir_off = "off"
 
     switches = []
     for switch_type in config.get(CONF_MONITORED_CONDITIONS):

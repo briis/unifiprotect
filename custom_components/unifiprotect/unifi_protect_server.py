@@ -344,7 +344,11 @@ class UpvServer:
         """
         if mode == "led_only":
             mode = "autoFilterOnly"
-            
+        elif mode == "always_on":
+            mode = "on"
+        elif mode == "always_off":
+            mode = "off"
+
         cam_uri = "https://" + str(self._host) + ":" + str(self._port) + "/cameras/" + str(camera_id)
 
         data =  {

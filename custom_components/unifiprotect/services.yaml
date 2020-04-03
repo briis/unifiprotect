@@ -25,6 +25,6 @@ set_ir_mode:
     entity_id:
       description: 'string (required) camera to enable recording on'
       example: 'camera.outdoor'
-    recording_mode:
+    ir_mode:
       description: '(Optional) Valid options are: always = IR always on, auto = Automatic, led_off = Automatic wo LEDs, off = Always Off. Default value is: auto'
       example: always

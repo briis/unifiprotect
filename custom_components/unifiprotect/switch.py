@@ -18,6 +18,7 @@ from . import (
     TYPE_RECORD_NEVER,
     TYPE_IR_AUTO,
     TYPE_IR_OFF,
+    TYPE_IR_LED_OFF,
     TYPE_IR_ON,
     )
 
@@ -30,6 +31,12 @@ SCAN_INTERVAL = timedelta(seconds=3)
 ATTR_CAMERA_TYPE = "camera_type"
 ATTR_BRAND = "brand"
 
+CONF_IR_ON = "ir_on"
+CONF_IR_OFF = "ir_off"
+
+DEFAULT_IR_ON = TYPE_IR_AUTO
+DEFAULT_IR_OFF = TYPE_IR_OFF
+
 SWITCH_TYPES = {
     "record_motion": ["Record Motion", "camcorder", "record_motion"],
     "record_always": ["Record Always", "camcorder", "record_always"],
@@ -41,6 +48,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_MONITORED_CONDITIONS, default=list(SWITCH_TYPES)): vol.All(
             cv.ensure_list, [vol.In(SWITCH_TYPES)]
         ),
+        vol.Optional(CONF_IR_ON, default=DEFAULT_IR_ON): cv.string,
+        vol.Optional(CONF_IR_OFF, default=DEFAULT_IR_OFF): cv.string,
     }
 )
 
@@ -50,17 +59,21 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
     if not data:
         return
 
+    conf = config[DOMAIN]
+    ir_on = conf.get(CONF_IR_ON)
+    ir_off = conf.get(CONF_IR_OFF)
+
     switches = []
     for switch_type in config.get(CONF_MONITORED_CONDITIONS):
         for camera in data.devices:
-            switches.append(UnifiProtectSwitch(data, camera, switch_type))
+            switches.append(UnifiProtectSwitch(data, camera, switch_type, ir_on, ir_off))
 
     async_add_entities(switches, True)
 
 class UnifiProtectSwitch(SwitchDevice):
     """A Unifi Protect Switch."""
 
-    def __init__(self, data, camera, switch_type):
+    def __init__(self, data, camera, switch_type, ir_on, ir_off):
         """Initialize an Unifi Protect Switch."""
         self.data = data
         self._camera_id = camera
@@ -68,6 +81,8 @@ class UnifiProtectSwitch(SwitchDevice):
         self._name = "{0} {1} {2}".format(DOMAIN.capitalize(), SWITCH_TYPES[switch_type][0], self._camera["name"])
         self._unique_id = self._name.lower().replace(" ", "_")
         self._icon = "mdi:{}".format(SWITCH_TYPES.get(switch_type)[1])
+        self._ir_on_cmd = ir_on
+        self._ir_off_cmd = ir_off
         self._state = STATE_OFF
         self._camera_type = self._camera["type"]
         self._attr = SWITCH_TYPES.get(switch_type)[2]
@@ -120,13 +135,13 @@ class UnifiProtectSwitch(SwitchDevice):
             self.data.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
         else:
             _LOGGER.debug("Turning on IR")
-            self.data.set_camera_ir(self._camera_id, TYPE_IR_AUTO)
+            self.data.set_camera_ir(self._camera_id, self._ir_on_cmd)
 
     def turn_off(self, **kwargs):
         """Turn the device off."""
         if self._switch_type == "ir_mode":
             _LOGGER.debug("Turning off IR")
-            self.data.set_camera_ir(self._camera_id, TYPE_IR_OFF)
+            self.data.set_camera_ir(self._camera_id, self._ir_off_cmd)
         else:
             _LOGGER.debug("Turning off Recording")
             self.data.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
@@ -138,7 +153,7 @@ class UnifiProtectSwitch(SwitchDevice):
         elif self._switch_type == "record_always":
             enabled = True if self._camera["recording_mode"] == TYPE_RECORD_ALLWAYS else False
         else:
-            enabled = True if self._camera["ir_mode"] == TYPE_IR_AUTO else False
+            enabled = True if self._camera["ir_mode"] == self._ir_on_cmd else False
 
         _LOGGER.debug("enabled: %s", enabled)
         self._state = STATE_ON if enabled else STATE_OFF

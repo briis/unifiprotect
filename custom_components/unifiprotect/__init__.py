@@ -55,7 +55,8 @@ TYPE_RECORD_ALLWAYS = "always"
 TYPE_RECORD_NEVER = "never"
 TYPE_IR_AUTO = "auto"
 TYPE_IR_ON = "on"
-TYPE_IR_OFF = "autoFilterOnly"
+TYPE_IR_LED_OFF = "autoFilterOnly"
+TYPE_IR_OFF = "off"
 
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN

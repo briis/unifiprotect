@@ -71,7 +71,7 @@ class UpvServer:
             if response.status_code in (401, 403):
                 raise NotAuthorized("Unifi Protect reported authorization failure")
             if response.status_code / 100 != 2:
-                raise NvrError("Request failed: %s" % response.status)
+                raise NvrError("Request failed: %s" % response.status_code)
 
     def _get_api_access_key(self):
         """get API Access Key."""
@@ -94,7 +94,7 @@ class UpvServer:
             return access_key
         else:
             raise NvrError(
-                "Request failed: %s - Reason: %s" % (response.status, response.reason)
+                "Request failed: %s - Reason: %s" % (response.status_code, response.reason)
             )
 
     def _get_camera_list(self):
@@ -121,6 +121,8 @@ class UpvServer:
                     online = False
                 # Get Recording Mode
                 recording_mode = str(camera["recordingSettings"]["mode"])
+                # Get Infrared Mode
+                ir_mode = str(camera["ispSettings"]["irLedMode"])
                 # Get the last time motion occured
                 lastmotion = (
                     None
@@ -157,6 +159,7 @@ class UpvServer:
                             "name": str(camera["name"]),
                             "type": str(camera["type"]),
                             "recording_mode": recording_mode,
+                            "ir_mode": ir_mode,
                             "rtsp": rtsp,
                             "up_since": upsince,
                             "last_motion": lastmotion,
@@ -175,6 +178,7 @@ class UpvServer:
                     self.device_data[camera_id]["online"] = online
                     self.device_data[camera_id]["up_since"] = upsince
                     self.device_data[camera_id]["recording_mode"] = recording_mode
+                    self.device_data[camera_id]["ir_mode"] = ir_mode
 
     def _get_motion_events(self, lookback=86400):
         """Load the Event Log and loop through items to find motion events."""
@@ -259,7 +263,7 @@ class UpvServer:
             else:
                 raise NvrError(
                     "Thumbnail Request failed: %s - Reason: %s"
-                    % (response.status, response.reason)
+                    % (response.status_code, response.reason)
                 )
         else:
             return None
@@ -331,6 +335,37 @@ class UpvServer:
         else:
             raise NvrError(
                 "Set Recording Mode failed: %s - Reason: %s"
-                % (response.status, response.reason)
+                % (response.status_code, response.reason)
             )
 
+    def set_camera_ir(self, camera_id, mode):
+        """ Sets the camera infrared settings to what is supplied with 'mode'. 
+            Valid inputs for mode: auto, on, autoFilterOnly
+        """
+        if mode == "led_off":
+            mode = "autoFilterOnly"
+        elif mode == "always_on":
+            mode = "on"
+        elif mode == "always_off":
+            mode = "off"
+
+        cam_uri = "https://" + str(self._host) + ":" + str(self._port) + "/cameras/" + str(camera_id)
+
+        data =  {
+            "ispSettings": {
+                "irLedMode":mode,
+                "irLedLevel":255
+                }
+        }
+
+        header = {'Authorization': 'Bearer ' + self._api_auth_bearer_token,'Content-Type': 'application/json'}
+
+        response = requests.patch(cam_uri, headers=header, verify=self._verify_ssl, json=data)
+        if response.status_code == 200:
+            self.device_data[camera_id]["ir_mode"] = mode
+            return True
+        else:
+            raise NvrError(
+                "Set IR Mode failed: %s - Reason: %s"
+                % (response.status_code, response.reason)
+            )

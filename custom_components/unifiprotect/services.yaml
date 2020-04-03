@@ -19,3 +19,12 @@ set_recording_mode:
     recording_mode:
       description: '(Optional) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording. Default value is: motion'
       example: always
+set_ir_mode:
+  description: 'Set Infrared Settings for the camera'
+  fields:
+    entity_id:
+      description: 'string (required) camera to enable recording on'
+      example: 'camera.outdoor'
+    ir_mode:
+      description: '(Optional) Valid options are: always_on = IR always on, auto = Automatic, led_off = Automatic wo LEDs, always_off = Always Off. Default value is: auto'
+      example: always

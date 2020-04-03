@@ -40,25 +40,32 @@ ATTR_ONLINE = "online"
 CONF_THUMB_WIDTH = "image_width"
 CONF_MIN_SCORE = "minimum_score"
 CONF_RECORDING_MODE = "recording_mode"
+CONF_IR_MODE = "ir_mode"
+
+TYPE_RECORD_MOTION = "motion"
+TYPE_RECORD_ALLWAYS = "always"
+TYPE_RECORD_NEVER = "never"
+TYPE_IR_AUTO = "auto"
+TYPE_IR_ON = "always_on"
+TYPE_IR_LED_OFF = "led_off"
+TYPE_IR_OFF = "always_off"
 
 DEFAULT_ATTRIBUTION = "Data provided by Ubiquiti's Unifi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_MIN_SCORE = 0
 DEFAULT_PORT = 7443
 DEFAULT_RECORDING_MODE = "motion"
+DEFAULT_IR_MODE = TYPE_IR_AUTO
 DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
 DEFAULT_SSL = False
 DEFAULT_THUMB_WIDTH = 640
-
-TYPE_RECORD_MOTION = "motion"
-TYPE_RECORD_ALLWAYS = "always"
-TYPE_RECORD_NEVER = "never"
 
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN
 
 SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
+SERVICE_SET_IR_MODE = "set_ir_mode"
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -92,6 +99,13 @@ SET_RECORDING_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Optional(CONF_RECORDING_MODE, default=DEFAULT_RECORDING_MODE): cv.string,
+    }
+)
+
+SET_IR_MODE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Optional(CONF_IR_MODE, default=DEFAULT_IR_MODE): cv.string,
     }
 )
 
@@ -130,6 +144,10 @@ def setup(hass, config):
         """Call Set Recording Mode."""
         await async_handle_set_recording_mode(hass, call)
 
+    async def async_set_ir_mode(call):
+        """Call Set Infrared Mode."""
+        await async_handle_set_ir_mode(hass, call)
+
     hass.services.register(
         DOMAIN,
         SERVICE_SAVE_THUMBNAIL,
@@ -144,6 +162,13 @@ def setup(hass, config):
         schema=SET_RECORDING_MODE_SCHEMA,
     )
 
+    hass.services.register(
+        DOMAIN,
+        SERVICE_SET_IR_MODE,
+        async_set_ir_mode,
+        schema=SET_IR_MODE_SCHEMA,
+    )
+
     async def _async_systems_update(now):
         """Refresh internal state for all systems."""
         hass.data[UPV_DATA].update()
@@ -155,7 +180,7 @@ def setup(hass, config):
     return True
 
 async def async_handle_set_recording_mode(hass, call):
-    """Handle enable Always recording."""
+    """Handle setting Recording Mode."""
     entity_id = call.data[ATTR_ENTITY_ID]
     entity_state = hass.states.get(entity_id[0])
     camera_id = entity_state.attributes[ATTR_CAMERA_ID]
@@ -173,6 +198,27 @@ async def async_handle_set_recording_mode(hass, call):
 
     await hass.async_add_executor_job(
         _set_recording_mode, camera_id, rec_mode
+    )
+
+async def async_handle_set_ir_mode(hass, call):
+    """Handle enable Always recording."""
+    entity_id = call.data[ATTR_ENTITY_ID]
+    entity_state = hass.states.get(entity_id[0])
+    camera_id = entity_state.attributes[ATTR_CAMERA_ID]
+    if camera_id is None:
+        _LOGGER.error("Unable to get Camera ID for selected Camera")
+        return
+    
+    ir_mode = call.data[CONF_IR_MODE].lower()
+    if ir_mode not in {"always_on", "auto", "always_off", "led_off"}:
+        ir_mode = "auto"
+
+    def _set_ir_mode(camera_id, ir_mode):
+        """Communicate with Camera and set infrared mode."""
+        hass.data[UPV_DATA].set_camera_ir(camera_id, ir_mode)
+
+    await hass.async_add_executor_job(
+        _set_ir_mode, camera_id, ir_mode
     )
 
 async def async_handle_save_thumbnail_service(hass, call):

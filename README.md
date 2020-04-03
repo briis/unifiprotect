@@ -106,8 +106,8 @@ Service | Parameters | Description
 `camera.snapshot` | `entity_id` - Name of entity to create snapshots from.<br>`filename` - Filename to store snapshot in | Take a snapshot of the current image on the specified camera and stor in a file
 `camera.record` | `entity_id` - camera to record from<br>`filename` - Template of a Filename. Variable is entity_id. Must be mp4.<br>`duration` - (Optional) Target recording length (in seconds).<br>`lookback` - (Optional) Target lookback period (in seconds) to include in addition to duration. Only available if there is currently an active HLS stream. | Record the current stream to a file
 `unifiprotect.save_thumbnail_image` | `entity_id` - Name of entity to retrieve thumbnail from.<br>`filename` - Filename to store thumbnail in<br>`image_width` - (Optional) Width of the image in pixels. Height will be scaled proportionally. Default is 640. | Get the thumbnail image of the last recording event (If any), from the specified camera
-`unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, motion or never< | Set the recording mode for each Camera.
-`unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, always_on, led_off or always_off< | Set the infrared mode for each Camera.
+`unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, motion or never | Set the recording mode for each Camera.
+`unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, always_on, led_off or always_off | Set the infrared mode for each Camera.
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 
@@ -147,10 +147,11 @@ The sensor can have 3 different states:
 
 ### Switch
 
-If this component is enabled two Switches are created per Camera.
+If this component is enabled three Switches are created per Camera.
 
 1. Enable or disable motion recording
 2. Enable or disable constant recording
+3. Enable or disable Infrared sensors. This switch also supports extra options to define what setting is ON and what settings is OFF. See more below.
 
 In order to use the Switch component, add the following to your *configuration.yaml* file:
 
@@ -158,14 +159,23 @@ In order to use the Switch component, add the following to your *configuration.y
 # Example configuration.yaml entry
 switch:
   - platform: unifiprotect
+    ir_on: <Optional, type what mode defines on for Infrared>
+    ir_off: <Optional, type what mode defines off for Infrared>
 ```
+
+**ir_on**  
+(string)(Optional) The mode that defines Infrared On. Values are: *auto* and *always_on*. Default is *auto*
+
+**ir_off**  
+(string)(Optional) The mode that defines Infrared OF. Values are: *led_off* and *always_off*. Default is *always_off*
 
 ## Automating Services
 
 If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.
 These Services support more than 2 different modes each, and as such it would be good to have a list to select from when switching the mode of those settings. I have not found a way to create a listbox as Custom Component, but it is fairly simpel to use an *input_select* integration and an *Automation* to achieve a UI friendly way of changing these modes. Below is an example that creates an *input*select* integration for one of the Cameras and then an example of an automation that is triggered whenever the user selects a new value in the dropdown list.
 
-Start by creating the *input_select* integration. If you are on Version 107.x or greater that can now be done directly from the menu under *Configuration* and then *Helpers*. Click the PLUS sign at the bottom and use the *Dropdown* option. **Important** Fill in the *Option* part as seen below.
+Start by creating the *input_select* integration. If you are on Version 107.x or greater that can now be done directly from the menu under *Configuration* and then *Helpers*. Click the PLUS sign at the bottom and use the *Dropdown* option.  
+**Important** Fill in the *Option* part as seen below for the Infrared Service.  
 If you do it manually add the following to your *configuration.yaml* file:
 
 ```yaml

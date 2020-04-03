@@ -107,8 +107,9 @@ Service | Parameters | Description
 `camera.record` | `entity_id` - camera to record from<br>`filename` - Template of a Filename. Variable is entity_id. Must be mp4.<br>`duration` - (Optional) Target recording length (in seconds).<br>`lookback` - (Optional) Target lookback period (in seconds) to include in addition to duration. Only available if there is currently an active HLS stream. | Record the current stream to a file
 `unifiprotect.save_thumbnail_image` | `entity_id` - Name of entity to retrieve thumbnail from.<br>`filename` - Filename to store thumbnail in<br>`image_width` - (Optional) Width of the image in pixels. Height will be scaled proportionally. Default is 640. | Get the thumbnail image of the last recording event (If any), from the specified camera
 `unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, motion or never< | Set the recording mode for each Camera.
+`unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, always_on, led_off or always_off< | Set the infrared mode for each Camera.
 
-**Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App.
+**Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 
 ### Binary Sensor
 
@@ -146,11 +147,10 @@ The sensor can have 3 different states:
 
 ### Switch
 
-If this component is enabled three Switches are created per Camera.
+If this component is enabled two Switches are created per Camera.
 
 1. Enable or disable motion recording
 2. Enable or disable constant recording
-3. Enable or disable Infrared on the Camera
 
 In order to use the Switch component, add the following to your *configuration.yaml* file:
 
@@ -159,3 +159,46 @@ In order to use the Switch component, add the following to your *configuration.y
 switch:
   - platform: unifiprotect
 ```
+
+## Automating Services
+
+If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.
+These Services support more than 2 different modes each, and as such it would be good to have a list to select from when switching the mode of those settings. I have not found a way to create a listbox as Custom Component, but it is fairly simpel to use an *input_select* integration and an *Automation* to achieve a UI friendly way of changing these modes. Below is an example that creates an *input*select* integration for one of the Cameras and then an example of an automation that is triggered whenever the user selects a new value in the dropdown list.
+
+Start by creating the *input_select* integration. If you are on Version 107.x or greater that can now be done directly from the menu under *Configuration* and then *Helpers*. Click the PLUS sign at the bottom and use the *Dropdown* option. **Important** Fill in the *Option* part as seen below.
+If you do it manually add the following to your *configuration.yaml* file:
+
+```yaml
+# Example configuration.yaml entry
+input_select:
+  camera_office_ir_mode:
+    name: IR Mode for Camera Office
+    options:
+      - auto
+      - always_on
+      - led_off
+      - always_off
+    icon: mdi:brightness-4
+```
+
+If you did it manually, you need to restart Home Assistant, else you can continue.
+
+Now add a new Automation, like the following:
+
+```yaml
+- id: '1585900471122'
+  alias: Camera Office IR Mode Change
+  description: ''
+  trigger:
+  - entity_id: input_select.camera_office_ir_mode
+    platform: state
+  condition: []
+  action:
+  - data_template:
+      entity_id: camera.camera_office
+      ir_mode: '{{ states(''input_select.camera_office_ir_mode'') }}'
+    entity_id: camera.camera_office
+    service: unifiprotect.set_ir_mode
+```
+
+Thats it. Whenever you now select a new value from the Dropdown, the automation is activated, and the service is called to change the IR mode. The same can then be achieved for the *recording_mode* by changing the options and the service call in the automation.

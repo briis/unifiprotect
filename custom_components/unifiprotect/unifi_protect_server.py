@@ -71,7 +71,7 @@ class UpvServer:
             if response.status_code in (401, 403):
                 raise NotAuthorized("Unifi Protect reported authorization failure")
             if response.status_code / 100 != 2:
-                raise NvrError("Request failed: %s" % response.status)
+                raise NvrError("Request failed: %s" % response.status_code)
 
     def _get_api_access_key(self):
         """get API Access Key."""
@@ -94,7 +94,7 @@ class UpvServer:
             return access_key
         else:
             raise NvrError(
-                "Request failed: %s - Reason: %s" % (response.status, response.reason)
+                "Request failed: %s - Reason: %s" % (response.status_code, response.reason)
             )
 
     def _get_camera_list(self):
@@ -263,7 +263,7 @@ class UpvServer:
             else:
                 raise NvrError(
                     "Thumbnail Request failed: %s - Reason: %s"
-                    % (response.status, response.reason)
+                    % (response.status_code, response.reason)
                 )
         else:
             return None
@@ -335,14 +335,16 @@ class UpvServer:
         else:
             raise NvrError(
                 "Set Recording Mode failed: %s - Reason: %s"
-                % (response.status, response.reason)
+                % (response.status_code, response.reason)
             )
 
     def set_camera_ir(self, camera_id, mode):
         """ Sets the camera infrared settings to what is supplied with 'mode'. 
             Valid inputs for mode: auto, on, autoFilterOnly
         """
-
+        if mode == "led_only":
+            mode = "autoFilterOnly"
+            
         cam_uri = "https://" + str(self._host) + ":" + str(self._port) + "/cameras/" + str(camera_id)
 
         data =  {
@@ -361,5 +363,5 @@ class UpvServer:
         else:
             raise NvrError(
                 "Set IR Mode failed: %s - Reason: %s"
-                % (response.status, response.reason)
+                % (response.status_code, response.reason)
             )

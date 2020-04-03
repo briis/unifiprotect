@@ -59,9 +59,10 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
     if not data:
         return
 
-    conf = config[DOMAIN]
-    ir_on = conf.get(CONF_IR_ON)
-    ir_off = conf.get(CONF_IR_OFF)
+    ir_on = config.get(CONF_IR_ON)
+    ir_off = config.get(CONF_IR_OFF)
+    if ir_off == "led_off":
+        ir_off = "autoFilterOnly"
 
     switches = []
     for switch_type in config.get(CONF_MONITORED_CONDITIONS):
@@ -88,6 +89,7 @@ class UnifiProtectSwitch(SwitchDevice):
         self._attr = SWITCH_TYPES.get(switch_type)[2]
         self._switch_type = SWITCH_TYPES.get(switch_type)[2]
         _LOGGER.debug("UnifiProtectSwitch: %s created", self._name)
+        _LOGGER.debug("UnifiProtectSwitch: IR_ON %s IR_OFF %s", self._ir_on_cmd, self._ir_off_cmd)
 
     @property
     def should_poll(self):

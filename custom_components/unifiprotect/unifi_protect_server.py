@@ -19,7 +19,7 @@ class NotAuthorized(Exception):
 
 
 class NvrError(Exception):
-    """Other error from Authorization request."""
+    """Other error."""
 
     pass
 

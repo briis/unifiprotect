@@ -21,7 +21,7 @@ Before you install this Integration you need to ensure that the following two se
 **Note:**  
 
 * This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.0-beta.16 and higher. I cannot guarantee that this will work on a lower version than that.
-* It is **not working** with *UnifiOS* that is currently being shipped with the Unifi Dream Machine Pro in the US. I have no access to a system like that, so I don't know when and if, that can be supported.
+* The component is **not working** directly with *UnifiOS*, that is currently being shipped with the Unifi Dream Machine Pro in the US. I have no access to a system like that, but [Mark Lopez](@Silvenga) has made a proxy container, that can take care of the new Authentication that UnifiOS introduces. Have a look [here](https://github.com/Silvenga/unifi-udm-api-proxy) for setup instructions.
 
 ## Manual Installation
 

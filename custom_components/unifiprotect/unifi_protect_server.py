@@ -273,6 +273,14 @@ class UpvServer:
 
         access_key = self._get_api_access_key()
         time_since = int(time.mktime(datetime.datetime.now().timetuple())) * 1000
+        model_type = self.device_data[camera_id]["type"]
+        if (model_type.find("G4") != -1):
+            image_width = "1280"
+            image_height = "720"
+        else:
+            image_width = "1024"
+            image_height = "576"
+
         img_uri = (
             "https://"
             + str(self._host)
@@ -284,7 +292,7 @@ class UpvServer:
             + access_key
             + "&ts="
             + str(time_since)
-            + "&h=768&w=1024"
+            + "&h=" + image_height + "&w=" + image_width
         )
         response = self.req.get(img_uri, verify=self._verify_ssl)
         if response.status_code == 200:

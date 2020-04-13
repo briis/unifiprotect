@@ -284,6 +284,7 @@ class UpvServer:
             + access_key
             + "&ts="
             + str(time_since)
+            + "&h=768&w=1024"
         )
         response = self.req.get(img_uri, verify=self._verify_ssl)
         if response.status_code == 200:

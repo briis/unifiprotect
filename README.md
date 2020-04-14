@@ -163,7 +163,7 @@ switch:
 (string)(Optional) The mode that defines Infrared On. Values are: *auto* and *always_on*. Default is *auto*
 
 **ir_off**  
-(string)(Optional) The mode that defines Infrared OF. Values are: *led_off* and *always_off*. Default is *always_off*
+(string)(Optional) The mode that defines Infrared OFF. Values are: *led_off* and *always_off*. Default is *always_off*
 
 ## Automating Services
 

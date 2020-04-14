@@ -131,3 +131,4 @@ unifiprotect.code-workspace
 .DS_Store
 .vscode/settings.json
 met.no.json
+custom_components/unifiprotect/test.py

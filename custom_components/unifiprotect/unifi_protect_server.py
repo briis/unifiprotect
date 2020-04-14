@@ -241,7 +241,7 @@ class UpvServer:
         thumbnail_id = self.device_data[camera_id]["motion_thumbnail"]
 
         if thumbnail_id is not None:
-            height = float(width) / 1.8
+            height = float(width) / 16 * 9
             access_key = self._get_api_access_key()
             img_uri = (
                 "https://"

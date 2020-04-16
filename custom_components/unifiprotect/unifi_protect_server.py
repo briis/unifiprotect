@@ -28,7 +28,7 @@ class UpvServer:
     """Updates device States and Attributes."""
 
     def __init__(
-        self, host, port, username, password, verify_ssl=False, minimum_score=40
+        self, host, port, username, password, verify_ssl=False, minimum_score=0
     ):
         self._host = host
         self._port = port
@@ -168,7 +168,6 @@ class UpvServer:
                             "motion_score": 0,
                             "motion_thumbnail": None,
                             "motion_on": False,
-                            "motion_events_today": 0,
                         }
                     }
                     self.device_data.update(item)
@@ -214,15 +213,19 @@ class UpvServer:
                     start_time = datetime.datetime.fromtimestamp(
                         int(event["start"]) / 1000
                     ).strftime("%Y-%m-%d %H:%M:%S")
+                    if int(event["score"]) >= self._minimum_score:
+                        motion_on = True
+                    else:
+                        motion_on = False
                 else:
                     start_time = None
                 if event["end"]:
                     motion_on = False
-                else:
-                    if int(event["score"]) > self._minimum_score:
-                        motion_on = True
-                    else:
-                        motion_on = False
+                # else:
+                #     if int(event["score"]) >= self._minimum_score:
+                #         motion_on = True
+                #     else:
+                #         motion_on = False
 
                 camera_id = event["camera"]
                 self.device_data[camera_id]["motion_start"] = start_time

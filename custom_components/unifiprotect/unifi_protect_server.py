@@ -205,10 +205,8 @@ class UpvServer:
             verify=self._verify_ssl,
         )
         if response.status_code == 200:
-            # print("Successfully retrieved data from /api/events")
             events = response.json()
             for event in events:
-                # print("Event for camera: " + str(event['camera']))
                 if event["start"]:
                     start_time = datetime.datetime.fromtimestamp(
                         int(event["start"]) / 1000
@@ -235,7 +233,12 @@ class UpvServer:
                     event["thumbnail"] is not None
                 ):  # Only update if there is a new Motion Event
                     self.device_data[camera_id]["motion_thumbnail"] = event["thumbnail"]
-
+        else:
+            raise NvrError(
+                "Fetching Eventlog failed failed: %s - Reason: %s"
+                % (response.status_code, response.reason)
+            )
+                      
     def get_thumbnail(self, camera_id, width=640):
         """Returns the last recorded Thumbnail, based on Camera ID."""
 

@@ -216,16 +216,12 @@ class UpvServer:
                     start_time = datetime.datetime.fromtimestamp(
                         int(event["start"]) / 1000
                     ).strftime("%Y-%m-%d %H:%M:%S")
-                    # if int(event["score"]) >= 0:   #self._minimum_score:
-                    #     motion_on = True
-                    # else:
-                    #     motion_on = False
                 else:
                     start_time = None
                 if event["end"]:
                     motion_on = False
                 else:
-                    if int(event["score"]) >= 0:   # self._minimum_score:
+                    if int(event["score"]) >= self._minimum_score:
                         motion_on = True
                     else:
                         motion_on = False

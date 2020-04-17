@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ["unifiprotect"]
 
-SCAN_INTERVAL = timedelta(seconds=3)
+SCAN_INTERVAL = timedelta(seconds=5)
 
 ATTR_CAMERA_TYPE = "camera_type"
 ATTR_BRAND = "brand"

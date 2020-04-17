@@ -28,7 +28,7 @@ class UpvServer:
     """Updates device States and Attributes."""
 
     def __init__(
-        self, host, port, username, password, verify_ssl=False, minimum_score=40
+        self, host, port, username, password, verify_ssl=False, minimum_score=0
     ):
         self._host = host
         self._port = port
@@ -168,7 +168,6 @@ class UpvServer:
                             "motion_score": 0,
                             "motion_thumbnail": None,
                             "motion_on": False,
-                            "motion_events_today": 0,
                         }
                     }
                     self.device_data.update(item)
@@ -179,6 +178,11 @@ class UpvServer:
                     self.device_data[camera_id]["up_since"] = upsince
                     self.device_data[camera_id]["recording_mode"] = recording_mode
                     self.device_data[camera_id]["ir_mode"] = ir_mode
+        else:
+            raise NvrError(
+                "Fetching Camera List failed: %s - Reason: %s"
+                % (response.status_code, response.reason)
+            )
 
     def _get_motion_events(self, lookback=86400):
         """Load the Event Log and loop through items to find motion events."""
@@ -206,10 +210,8 @@ class UpvServer:
             verify=self._verify_ssl,
         )
         if response.status_code == 200:
-            # print("Successfully retrieved data from /api/events")
             events = response.json()
             for event in events:
-                # print("Event for camera: " + str(event['camera']))
                 if event["start"]:
                     start_time = datetime.datetime.fromtimestamp(
                         int(event["start"]) / 1000
@@ -219,7 +221,7 @@ class UpvServer:
                 if event["end"]:
                     motion_on = False
                 else:
-                    if int(event["score"]) > self._minimum_score:
+                    if int(event["score"]) >= self._minimum_score:
                         motion_on = True
                     else:
                         motion_on = False
@@ -232,7 +234,12 @@ class UpvServer:
                     event["thumbnail"] is not None
                 ):  # Only update if there is a new Motion Event
                     self.device_data[camera_id]["motion_thumbnail"] = event["thumbnail"]
-
+        else:
+            raise NvrError(
+                "Fetching Eventlog failed: %s - Reason: %s"
+                % (response.status_code, response.reason)
+            )
+                      
     def get_thumbnail(self, camera_id, width=640):
         """Returns the last recorded Thumbnail, based on Camera ID."""
 

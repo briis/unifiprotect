@@ -3,6 +3,13 @@
 
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/briis/unifiprotect?include_prereleases&style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
+### *** As of Home Assistant 0.109.x you will start seeing a lot of warnings due to blocking I/O ***
+A new logic is implemented in HA V0.109 that checks for blocking I/O and writes a warning in the log file every time that happens. The way this integration is written, you will see this warnings very often. I will most likely have to rewrite the whole engine to use the async libraries. I honestly don't know how to do that, so it will take some time before this is done, unless I get some help. 
+
+**So unless you can live with all the warnings, I will not recommend using this once you upgrade to 0.109 or greater.**
+
+<hr>
+
 This is a Home Assistant Integration for Ubiquiti's Unifi Protect Surveillance system.
 
 This Home Assistant integration is inspired by [danielfernau's video downloader program](https://github.com/danielfernau/unifi-protect-video-downloader) and the Authorization implementation is copied from there.

@@ -4,7 +4,7 @@ import voluptuous as vol
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.binary_sensor import BinarySensorDevice
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME, CONF_MONITORED_CONDITIONS
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND

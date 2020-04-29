@@ -132,3 +132,6 @@ unifiprotect.code-workspace
 .vscode/settings.json
 met.no.json
 custom_components/unifiprotect/test.py
+custom_components/unifiprotect/aioufprotect/setup.cfg
+custom_components/unifiprotect/aioufprotect/setup.py
+custom_components/unifiprotect/aioufprotect/aioufprotect/__init__.py

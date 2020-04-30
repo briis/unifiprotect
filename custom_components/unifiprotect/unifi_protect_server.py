@@ -97,7 +97,7 @@ class UpvServer:
                 "Request failed: %s - Reason: %s" % (response.status_code, response.reason)
             )
 
-    def _get_camera_list(self):
+    async def _get_camera_list(self):
         """Get a list of Cameras connected to the NVR."""
 
         bootstrap_uri = (
@@ -184,7 +184,7 @@ class UpvServer:
                 % (response.status_code, response.reason)
             )
 
-    def _get_motion_events(self, lookback=86400):
+    async def _get_motion_events(self, lookback=86400):
         """Load the Event Log and loop through items to find motion events."""
 
         event_start = datetime.datetime.now() - datetime.timedelta(seconds=lookback)

@@ -274,7 +274,7 @@ class UpvServer:
 
         img_uri = f"{self._base_url}/api/cameras/{camera_id}/snapshot"
         params = {
-            "access_key": access_key,
+            "accessKey": access_key,
             "h": image_height,
             "ts": str(time_since),
             "w": image_width,

@@ -20,6 +20,7 @@ from homeassistant.const import (
 )
 import homeassistant.helpers.config_validation as cv
 from homeassistant.exceptions import PlatformNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import Entity
 
 from homeassistant.helpers.event import async_track_time_interval
@@ -109,7 +110,8 @@ SET_IR_MODE_SCHEMA = vol.Schema(
     }
 )
 
-def setup(hass, config):
+
+async def async_setup(hass, config):
     """Set up the Unifi Protect component."""
     conf = config[DOMAIN]
     host = conf.get(CONF_HOST)
@@ -121,9 +123,11 @@ def setup(hass, config):
     scan_interval = conf[CONF_SCAN_INTERVAL]
 
     try:
+        http_session = async_get_clientsession(hass)
         hass.data[UPV_DATA] = upv.UpvServer(
-            host, port, username, password, use_ssl, minimum_score
+            host, port, username, password, http_session, use_ssl, minimum_score
         )
+        await hass.data[UPV_DATA].update()
         _LOGGER.debug("Connected to Unifi Protect Platform")
 
     except upv.NotAuthorized:
@@ -163,10 +167,7 @@ def setup(hass, config):
     )
 
     hass.services.register(
-        DOMAIN,
-        SERVICE_SET_IR_MODE,
-        async_set_ir_mode,
-        schema=SET_IR_MODE_SCHEMA,
+        DOMAIN, SERVICE_SET_IR_MODE, async_set_ir_mode, schema=SET_IR_MODE_SCHEMA,
     )
 
     async def _async_systems_update(now):
@@ -179,6 +180,7 @@ def setup(hass, config):
 
     return True
 
+
 async def async_handle_set_recording_mode(hass, call):
     """Handle setting Recording Mode."""
     entity_id = call.data[ATTR_ENTITY_ID]
@@ -187,7 +189,7 @@ async def async_handle_set_recording_mode(hass, call):
     if camera_id is None:
         _LOGGER.error("Unable to get Camera ID for selected Camera")
         return
-    
+
     rec_mode = call.data[CONF_RECORDING_MODE].lower()
     if rec_mode not in {"always", "motion", "never"}:
         rec_mode = "motion"
@@ -196,9 +198,8 @@ async def async_handle_set_recording_mode(hass, call):
         """Communicate with Camera and set recording mode."""
         hass.data[UPV_DATA].set_camera_recording(camera_id, recording_mode)
 
-    await hass.async_add_executor_job(
-        _set_recording_mode, camera_id, rec_mode
-    )
+    await hass.async_add_executor_job(_set_recording_mode, camera_id, rec_mode)
+
 
 async def async_handle_set_ir_mode(hass, call):
     """Handle enable Always recording."""
@@ -208,7 +209,7 @@ async def async_handle_set_ir_mode(hass, call):
     if camera_id is None:
         _LOGGER.error("Unable to get Camera ID for selected Camera")
         return
-    
+
     ir_mode = call.data[CONF_IR_MODE].lower()
     if ir_mode not in {"always_on", "auto", "always_off", "led_off"}:
         ir_mode = "auto"
@@ -217,9 +218,8 @@ async def async_handle_set_ir_mode(hass, call):
         """Communicate with Camera and set infrared mode."""
         hass.data[UPV_DATA].set_camera_ir(camera_id, ir_mode)
 
-    await hass.async_add_executor_job(
-        _set_ir_mode, camera_id, ir_mode
-    )
+    await hass.async_add_executor_job(_set_ir_mode, camera_id, ir_mode)
+
 
 async def async_handle_save_thumbnail_service(hass, call):
     """Handle save thumbnail service calls."""
@@ -259,4 +259,3 @@ async def async_handle_save_thumbnail_service(hass, call):
         )
     except OSError as err:
         _LOGGER.error("Can't write image to file: %s", err)
-

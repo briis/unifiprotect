@@ -4,7 +4,11 @@ import voluptuous as vol
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME, CONF_MONITORED_CONDITIONS
+from homeassistant.const import (
+    ATTR_ATTRIBUTION,
+    ATTR_FRIENDLY_NAME,
+    CONF_MONITORED_CONDITIONS,
+)
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 from homeassistant.helpers.entity import Entity
 from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, TYPE_RECORD_NEVER
@@ -34,14 +38,14 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
     """Set up an Unifi Protect sensor."""
-    data = hass.data[UPV_DATA]
-    if not data:
+    coordinator = hass.data[UPV_DATA]["coordinator"]
+    if not coordinator.data:
         return
 
     sensors = []
     for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
-        for camera in data.devices:
-            sensors.append(UnifiProtectSensor(data, camera, sensor_type))
+        for camera in coordinator.data:
+            sensors.append(UnifiProtectSensor(coordinator, camera, sensor_type))
 
     async_add_entities(sensors, True)
 
@@ -49,12 +53,14 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
 class UnifiProtectSensor(Entity):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, data, camera, sensor_type):
+    def __init__(self, coordinator, camera, sensor_type):
         """Initialize an Unifi Protect sensor."""
-        self.data = data
+        self.coordinator = coordinator
         self._camera_id = camera
-        self._camera = self.data.devices[camera]
-        self._name = "{0} {1}".format(SENSOR_TYPES[sensor_type][0], self._camera["name"])
+        self._camera = self.coordiantor.data[camera]
+        self._name = "{0} {1}".format(
+            SENSOR_TYPES[sensor_type][0], self._camera["name"]
+        )
         self._unique_id = self._name.lower().replace(" ", "_")
         self._sensor_type = sensor_type
         self._icon = "mdi:{}".format(SENSOR_TYPES.get(self._sensor_type)[2])
@@ -104,4 +110,6 @@ class UnifiProtectSensor(Entity):
         """ Updates Motions State."""
 
         self._state = self._camera["recording_mode"]
-        self._icon = "mdi:camcorder" if self._state != TYPE_RECORD_NEVER else "mdi:camcorder-off"
+        self._icon = (
+            "mdi:camcorder" if self._state != TYPE_RECORD_NEVER else "mdi:camcorder-off"
+        )

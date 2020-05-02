@@ -1,9 +1,10 @@
 """Unifi Protect Platform."""
 
-from datetime import timedelta
 import logging
-import voluptuous as vol
+from datetime import timedelta
+
 import requests
+import voluptuous as vol
 
 from . import unifi_protect_server as upv
 
@@ -19,15 +20,16 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
 )
 import homeassistant.helpers.config_validation as cv
+from homeassistant import core
 from homeassistant.exceptions import PlatformNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import Entity
-
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 __version__ = "0.1.7"
 
@@ -111,7 +113,7 @@ SET_IR_MODE_SCHEMA = vol.Schema(
 )
 
 
-async def async_setup(hass, config):
+async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Unifi Protect component."""
     conf = config[DOMAIN]
     host = conf.get(CONF_HOST)
@@ -121,15 +123,13 @@ async def async_setup(hass, config):
     use_ssl = conf.get(CONF_SSL)
     minimum_score = conf.get(CONF_MIN_SCORE)
     scan_interval = conf[CONF_SCAN_INTERVAL]
+    session = async_get_clientsession(hass)
 
     try:
-        http_session = async_get_clientsession(hass)
-        hass.data[UPV_DATA] = upv.UpvServer(
-            host, port, username, password, http_session, use_ssl, minimum_score
+        upv_server = upv.UpvServer(
+            session, host, port, username, password, use_ssl, minimum_score
         )
-        await hass.data[UPV_DATA].update()
-        _LOGGER.debug("Connected to Unifi Protect Platform")
-
+        _LOGGER.error("Connected to Unifi Protect Platform")
     except upv.NotAuthorized:
         _LOGGER.error("Authorization failure while connecting to NVR")
         return False
@@ -139,44 +139,52 @@ async def async_setup(hass, config):
     except requests.exceptions.ConnectionError as ex:
         _LOGGER.error("Unable to connect to NVR: %s", str(ex))
         raise PlatformNotReady
+    _LOGGER.error("upv_server: %s", upv_server)
 
-    async def async_save_thumbnail(call):
-        """Call save video service handler."""
-        await async_handle_save_thumbnail_service(hass, call)
-
-    async def async_set_recording_mode(call):
-        """Call Set Recording Mode."""
-        await async_handle_set_recording_mode(hass, call)
-
-    async def async_set_ir_mode(call):
-        """Call Set Infrared Mode."""
-        await async_handle_set_ir_mode(hass, call)
-
-    hass.services.register(
-        DOMAIN,
-        SERVICE_SAVE_THUMBNAIL,
-        async_save_thumbnail,
-        schema=SAVE_THUMBNAIL_SCHEMA,
+    coordinator = DataUpdateCoordinator(
+        hass,
+        _LOGGER,
+        name=DOMAIN,
+        update_method=upv_server.update,
+        update_interval=scan_interval,
     )
+    # Fetch initial data so we have data when entities subscribe
+    await coordinator.async_refresh()
+    _LOGGER.error("async refreshed.")
+    hass.data[UPV_DATA] = {
+        "coordinator": coordinator,
+        "upv": upv_server,
+    }
 
-    hass.services.register(
-        DOMAIN,
-        SERVICE_SET_RECORDING_MODE,
-        async_set_recording_mode,
-        schema=SET_RECORDING_MODE_SCHEMA,
-    )
+    # async def async_save_thumbnail(call):
+    #    """Call save video service handler."""
+    #    await async_handle_save_thumbnail_service(hass, call)
 
-    hass.services.register(
-        DOMAIN, SERVICE_SET_IR_MODE, async_set_ir_mode, schema=SET_IR_MODE_SCHEMA,
-    )
+    # async def async_set_recording_mode(call):
+    #    """Call Set Recording Mode."""
+    #    await async_handle_set_recording_mode(hass, call)
 
-    async def _async_systems_update(now):
-        """Refresh internal state for all systems."""
-        hass.data[UPV_DATA].update()
+    # async def async_set_ir_mode(call):
+    #    """Call Set Infrared Mode."""
+    #    await async_handle_set_ir_mode(hass, call)
 
-        async_dispatcher_send(hass, DOMAIN)
+    # hass.services.register(
+    #    DOMAIN,
+    #    SERVICE_SAVE_THUMBNAIL,
+    #    async_save_thumbnail,
+    #    schema=SAVE_THUMBNAIL_SCHEMA,
+    # )
 
-    async_track_time_interval(hass, _async_systems_update, scan_interval)
+    # hass.services.register(
+    #    DOMAIN,
+    #    SERVICE_SET_RECORDING_MODE,
+    #    async_set_recording_mode,
+    #    schema=SET_RECORDING_MODE_SCHEMA,
+    # )
+
+    # hass.services.register(
+    #    DOMAIN, SERVICE_SET_IR_MODE, async_set_ir_mode, schema=SET_IR_MODE_SCHEMA,
+    # )
 
     return True
 
@@ -194,11 +202,7 @@ async def async_handle_set_recording_mode(hass, call):
     if rec_mode not in {"always", "motion", "never"}:
         rec_mode = "motion"
 
-    def _set_recording_mode(camera_id, recording_mode):
-        """Communicate with Camera and set recording mode."""
-        hass.data[UPV_DATA].set_camera_recording(camera_id, recording_mode)
-
-    await hass.async_add_executor_job(_set_recording_mode, camera_id, rec_mode)
+    await hass.data[UPV_DATA]["upv"].set_camera_recording(camera_id, rec_mode)
 
 
 async def async_handle_set_ir_mode(hass, call):
@@ -214,11 +218,7 @@ async def async_handle_set_ir_mode(hass, call):
     if ir_mode not in {"always_on", "auto", "always_off", "led_off"}:
         ir_mode = "auto"
 
-    def _set_ir_mode(camera_id, ir_mode):
-        """Communicate with Camera and set infrared mode."""
-        hass.data[UPV_DATA].set_camera_ir(camera_id, ir_mode)
-
-    await hass.async_add_executor_job(_set_ir_mode, camera_id, ir_mode)
+    await hass.data[UPV_DATA]["upv"].set_camera_ir(camera_id, ir_mode)
 
 
 async def async_handle_save_thumbnail_service(hass, call):
@@ -239,9 +239,11 @@ async def async_handle_save_thumbnail_service(hass, call):
         _LOGGER.error("Can't write %s, no access to path!", filename)
         return
 
-    def _write_thumbnail(camera_id, filename, image_width):
+    async def _write_thumbnail(camera_id, filename, image_width):
         """Call thumbnail write."""
-        image_data = hass.data[UPV_DATA].get_thumbnail(camera_id, image_width)
+        image_data = await hass.data[UPV_DATA]["upv"].get_thumbnail(
+            camera_id, image_width
+        )
         if image_data is None:
             _LOGGER.warning(
                 "Last recording not found for Camera %s",
@@ -254,8 +256,6 @@ async def async_handle_save_thumbnail_service(hass, call):
             _LOGGER.debug("Thumbnail Image written to %s", filename)
 
     try:
-        await hass.async_add_executor_job(
-            _write_thumbnail, camera_id, filename, image_width
-        )
+        await _write_thumbnail(camera_id, filename, image_width)
     except OSError as err:
         _LOGGER.error("Can't write image to file: %s", err)

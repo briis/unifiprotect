@@ -24,15 +24,17 @@ DEPENDENCIES = ["unifiprotect"]
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
-
-    upv_object = hass.data[UPV_DATA]
-    if not upv_object:
+    _LOGGER.warning("setting up camera")
+    upv_object = hass.data[UPV_DATA]["upv"]
+    coordinator = hass.data[UPV_DATA]["coordinator"]
+    _LOGGER.warning("coord data:%s", coordinator.data)
+    if not coordinator.data:
         return
 
-    cameras = [camera for camera in upv_object.devices]
+    cameras = [camera for camera in coordinator.data]
 
     async_add_entities(
-        [UnifiVideoCamera(hass, upv_object, camera) for camera in cameras]
+        [UnifiVideoCamera(hass, upv_object, coordinator, camera) for camera in cameras]
     )
 
     return True
@@ -41,13 +43,14 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class UnifiVideoCamera(Camera):
     """A Ubiquiti Unifi Video Camera."""
 
-    def __init__(self, hass, upv_object, camera):
+    def __init__(self, hass, upv_object, coordinator, camera):
         """Initialize an Unifi camera."""
         super().__init__()
         self.hass = hass
         self.upv_object = upv_object
+        self.coordinator = coordinator
         self._camera_id = camera
-        self._camera = self.upv_object.devices[camera]
+        self._camera = coordinator.data[camera]
 
         self._name = self._camera["name"]
         self._model = self._camera["type"]
@@ -121,7 +124,7 @@ class UnifiVideoCamera(Camera):
 
     def update(self):
         """ Updates Attribute States."""
-        data = self.upv_object.devices
+        data = self.coordinator.data
         camera = data[self._camera_id]
 
         self._online = camera["online"]
@@ -134,9 +137,9 @@ class UnifiVideoCamera(Camera):
             self._isrecording = False
         # self._thumbnail = camera["motion_thumbnail"]
 
-    async def enable_motion_detection(self):
+    def enable_motion_detection(self):
         """Enable motion detection in camera."""
-        ret = await self.upv_object.set_camera_recording(self._camera_id, "motion")
+        ret = self.upv_object.set_camera_recording(self._camera_id, "motion")
         if not ret:
             return
 
@@ -144,9 +147,9 @@ class UnifiVideoCamera(Camera):
         self._isrecording = True
         _LOGGER.debug("Motion Detection Enabled for Camera: %s", self._name)
 
-    async def disable_motion_detection(self):
+    def disable_motion_detection(self):
         """Disable motion detection in camera."""
-        ret = await self.upv_object.set_camera_recording(self._camera_id, "never")
+        ret = self.upv_object.set_camera_recording(self._camera_id, "never")
         if not ret:
             return
 
@@ -162,7 +165,7 @@ class UnifiVideoCamera(Camera):
 
     async def async_camera_image(self):
         """ Return the Camera Image. """
-        last_image = await self.upv_object.get_snapshot_image(self._camera_id)
+        last_image = self.upv_object.get_snapshot_image(self._camera_id)
         self._last_image = last_image
         return self._last_image
 

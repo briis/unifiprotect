@@ -1,9 +1,11 @@
 """Unifi Protect Server Wrapper."""
 
 import datetime
-import requests
+import logging
 import time
 import urllib3
+
+import aiohttp
 
 
 class Invalid(Exception):
@@ -24,21 +26,25 @@ class NvrError(Exception):
     pass
 
 
+_LOGGER = logging.getLogger(__name__)
+
+
 class UpvServer:
     """Updates device States and Attributes."""
 
     def __init__(
         self,
-        host,
-        port,
-        username,
-        password,
-        http_session,
-        verify_ssl=False,
-        minimum_score=0,
+        session: aiohttp.ClientSession,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        verify_ssl: bool = False,
+        minimum_score: int = 0,
     ):
         self._host = host
         self._port = port
+        self._base_url = f"https://{host}:{port}"
         self._username = username
         self._password = password
         self._verify_ssl = verify_ssl
@@ -47,7 +53,7 @@ class UpvServer:
         self.device_data = {}
 
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        self.req = http_session
+        self.req = session
         self._api_auth_bearer_token = None
 
     @property
@@ -55,16 +61,17 @@ class UpvServer:
         """ Returns a JSON formatted list of Devices. """
         return self.device_data
 
-    async def update(self):
+    async def update(self) -> dict:
         """Updates the status of devices."""
-        self._api_auth_bearer_token = await self._get_api_auth_bearer_token()
+        if self._api_auth_bearer_token is None:
+            self._api_auth_bearer_token = await self._get_api_auth_bearer_token()
         await self._get_camera_list()
         await self._get_motion_events(10)
+        return self.devices
 
-    async def _get_api_auth_bearer_token(self):
+    async def _get_api_auth_bearer_token(self) -> str:
         """get bearer token using username and password of local user."""
-
-        auth_uri = "https://" + str(self._host) + ":" + str(self._port) + "/api/auth"
+        auth_uri = f"{self._base_url}/api/auth"
         async with self.req.post(
             auth_uri,
             headers={"Connection": "keep-alive"},
@@ -72,48 +79,35 @@ class UpvServer:
             verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
-                authorization_header = response.headers["Authorization"]
-                return authorization_header
+                return response.headers["Authorization"]
             else:
                 if response.status in (401, 403):
                     raise NotAuthorized("Unifi Protect reported authorization failure")
                 if response.status / 100 != 2:
-                    raise NvrError("Request failed: %s" % response.status)
+                    raise NvrError(f"Request failed: {response.status}")
 
-    async def _get_api_access_key(self):
+    async def _get_api_access_key(self) -> str:
         """get API Access Key."""
-
-        access_key_uri = (
-            "https://"
-            + str(self._host)
-            + ":"
-            + str(self._port)
-            + "/api/auth/access-key"
-        )
+        access_key_uri = f"{self._base_url}/api/auth/access-key"
         async with self.req.post(
             access_key_uri,
-            headers={"Authorization": "Bearer " + self._api_auth_bearer_token},
+            headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
             verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 json_response = await response.json()
-                access_key = json_response["accessKey"]
-                return access_key
+                return json_response["accessKey"]
             else:
                 raise NvrError(
-                    "Request failed: %s - Reason: %s"
-                    % (response.status, response.reason)
+                    f"Request failed: {response.status} - Reason: {response.reason}"
                 )
 
-    async def _get_camera_list(self):
+    async def _get_camera_list(self) -> None:
         """Get a list of Cameras connected to the NVR."""
-
-        bootstrap_uri = (
-            "https://" + str(self._host) + ":" + str(self._port) + "/api/bootstrap"
-        )
+        bootstrap_uri = f"{self._base_url}/api/bootstrap"
         async with self.req.get(
             bootstrap_uri,
-            headers={"Authorization": "Bearer " + self._api_auth_bearer_token},
+            headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
             verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
@@ -121,7 +115,6 @@ class UpvServer:
                 cameras = json_response["cameras"]
 
                 for camera in cameras:
-
                     # Get if camera is online
                     if camera["state"] == "CONNECTED":
                         online = True
@@ -188,33 +181,26 @@ class UpvServer:
                         self.device_data[camera_id]["ir_mode"] = ir_mode
             else:
                 raise NvrError(
-                    "Fetching Camera List failed: %s - Reason: %s"
-                    % (response.status, response.reason)
+                    f"Fetching Camera List failed: {response.status} - Reason: {response.reason}"
                 )
 
-    async def _get_motion_events(self, lookback=86400):
+    async def _get_motion_events(self, lookback: int = 86400) -> None:
         """Load the Event Log and loop through items to find motion events."""
-
         event_start = datetime.datetime.now() - datetime.timedelta(seconds=lookback)
         event_end = datetime.datetime.now() + datetime.timedelta(seconds=10)
         start_time = int(time.mktime(event_start.timetuple())) * 1000
         end_time = int(time.mktime(event_end.timetuple())) * 1000
 
-        event_uri = (
-            "https://"
-            + str(self._host)
-            + ":"
-            + str(self._port)
-            + "/api/events?end="
-            + str(end_time)
-            + "&start="
-            + str(start_time)
-            + "&type=motion"
-        )
-
+        event_uri = f"{self._base_url}/api/events"
+        params = {
+            "end": str(end_time),
+            "start": str(start_time),
+            "type": "motion",
+        }
         async with self.req.get(
             event_uri,
-            headers={"Authorization": "Bearer " + self._api_auth_bearer_token},
+            params=params,
+            headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
             verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
@@ -246,48 +232,36 @@ class UpvServer:
                         ]
             else:
                 raise NvrError(
-                    "Fetching Eventlog failed: %s - Reason: %s"
-                    % (response.status, response.reason)
+                    f"Fetching Eventlog failed: {response.status} - Reason: {response.reason}"
                 )
 
-    async def get_thumbnail(self, camera_id, width=640):
+    async def get_thumbnail(self, camera_id, width: int = 640):
         """Returns the last recorded Thumbnail, based on Camera ID."""
-
-        self._get_motion_events()
+        await self._get_motion_events()
 
         thumbnail_id = self.device_data[camera_id]["motion_thumbnail"]
 
         if thumbnail_id is not None:
             height = float(width) / 16 * 9
-            access_key = await self._get_api_access_key()
-            img_uri = (
-                "https://"
-                + str(self._host)
-                + ":"
-                + str(self._port)
-                + "/api/thumbnails/"
-                + str(thumbnail_id)
-                + "?accessKey="
-                + access_key
-                + "&h="
-                + str(height)
-                + "&w="
-                + str(width)
-            )
-            async with self.req.get(img_uri, verify_ssl=self._verify_ssl) as response:
+            img_uri = f"{self._base_url}/api/thumbnails/{thumbnail_id}"
+            params = {
+                "accessKey": await self._get_api_access_key(),
+                "h": str(height),
+                "w": str(width),
+            }
+            async with self.req.get(
+                img_uri, params=params, verify_ssl=self._verify_ssl
+            ) as response:
                 if response.status == 200:
                     return await response.content()
                 else:
                     raise NvrError(
-                        "Thumbnail Request failed: %s - Reason: %s"
-                        % (response.status, response.reason)
+                        f"Thumbnail Request failed: {response.status} - Reason: {response.reason}"
                     )
-        else:
-            return None
+        return None
 
     async def get_snapshot_image(self, camera_id):
         """ Returns a Snapshot image of a recording event. """
-
         access_key = await self._get_api_access_key()
         time_since = int(time.mktime(datetime.datetime.now().timetuple())) * 1000
         model_type = self.device_data[camera_id]["type"]
@@ -298,48 +272,29 @@ class UpvServer:
             image_width = "1024"
             image_height = "576"
 
-        img_uri = (
-            "https://"
-            + str(self._host)
-            + ":"
-            + str(self._port)
-            + "/api/cameras/"
-            + str(camera_id)
-            + "/snapshot?accessKey="
-            + access_key
-            + "&ts="
-            + str(time_since)
-            + "&h="
-            + image_height
-            + "&w="
-            + image_width
-        )
-        async with self.req.get(img_uri, verify_ssl=self._verify_ssl) as response:
+        img_uri = f"{self._base_url}/api/cameras/{camera_id}/snapshot"
+        params = {
+            "access_key": access_key,
+            "h": image_height,
+            "ts": str(time_since),
+            "w": image_width,
+        }
+        async with self.req.get(
+            img_uri, params=params, verify_ssl=self._verify_ssl
+        ) as response:
             if response.status == 200:
                 return await response.content()
             else:
                 print(
-                    "Error Code: "
-                    + str(response.status)
-                    + " - Error Status: "
-                    + response.reason
+                    f"Error Code: {response.status} - Error Status: {response.reason}"
                 )
                 return None
 
-    async def set_camera_recording(self, camera_id, mode):
+    async def set_camera_recording(self, camera_id, mode: str) -> bool:
         """ Sets the camera recoding mode to what is supplied with 'mode'.
             Valid inputs for mode: never, motion, always
         """
-
-        cam_uri = (
-            "https://"
-            + str(self._host)
-            + ":"
-            + str(self._port)
-            + "/cameras/"
-            + str(camera_id)
-        )
-
+        cam_uri = f"{self._base_url}/cameras/{camera_id}"
         data = {
             "recordingSettings": {
                 "mode": mode,
@@ -349,9 +304,8 @@ class UpvServer:
                 "enablePirTimelapse": False,
             }
         }
-
         header = {
-            "Authorization": "Bearer " + self._api_auth_bearer_token,
+            "Authorization": f"Bearer {self._api_auth_bearer_token}",
             "Content-Type": "application/json",
         }
 
@@ -363,11 +317,10 @@ class UpvServer:
                 return True
             else:
                 raise NvrError(
-                    "Set Recording Mode failed: %s - Reason: %s"
-                    % (response.status, response.reason)
+                    f"Set Recording Mode failed: {response.status} - Reason: {response.reason}"
                 )
 
-    async def set_camera_ir(self, camera_id, mode):
+    async def set_camera_ir(self, camera_id, mode: str):
         """ Sets the camera infrared settings to what is supplied with 'mode'.
             Valid inputs for mode: auto, on, autoFilterOnly
         """
@@ -378,23 +331,14 @@ class UpvServer:
         elif mode == "always_off":
             mode = "off"
 
-        cam_uri = (
-            "https://"
-            + str(self._host)
-            + ":"
-            + str(self._port)
-            + "/cameras/"
-            + str(camera_id)
-        )
-
+        cam_uri = f"{self._base_url}/cameras/{camera_id}"
         data = {"ispSettings": {"irLedMode": mode, "irLedLevel": 255}}
-
         header = {
-            "Authorization": "Bearer " + self._api_auth_bearer_token,
+            "Authorization": f"Bearer {self._api_auth_bearer_token}",
             "Content-Type": "application/json",
         }
 
-        async with requests.patch(
+        async with self.req.patch(
             cam_uri, headers=header, verify_ssl=self._verify_ssl, json=data
         ) as response:
             if response.status == 200:

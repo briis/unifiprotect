@@ -63,8 +63,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
     """Set up an Unifi Protect Switch."""
-    data = hass.data[UPV_DATA]
-    if not data:
+    upv = hass.data[UPV_DATA]["upv"]
+    coordinator = hass.data[UPV_DATA]["coordinator"]
+    if not coordinator.data:
         return
 
     ir_on = config.get(CONF_IR_ON)
@@ -79,9 +80,9 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
 
     switches = []
     for switch_type in config.get(CONF_MONITORED_CONDITIONS):
-        for camera in data.devices:
+        for camera in coordinator.data:
             switches.append(
-                UnifiProtectSwitch(data, camera, switch_type, ir_on, ir_off)
+                UnifiProtectSwitch(coordinator, upv, camera, switch_type, ir_on, ir_off)
             )
 
     async_add_entities(switches, True)
@@ -90,11 +91,12 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
 class UnifiProtectSwitch(SwitchDevice):
     """A Unifi Protect Switch."""
 
-    def __init__(self, data, camera, switch_type, ir_on, ir_off):
+    def __init__(self, coordinator, upv, camera, switch_type, ir_on, ir_off):
         """Initialize an Unifi Protect Switch."""
-        self.data = data
+        self.coordinator = coordinator
+        self.upv = upv
         self._camera_id = camera
-        self._camera = self.data.devices[camera]
+        self._camera = self.coordinator.data[camera]
         self._name = "{0} {1} {2}".format(
             DOMAIN.capitalize(), SWITCH_TYPES[switch_type][0], self._camera["name"]
         )
@@ -147,26 +149,26 @@ class UnifiProtectSwitch(SwitchDevice):
 
         return attrs
 
-    async def turn_on(self, **kwargs):
+    def turn_on(self, **kwargs):
         """Turn the device on."""
         if self._switch_type == "record_motion":
             _LOGGER.debug("Turning on Motion Detection")
-            await self.data.set_camera_recording(self._camera_id, TYPE_RECORD_MOTION)
+            self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_MOTION)
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")
-            await self.data.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
+            self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
         else:
             _LOGGER.debug("Turning on IR")
-            await self.data.set_camera_ir(self._camera_id, self._ir_on_cmd)
+            self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)
 
-    async def turn_off(self, **kwargs):
+    def turn_off(self, **kwargs):
         """Turn the device off."""
         if self._switch_type == "ir_mode":
             _LOGGER.debug("Turning off IR")
-            await self.data.set_camera_ir(self._camera_id, self._ir_off_cmd)
+            self.upv.set_camera_ir(self._camera_id, self._ir_off_cmd)
         else:
             _LOGGER.debug("Turning off Recording")
-            await self.data.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
+            self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
 
     def update(self):
         """Update Motion Detection state."""

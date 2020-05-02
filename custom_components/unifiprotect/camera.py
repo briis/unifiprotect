@@ -155,15 +155,9 @@ class UnifiVideoCamera(Camera):
         self._isrecording = False
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self._name)
 
-    def camera_image(self):
-        """Return bytes of camera image."""
-        return asyncio.run_coroutine_threadsafe(
-            self.async_camera_image(), self.hass.loop
-        ).result()
-
     async def async_camera_image(self):
         """ Return the Camera Image. """
-        last_image = self.upv_object.get_snapshot_image(self._camera_id)
+        last_image = await self.upv_object.get_snapshot_image(self._camera_id)
         self._last_image = last_image
         return self._last_image
 

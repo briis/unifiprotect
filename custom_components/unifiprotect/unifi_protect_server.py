@@ -235,7 +235,7 @@ class UpvServer:
                     f"Fetching Eventlog failed: {response.status} - Reason: {response.reason}"
                 )
 
-    async def get_thumbnail(self, camera_id, width: int = 640):
+    async def get_thumbnail(self, camera_id: str, width: int = 640) -> bytes:
         """Returns the last recorded Thumbnail, based on Camera ID."""
         await self._get_motion_events()
 
@@ -253,14 +253,14 @@ class UpvServer:
                 img_uri, params=params, verify_ssl=self._verify_ssl
             ) as response:
                 if response.status == 200:
-                    return response.content
+                    return await response.read()
                 else:
                     raise NvrError(
                         f"Thumbnail Request failed: {response.status} - Reason: {response.reason}"
                     )
         return None
 
-    async def get_snapshot_image(self, camera_id):
+    async def get_snapshot_image(self, camera_id: str) -> bytes:
         """ Returns a Snapshot image of a recording event. """
         access_key = await self._get_api_access_key()
         time_since = int(time.mktime(datetime.datetime.now().timetuple())) * 1000
@@ -283,14 +283,14 @@ class UpvServer:
             img_uri, params=params, verify_ssl=self._verify_ssl
         ) as response:
             if response.status == 200:
-                return response.content
+                return await response.read()
             else:
-                print(
+                _LOGGER.warning(
                     f"Error Code: {response.status} - Error Status: {response.reason}"
                 )
                 return None
 
-    async def set_camera_recording(self, camera_id, mode: str) -> bool:
+    async def set_camera_recording(self, camera_id: str, mode: str) -> bool:
         """ Sets the camera recoding mode to what is supplied with 'mode'.
             Valid inputs for mode: never, motion, always
         """
@@ -320,7 +320,7 @@ class UpvServer:
                     f"Set Recording Mode failed: {response.status} - Reason: {response.reason}"
                 )
 
-    async def set_camera_ir(self, camera_id, mode: str):
+    async def set_camera_ir(self, camera_id: str, mode: str) -> bool:
         """ Sets the camera infrared settings to what is supplied with 'mode'.
             Valid inputs for mode: auto, on, autoFilterOnly
         """

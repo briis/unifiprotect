@@ -24,10 +24,8 @@ DEPENDENCIES = ["unifiprotect"]
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Discover cameras on a Unifi Protect NVR."""
-    _LOGGER.warning("setting up camera")
     upv_object = hass.data[UPV_DATA]["upv"]
     coordinator = hass.data[UPV_DATA]["coordinator"]
-    _LOGGER.warning("coord data:%s", coordinator.data)
     if not coordinator.data:
         return
 

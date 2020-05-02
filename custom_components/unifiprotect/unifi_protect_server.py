@@ -253,7 +253,7 @@ class UpvServer:
                 img_uri, params=params, verify_ssl=self._verify_ssl
             ) as response:
                 if response.status == 200:
-                    return await response.content()
+                    return response.content
                 else:
                     raise NvrError(
                         f"Thumbnail Request failed: {response.status} - Reason: {response.reason}"
@@ -283,7 +283,7 @@ class UpvServer:
             img_uri, params=params, verify_ssl=self._verify_ssl
         ) as response:
             if response.status == 200:
-                return await response.content()
+                return response.content
             else:
                 print(
                     f"Error Code: {response.status} - Error Status: {response.reason}"

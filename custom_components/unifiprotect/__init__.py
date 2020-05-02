@@ -129,7 +129,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         upv_server = upv.UpvServer(
             session, host, port, username, password, use_ssl, minimum_score
         )
-        _LOGGER.error("Connected to Unifi Protect Platform")
+        _LOGGER.debug("Connected to Unifi Protect Platform")
     except upv.NotAuthorized:
         _LOGGER.error("Authorization failure while connecting to NVR")
         return False
@@ -139,7 +139,6 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     except requests.exceptions.ConnectionError as ex:
         _LOGGER.error("Unable to connect to NVR: %s", str(ex))
         raise PlatformNotReady
-    _LOGGER.error("upv_server: %s", upv_server)
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -150,41 +149,40 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     )
     # Fetch initial data so we have data when entities subscribe
     await coordinator.async_refresh()
-    _LOGGER.error("async refreshed.")
     hass.data[UPV_DATA] = {
         "coordinator": coordinator,
         "upv": upv_server,
     }
 
-    # async def async_save_thumbnail(call):
-    #    """Call save video service handler."""
-    #    await async_handle_save_thumbnail_service(hass, call)
+    async def async_save_thumbnail(call):
+        """Call save video service handler."""
+        await async_handle_save_thumbnail_service(hass, call)
 
-    # async def async_set_recording_mode(call):
-    #    """Call Set Recording Mode."""
-    #    await async_handle_set_recording_mode(hass, call)
+    async def async_set_recording_mode(call):
+        """Call Set Recording Mode."""
+        await async_handle_set_recording_mode(hass, call)
 
-    # async def async_set_ir_mode(call):
-    #    """Call Set Infrared Mode."""
-    #    await async_handle_set_ir_mode(hass, call)
+    async def async_set_ir_mode(call):
+        """Call Set Infrared Mode."""
+        await async_handle_set_ir_mode(hass, call)
 
-    # hass.services.register(
-    #    DOMAIN,
-    #    SERVICE_SAVE_THUMBNAIL,
-    #    async_save_thumbnail,
-    #    schema=SAVE_THUMBNAIL_SCHEMA,
-    # )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SAVE_THUMBNAIL,
+        async_save_thumbnail,
+        schema=SAVE_THUMBNAIL_SCHEMA,
+    )
 
-    # hass.services.register(
-    #    DOMAIN,
-    #    SERVICE_SET_RECORDING_MODE,
-    #    async_set_recording_mode,
-    #    schema=SET_RECORDING_MODE_SCHEMA,
-    # )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_RECORDING_MODE,
+        async_set_recording_mode,
+        schema=SET_RECORDING_MODE_SCHEMA,
+    )
 
-    # hass.services.register(
-    #    DOMAIN, SERVICE_SET_IR_MODE, async_set_ir_mode, schema=SET_IR_MODE_SCHEMA,
-    # )
+    hass.services.async_register(
+        DOMAIN, SERVICE_SET_IR_MODE, async_set_ir_mode, schema=SET_IR_MODE_SCHEMA,
+    )
 
     return True
 

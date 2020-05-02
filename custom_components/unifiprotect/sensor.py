@@ -57,7 +57,7 @@ class UnifiProtectSensor(Entity):
         """Initialize an Unifi Protect sensor."""
         self.coordinator = coordinator
         self._camera_id = camera
-        self._camera = self.coordiantor.data[camera]
+        self._camera = self.coordinator.data[camera]
         self._name = "{0} {1}".format(
             SENSOR_TYPES[sensor_type][0], self._camera["name"]
         )

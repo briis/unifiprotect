@@ -10,8 +10,6 @@ from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,
     CONF_MONITORED_CONDITIONS,
-    STATE_OFF,
-    STATE_ON,
 )
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 
@@ -104,7 +102,6 @@ class UnifiProtectSwitch(SwitchDevice):
         self._icon = "mdi:{}".format(SWITCH_TYPES.get(switch_type)[1])
         self._ir_on_cmd = ir_on
         self._ir_off_cmd = ir_off
-        self._state = STATE_OFF
         self._camera_type = self._camera["type"]
         self._attr = SWITCH_TYPES.get(switch_type)[2]
         self._switch_type = SWITCH_TYPES.get(switch_type)[2]
@@ -116,7 +113,7 @@ class UnifiProtectSwitch(SwitchDevice):
     @property
     def should_poll(self):
         """Poll for status regularly."""
-        return True
+        return False
 
     @property
     def name(self):
@@ -124,14 +121,16 @@ class UnifiProtectSwitch(SwitchDevice):
         return self._name
 
     @property
-    def state(self):
-        """Return the state of the device if any."""
-        return self._state
-
-    @property
     def is_on(self):
         """Return true if device is on."""
-        return self._state == STATE_ON
+        camera = self.coordinator.data[self._camera_id]
+        if self._switch_type == "record_motion":
+            enabled = True if camera["recording_mode"] == TYPE_RECORD_MOTION else False
+        elif self._switch_type == "record_always":
+            enabled = True if camera["recording_mode"] == TYPE_RECORD_ALLWAYS else False
+        else:
+            enabled = True if camera["ir_mode"] == self._ir_on_cmd else False
+        return enabled
 
     @property
     def icon(self):
@@ -149,6 +148,12 @@ class UnifiProtectSwitch(SwitchDevice):
 
         return attrs
 
+    async def async_added_to_hass(self):
+        """When entity is added to hass."""
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self.async_write_ha_state)
+        )
+
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
         if self._switch_type == "record_motion":
@@ -160,6 +165,7 @@ class UnifiProtectSwitch(SwitchDevice):
         else:
             _LOGGER.debug("Turning on IR")
             await self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)
+        await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs):
         """Turn the device off."""
@@ -169,16 +175,4 @@ class UnifiProtectSwitch(SwitchDevice):
         else:
             _LOGGER.debug("Turning off Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
-
-    def update(self):
-        """Update Motion Detection state."""
-        camera = self.coordinator.data[self._camera_id]
-        if self._switch_type == "record_motion":
-            enabled = True if camera["recording_mode"] == TYPE_RECORD_MOTION else False
-        elif self._switch_type == "record_always":
-            enabled = True if camera["recording_mode"] == TYPE_RECORD_ALLWAYS else False
-        else:
-            enabled = True if camera["ir_mode"] == self._ir_on_cmd else False
-
-        _LOGGER.debug("enabled: %s", enabled)
-        self._state = STATE_ON if enabled else STATE_OFF
+        await self.coordinator.async_request_refresh()

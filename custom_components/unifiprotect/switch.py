@@ -149,39 +149,36 @@ class UnifiProtectSwitch(SwitchDevice):
 
         return attrs
 
-    def turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs):
         """Turn the device on."""
         if self._switch_type == "record_motion":
             _LOGGER.debug("Turning on Motion Detection")
-            self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_MOTION)
+            await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_MOTION)
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")
-            self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
+            await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
         else:
             _LOGGER.debug("Turning on IR")
-            self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)
+            await self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)
 
-    def turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn the device off."""
         if self._switch_type == "ir_mode":
             _LOGGER.debug("Turning off IR")
-            self.upv.set_camera_ir(self._camera_id, self._ir_off_cmd)
+            await self.upv.set_camera_ir(self._camera_id, self._ir_off_cmd)
         else:
             _LOGGER.debug("Turning off Recording")
-            self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
+            await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
 
     def update(self):
         """Update Motion Detection state."""
+        camera = self.coordinator.data[self._camera_id]
         if self._switch_type == "record_motion":
-            enabled = (
-                True if self._camera["recording_mode"] == TYPE_RECORD_MOTION else False
-            )
+            enabled = True if camera["recording_mode"] == TYPE_RECORD_MOTION else False
         elif self._switch_type == "record_always":
-            enabled = (
-                True if self._camera["recording_mode"] == TYPE_RECORD_ALLWAYS else False
-            )
+            enabled = True if camera["recording_mode"] == TYPE_RECORD_ALLWAYS else False
         else:
-            enabled = True if self._camera["ir_mode"] == self._ir_on_cmd else False
+            enabled = True if camera["ir_mode"] == self._ir_on_cmd else False
 
         _LOGGER.debug("enabled: %s", enabled)
         self._state = STATE_ON if enabled else STATE_OFF

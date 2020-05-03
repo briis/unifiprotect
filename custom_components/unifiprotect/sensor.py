@@ -64,7 +64,6 @@ class UnifiProtectSensor(Entity):
         self._unique_id = self._name.lower().replace(" ", "_")
         self._sensor_type = sensor_type
         self._icon = "mdi:{}".format(SENSOR_TYPES.get(self._sensor_type)[2])
-        self._state = None
         self._camera_type = self._camera["type"]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[3]
         _LOGGER.debug("UnifiProtectSensor: %s created", self._name)
@@ -77,12 +76,14 @@ class UnifiProtectSensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._state
+        return self.coordinator.data[self._camera_id]["recording_mode"]
 
     @property
     def icon(self):
         """Icon to use in the frontend, if any."""
-        return self._icon
+        return (
+            "mdi:camcorder" if self.state != TYPE_RECORD_NEVER else "mdi:camcorder-off"
+        )
 
     @property
     def unit_of_measurement(self):
@@ -105,11 +106,3 @@ class UnifiProtectSensor(Entity):
         attrs[ATTR_FRIENDLY_NAME] = self._name
 
         return attrs
-
-    def update(self):
-        """ Updates Motions State."""
-
-        self._state = self._camera["recording_mode"]
-        self._icon = (
-            "mdi:camcorder" if self._state != TYPE_RECORD_NEVER else "mdi:camcorder-off"
-        )

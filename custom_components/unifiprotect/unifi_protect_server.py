@@ -65,6 +65,7 @@ class UpvServer:
         """Updates the status of devices."""
         if self._api_auth_bearer_token is None:
             self._api_auth_bearer_token = await self._get_api_auth_bearer_token()
+
         await self._get_camera_list()
         await self._get_motion_events(10)
         return self.devices
@@ -349,4 +350,3 @@ class UpvServer:
                     "Set IR Mode failed: %s - Reason: %s"
                     % (response.status, response.reason)
                 )
-

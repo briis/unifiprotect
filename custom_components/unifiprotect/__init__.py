@@ -31,6 +31,7 @@ from homeassistant.helpers.dispatcher import (
 )
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
+
 _LOGGER = logging.getLogger(__name__)
 
 ATTR_CAMERA_ID = "camera_id"

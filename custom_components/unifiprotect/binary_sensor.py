@@ -62,7 +62,6 @@ class UfpBinarySensor(BinarySensorDevice):
         self._unique_id = self._name.lower().replace(" ", "_")
         self._sensor_type = sensor_type
         self._motion_score = self._camera["motion_score"]
-        self._state = False
         self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
         _LOGGER.debug("UfpBinarySensor: %s created", self._name)
@@ -75,7 +74,7 @@ class UfpBinarySensor(BinarySensorDevice):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self._state is True
+        return self.coordinator.data[self._camera_id]["motion_on"]
 
     @property
     def device_class(self):
@@ -90,12 +89,8 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
-        attrs[ATTR_MOTION_SCORE] = self._motion_score
+        attrs[ATTR_MOTION_SCORE] = self.coordinator.data[self._camera_id][
+            "motion_score"
+        ]
 
         return attrs
-
-    def update(self):
-        """ Updates Motions State."""
-
-        self._state = self._camera["motion_on"]
-        self._motion_score = self._camera["motion_score"]

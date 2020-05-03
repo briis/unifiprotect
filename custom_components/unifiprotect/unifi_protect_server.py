@@ -349,3 +349,4 @@ class UpvServer:
                     "Set IR Mode failed: %s - Reason: %s"
                     % (response.status, response.reason)
                 )
+

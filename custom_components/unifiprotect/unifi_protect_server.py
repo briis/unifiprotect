@@ -91,7 +91,7 @@ class UpvServer:
         if self.is_unifi_os:
             url = f"{self._base_url}/api/auth/login"
         else:
-            url = f"{self._base_url}/api/login"
+            url = f"{self._base_url}/api/auth"
 
         auth = {
             "username": self._username,

@@ -62,8 +62,9 @@ unifiprotect:
 ```
 
 **host**:  
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`  
-  **Important** If you run UnifiOS this must be the IP Address. of your UDMP
+(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`
+
+* **Important** If you run UnifiOS this must be the IP Address. of your UDMP
 
 **username**:  
 (string)(Required) The local username you setup under the *Prerequisites* section.  
@@ -72,8 +73,9 @@ unifiprotect:
 (string)(Required) The local password you setup under the *Prerequisites* section.  
 
 **port**  
-(int)(Optional) The port used to communicate with the NVR. Default is 7443.  
-  **Important** If run UnifiOS the port *must* be specified and it must be 443.
+(int)(Optional) The port used to communicate with the NVR. Default is 7443.
+
+* **Important** If run UnifiOS the port *must* be specified and it must be 443.
 
 **image_width**  
 (int)(Optional) The width of the Thumbnail Image. Default is 640px

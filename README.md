@@ -3,16 +3,8 @@
 
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/briis/unifiprotect?include_prereleases&style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
-### *** As of Home Assistant 0.109.x you will start seeing a lot of warnings due to blocking I/O ***
-A new logic is implemented in HA V0.109 that checks for blocking I/O and writes a warning in the log file every time that happens. The way this integration is written, you will see this warnings very often. I will most likely have to rewrite the whole engine to use the async libraries. I honestly don't know how to do that, so it will take some time before this is done, unless I get some help. 
-
-**So unless you can live with all the warnings, I will not recommend using this once you upgrade to 0.109 or greater.**
-
-<hr>
 
 This is a Home Assistant Integration for Ubiquiti's Unifi Protect Surveillance system.
-
-This Home Assistant integration is inspired by [danielfernau's video downloader program](https://github.com/danielfernau/unifi-protect-video-downloader) and the Authorization implementation is copied from there.
 
 Basically what this does, is integrating the Camera feeds from Unifi Protect in to Home Assistant, and furthermore there is an option to get Binary Motion Sensors and Sensors that show the current Recording Settings pr. camera.
 
@@ -28,7 +20,7 @@ Before you install this Integration you need to ensure that the following two se
 **Note:**  
 
 * This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.0-beta.16 and higher. I cannot guarantee that this will work on a lower version than that.
-* The component is **not working** directly with *UnifiOS*, that is currently being shipped with the Unifi Dream Machine Pro in the US. I have no access to a system like that, but [Mark Lopez](@Silvenga) has made a proxy container, that can take care of the new Authentication that UnifiOS introduces. Have a look [here](https://github.com/Silvenga/unifi-udm-api-proxy) for setup instructions.
+* As of version 0.3.0, this Integration also supports the UDM Pro with UnifiOS, thanks to the work of @msvinth.
 
 ## Manual Installation
 
@@ -70,7 +62,7 @@ unifiprotect:
 ```
 
 **host**:  
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`  
+(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10` **Important** If you run UnifiOS this must be the IP Address. of your UDMP
 
 **username**:  
 (string)(Required) The local username you setup under the *Prerequisites* section.  
@@ -79,7 +71,7 @@ unifiprotect:
 (string)(Required) The local password you setup under the *Prerequisites* section.  
 
 **port**  
-(int)(Optional) The port used to communicate with the NVR. Default is 7443.
+(int)(Optional) The port used to communicate with the NVR. Default is 7443. **Important** If run UnifiOS the port *must* be specified and it must be 443.
 
 **image_width**  
 (int)(Optional) The width of the Thumbnail Image. Default is 640px

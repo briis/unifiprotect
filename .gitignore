@@ -132,3 +132,5 @@ unifiprotect.code-workspace
 .vscode/settings.json
 met.no.json
 custom_components/unifiprotect/test.py
+
+.devcontainer/secrets.yaml

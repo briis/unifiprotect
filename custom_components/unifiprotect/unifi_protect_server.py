@@ -6,6 +6,7 @@ import time
 import urllib3
 
 import aiohttp
+from aiohttp import client_exceptions
 
 
 class Invalid(Exception):
@@ -49,12 +50,15 @@ class UpvServer:
         self._password = password
         self._verify_ssl = verify_ssl
         self._minimum_score = minimum_score
+        self.is_unifi_os = False
+        self.api_path = "api"
+        self.is_authenticated = False
         self.access_key = None
         self.device_data = {}
 
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.req = session
-        self._api_auth_bearer_token = None
+        self.headers = None
 
     @property
     def devices(self):
@@ -63,37 +67,53 @@ class UpvServer:
 
     async def update(self) -> dict:
         """Updates the status of devices."""
-        if self._api_auth_bearer_token is None:
-            self._api_auth_bearer_token = await self._get_api_auth_bearer_token()
+
+        if self.is_authenticated is False:
+            await self.check_unifi_os()
+            await self.login()
+
+        _LOGGER.debug("Unifi OS: %s", self.is_unifi_os)
+        _LOGGER.debug("Authenticated: %s", self.is_authenticated)
 
         await self._get_camera_list()
         await self._get_motion_events(10)
         return self.devices
 
-    async def _get_api_auth_bearer_token(self) -> str:
-        """get bearer token using username and password of local user."""
-        auth_uri = f"{self._base_url}/api/auth"
-        async with self.req.post(
-            auth_uri,
-            headers={"Connection": "keep-alive"},
-            json={"username": self._username, "password": self._password},
-            verify_ssl=self._verify_ssl,
-        ) as response:
-            if response.status == 200:
-                return response.headers["Authorization"]
-            else:
-                if response.status in (401, 403):
-                    raise NotAuthorized("Unifi Protect reported authorization failure")
-                if response.status / 100 != 2:
-                    raise NvrError(f"Request failed: {response.status}")
+    async def check_unifi_os(self):
+        response = await self.request("get", url=self._base_url, allow_redirects=False)
+        if response.status == 200:
+            if "x-csrf-token" in response.headers:
+                self.is_unifi_os = True
+                self.api_path = "proxy/protect/api"
+                self.headers = {"x-csrf-token": response.headers.get("x-csrf-token")}
+
+    async def login(self):
+        if self.is_unifi_os:
+            url = f"{self._base_url}/api/auth/login"
+        else:
+            url = f"{self._base_url}/api/auth"
+
+        auth = {
+            "username": self._username,
+            "password": self._password,
+            "remember": True,
+        }
+
+        response = await self.request("post", url=url, json=auth)
+        if self.is_unifi_os is False:
+            self.headers = {
+                "Authorization": f"Bearer {response.headers.get('Authorization')}"
+            }
+        self.is_authenticated = True
 
     async def _get_api_access_key(self) -> str:
         """get API Access Key."""
-        access_key_uri = f"{self._base_url}/api/auth/access-key"
+        if self.is_unifi_os:
+            return ""
+
+        access_key_uri = f"{self._base_url}/{self.api_path}/auth/access-key"
         async with self.req.post(
-            access_key_uri,
-            headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
-            verify_ssl=self._verify_ssl,
+            access_key_uri, headers=self.headers, verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 json_response = await response.json()
@@ -105,11 +125,9 @@ class UpvServer:
 
     async def _get_camera_list(self) -> None:
         """Get a list of Cameras connected to the NVR."""
-        bootstrap_uri = f"{self._base_url}/api/bootstrap"
+        bootstrap_uri = f"{self._base_url}/{self.api_path}/bootstrap"
         async with self.req.get(
-            bootstrap_uri,
-            headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
-            verify_ssl=self._verify_ssl,
+            bootstrap_uri, headers=self.headers, verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 json_response = await response.json()
@@ -192,17 +210,14 @@ class UpvServer:
         start_time = int(time.mktime(event_start.timetuple())) * 1000
         end_time = int(time.mktime(event_end.timetuple())) * 1000
 
-        event_uri = f"{self._base_url}/api/events"
+        event_uri = f"{self._base_url}/{self.api_path}/events"
         params = {
             "end": str(end_time),
             "start": str(start_time),
             "type": "motion",
         }
         async with self.req.get(
-            event_uri,
-            params=params,
-            headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
-            verify_ssl=self._verify_ssl,
+            event_uri, params=params, headers=self.headers, verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 events = await response.json()
@@ -244,14 +259,17 @@ class UpvServer:
 
         if thumbnail_id is not None:
             height = float(width) / 16 * 9
-            img_uri = f"{self._base_url}/api/thumbnails/{thumbnail_id}"
+            img_uri = f"{self._base_url}/{self.api_path}/thumbnails/{thumbnail_id}"
             params = {
                 "accessKey": await self._get_api_access_key(),
                 "h": str(height),
                 "w": str(width),
             }
             async with self.req.get(
-                img_uri, params=params, verify_ssl=self._verify_ssl
+                img_uri,
+                params=params,
+                headers=self.headers,
+                verify_ssl=self._verify_ssl,
             ) as response:
                 if response.status == 200:
                     return await response.read()
@@ -273,7 +291,7 @@ class UpvServer:
             image_width = "1024"
             image_height = "576"
 
-        img_uri = f"{self._base_url}/api/cameras/{camera_id}/snapshot"
+        img_uri = f"{self._base_url}/{self.api_path}/cameras/{camera_id}/snapshot"
         params = {
             "accessKey": access_key,
             "h": image_height,
@@ -281,7 +299,7 @@ class UpvServer:
             "w": image_width,
         }
         async with self.req.get(
-            img_uri, params=params, verify_ssl=self._verify_ssl
+            img_uri, params=params, headers=self.headers, verify_ssl=self._verify_ssl
         ) as response:
             if response.status == 200:
                 return await response.read()
@@ -295,7 +313,7 @@ class UpvServer:
         """ Sets the camera recoding mode to what is supplied with 'mode'.
             Valid inputs for mode: never, motion, always
         """
-        cam_uri = f"{self._base_url}/cameras/{camera_id}"
+        cam_uri = f"{self._base_url}/{self.api_path}/cameras/{camera_id}"
         data = {
             "recordingSettings": {
                 "mode": mode,
@@ -305,13 +323,9 @@ class UpvServer:
                 "enablePirTimelapse": False,
             }
         }
-        header = {
-            "Authorization": f"Bearer {self._api_auth_bearer_token}",
-            "Content-Type": "application/json",
-        }
 
         async with self.req.patch(
-            cam_uri, headers=header, verify_ssl=self._verify_ssl, json=data
+            cam_uri, headers=self.headers, verify_ssl=self._verify_ssl, json=data
         ) as response:
             if response.status == 200:
                 self.device_data[camera_id]["recording_mode"] = mode
@@ -332,15 +346,11 @@ class UpvServer:
         elif mode == "always_off":
             mode = "off"
 
-        cam_uri = f"{self._base_url}/cameras/{camera_id}"
+        cam_uri = f"{self._base_url}/{self.api_path}/cameras/{camera_id}"
         data = {"ispSettings": {"irLedMode": mode, "irLedLevel": 255}}
-        header = {
-            "Authorization": f"Bearer {self._api_auth_bearer_token}",
-            "Content-Type": "application/json",
-        }
 
         async with self.req.patch(
-            cam_uri, headers=header, verify_ssl=self._verify_ssl, json=data
+            cam_uri, headers=self.headers, verify_ssl=self._verify_ssl, json=data
         ) as response:
             if response.status == 200:
                 self.device_data[camera_id]["ir_mode"] = mode
@@ -350,3 +360,40 @@ class UpvServer:
                     "Set IR Mode failed: %s - Reason: %s"
                     % (response.status, response.reason)
                 )
+
+    async def request(self, method, path=None, json=None, url=None, **kwargs):
+        """Make a request to the API."""
+        if not url:
+            if self.is_unifi_os:
+                url = f"{self._base_url}/proxy/protect/api/"
+            else:
+                url = f"{self._base_url}"
+
+            if path is not None:
+                url += f"{path}"
+
+        _LOGGER.debug("%s", url)
+
+        try:
+            async with self.req.request(
+                method,
+                url,
+                verify_ssl=self._verify_ssl,
+                json=json,
+                headers=self.headers,
+                **kwargs,
+            ) as res:
+                _LOGGER.debug("%s %s %s", res.status, res.content_type, res)
+
+                if res.status in (401, 403):
+                    raise NotAuthorized(
+                        f"Unifi Protect reported authorization failure on request: {url} received {res.status}"
+                    )
+
+                if res.status == 404:
+                    raise NvrError(f"Call {url} received 404 Not Found")
+
+                return res
+
+        except client_exceptions.ClientError as err:
+            raise NvrError(f"Error requesting data from {self._host}: {err}") from None

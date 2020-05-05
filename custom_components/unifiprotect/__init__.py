@@ -5,6 +5,7 @@ from datetime import timedelta
 
 import requests
 import voluptuous as vol
+from aiohttp import CookieJar
 
 from . import unifi_protect_server as upv
 
@@ -22,7 +23,7 @@ from homeassistant.const import (
 import homeassistant.helpers.config_validation as cv
 from homeassistant import core
 from homeassistant.exceptions import PlatformNotReady
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.dispatcher import (
@@ -122,7 +123,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     use_ssl = conf.get(CONF_SSL)
     minimum_score = conf.get(CONF_MIN_SCORE)
     scan_interval = conf[CONF_SCAN_INTERVAL]
-    session = async_get_clientsession(hass)
+    session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
 
     try:
         upv_server = upv.UpvServer(

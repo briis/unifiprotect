@@ -99,7 +99,11 @@ class UpvServer:
             "remember": True,
         }
 
-        await self.request("post", url=url, json=auth)
+        response = await self.request("post", url=url, json=auth)
+        if self.is_unifi_os is False:
+            self.headers = {
+                "Authorization": f"Bearer {response.headers.get('Authorization')}"
+            }
         self.is_authenticated = True
 
     async def _get_api_access_key(self) -> str:

@@ -62,7 +62,9 @@ unifiprotect:
 ```
 
 **host**:  
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10` **Important** If you run UnifiOS this must be the IP Address. of your UDMP
+(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10` 
+
+**Important** If you run UnifiOS this must be the IP Address. of your UDMP
 
 **username**:  
 (string)(Required) The local username you setup under the *Prerequisites* section.  

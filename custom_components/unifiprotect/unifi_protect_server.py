@@ -59,7 +59,6 @@ class UpvServer:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.req = session
         self.headers = None
-        self._api_auth_bearer_token = None
 
     @property
     def devices(self):
@@ -75,8 +74,6 @@ class UpvServer:
 
         _LOGGER.debug("Unifi OS: %s", self.is_unifi_os)
         _LOGGER.debug("Authenticated: %s", self.is_authenticated)
-        # if self._api_auth_bearer_token is None:
-        # self._api_auth_bearer_token = await self._get_api_auth_bearer_token()
 
         await self._get_camera_list()
         await self._get_motion_events(10)
@@ -104,23 +101,6 @@ class UpvServer:
         await self.request("post", url=url, json=auth)
         self.is_authenticated = True
 
-    async def _get_api_auth_bearer_token(self) -> str:
-        """get bearer token using username and password of local user."""
-        auth_uri = f"{self._base_url}/api/auth"
-        async with self.req.post(
-            auth_uri,
-            headers={"Connection": "keep-alive"},
-            json={"username": self._username, "password": self._password},
-            verify_ssl=self._verify_ssl,
-        ) as response:
-            if response.status == 200:
-                return response.headers["Authorization"]
-            else:
-                if response.status in (401, 403):
-                    raise NotAuthorized("Unifi Protect reported authorization failure")
-                if response.status / 100 != 2:
-                    raise NvrError(f"Request failed: {response.status}")
-
     async def _get_api_access_key(self) -> str:
         """get API Access Key."""
         if self.is_unifi_os:
@@ -128,9 +108,7 @@ class UpvServer:
 
         access_key_uri = f"{self._base_url}/{self.api_path}/auth/access-key"
         async with self.req.post(
-            access_key_uri,
-            # headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
-            verify_ssl=self._verify_ssl,
+            access_key_uri, verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 json_response = await response.json()
@@ -144,10 +122,7 @@ class UpvServer:
         """Get a list of Cameras connected to the NVR."""
         bootstrap_uri = f"{self._base_url}/{self.api_path}/bootstrap"
         async with self.req.get(
-            bootstrap_uri,
-            # headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
-            headers=self.headers,
-            verify_ssl=self._verify_ssl,
+            bootstrap_uri, headers=self.headers, verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 json_response = await response.json()
@@ -237,11 +212,7 @@ class UpvServer:
             "type": "motion",
         }
         async with self.req.get(
-            event_uri,
-            params=params,
-            # headers={"Authorization": f"Bearer {self._api_auth_bearer_token}"},
-            headers=self.headers,
-            verify_ssl=self._verify_ssl,
+            event_uri, params=params, headers=self.headers, verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 events = await response.json()
@@ -347,10 +318,6 @@ class UpvServer:
                 "enablePirTimelapse": False,
             }
         }
-        # header = {
-        #    "Authorization": f"Bearer {self._api_auth_bearer_token}",
-        #    "Content-Type": "application/json",
-        # }
 
         async with self.req.patch(
             cam_uri, headers=self.headers, verify_ssl=self._verify_ssl, json=data
@@ -376,10 +343,6 @@ class UpvServer:
 
         cam_uri = f"{self._base_url}/{self.api_path}/cameras/{camera_id}"
         data = {"ispSettings": {"irLedMode": mode, "irLedLevel": 255}}
-        # header = {
-        #     "Authorization": f"Bearer {self._api_auth_bearer_token}",
-        #     "Content-Type": "application/json",
-        # }
 
         async with self.req.patch(
             cam_uri, headers=self.headers, verify_ssl=self._verify_ssl, json=data
@@ -417,8 +380,10 @@ class UpvServer:
             ) as res:
                 _LOGGER.debug("%s %s %s", res.status, res.content_type, res)
 
-                if res.status == 401:
-                    raise NotAuthorized(f"Call {url} received 401 Unauthorized")
+                if res.status in (401, 403):
+                    raise NotAuthorized(
+                        f"Unifi Protect reported authorization failure on request: {url} received {res.status}"
+                    )
 
                 if res.status == 404:
                     raise NvrError(f"Call {url} received 404 Not Found")

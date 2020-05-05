@@ -82,9 +82,10 @@ class UpvServer:
     async def check_unifi_os(self):
         response = await self.request("get", url=self._base_url, allow_redirects=False)
         if response.status == 200:
-            self.is_unifi_os = True
-            self.api_path = "proxy/protect/api"
-            self.headers = {"x-csrf-token": response.headers.get("x-csrf-token")}
+            if "x-csrf-token" in response.headers:
+                self.is_unifi_os = True
+                self.api_path = "proxy/protect/api"
+                self.headers = {"x-csrf-token": response.headers.get("x-csrf-token")}
 
     async def login(self):
         if self.is_unifi_os:

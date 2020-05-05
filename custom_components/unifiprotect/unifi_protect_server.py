@@ -113,7 +113,7 @@ class UpvServer:
 
         access_key_uri = f"{self._base_url}/{self.api_path}/auth/access-key"
         async with self.req.post(
-            access_key_uri, verify_ssl=self._verify_ssl,
+            access_key_uri, headers=self.headers, verify_ssl=self._verify_ssl,
         ) as response:
             if response.status == 200:
                 json_response = await response.json()
@@ -393,11 +393,6 @@ class UpvServer:
                 if res.status == 404:
                     raise NvrError(f"Call {url} received 404 Not Found")
 
-                if res.content_type == "application/json":
-                    response = await res.json()
-                    if "data" in response:
-                        return response["data"]
-                    return response
                 return res
 
         except client_exceptions.ClientError as err:

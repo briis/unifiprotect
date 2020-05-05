@@ -1,19 +1,21 @@
 default_config:
-    cloud:
-    
-    stream:
-    
-    unifiprotect:
-      host: 192.168.1.1
-      port: 443
-      username: !secret unifiprotect_user
-      password: !secret unifiprotect_password
-    
-    camera:
-      - platform: unifiprotect
-    
-    logger:
-      default: error
-      logs:
-        custom_components.unifiprotect: debug
-        
+cloud:
+
+stream:
+
+unifiprotect:
+  host: 192.168.1.1
+  port: 443
+  username: !secret unifiprotect_user
+  password: !secret unifiprotect_password
+
+camera:
+  - platform: unifiprotect
+
+binary_sensor:
+  - platform: unifiprotect
+
+logger:
+  default: error
+  logs:
+    custom_components.unifiprotect: debug

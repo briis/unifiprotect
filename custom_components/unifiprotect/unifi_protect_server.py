@@ -4,6 +4,7 @@ import datetime
 import logging
 import time
 import urllib3
+import jwt
 
 import aiohttp
 from aiohttp import client_exceptions
@@ -50,9 +51,9 @@ class UpvServer:
         self._password = password
         self._verify_ssl = verify_ssl
         self._minimum_score = minimum_score
-        self.is_unifi_os = False
+        self.is_unifi_os = None
         self.api_path = "api"
-        self.is_authenticated = False
+        self._is_authenticated = False
         self.access_key = None
         self.device_data = {}
 
@@ -68,28 +69,33 @@ class UpvServer:
     async def update(self) -> dict:
         """Updates the status of devices."""
 
-        if self.is_authenticated is False:
-            await self.check_unifi_os()
-            await self.login()
-
-        _LOGGER.debug("Unifi OS: %s", self.is_unifi_os)
-        _LOGGER.debug("Authenticated: %s", self.is_authenticated)
-
         await self._get_camera_list()
         await self._get_motion_events(10)
         return self.devices
 
     async def check_unifi_os(self):
+        if self.is_unifi_os is not None:
+            return
+
         response = await self.request("get", url=self._base_url, allow_redirects=False)
         if response.status == 200:
             if "x-csrf-token" in response.headers:
                 self.is_unifi_os = True
                 self.api_path = "proxy/protect/api"
                 self.headers = {"x-csrf-token": response.headers.get("x-csrf-token")}
+            else:
+                self.is_unifi_os = False
+            _LOGGER.debug("Unifi OS: %s", self.is_unifi_os)
 
-    async def login(self):
+    async def ensureAuthenticated(self):
+        if self.is_authenticated() is False:
+            await self.authenticate()
+
+    async def authenticate(self):
+        await self.check_unifi_os()
         if self.is_unifi_os:
             url = f"{self._base_url}/api/auth/login"
+            self.req.cookie_jar.clear()
         else:
             url = f"{self._base_url}/api/auth"
 
@@ -100,11 +106,35 @@ class UpvServer:
         }
 
         response = await self.request("post", url=url, json=auth)
-        if self.is_unifi_os is False:
+        if self.is_unifi_os is True:
+            self.headers = {"x-csrf-token": response.headers.get("x-csrf-token")}
+        else:
             self.headers = {
                 "Authorization": f"Bearer {response.headers.get('Authorization')}"
             }
-        self.is_authenticated = True
+        self._is_authenticated = True
+        _LOGGER.debug("Authenticated successfully!")
+
+    def is_authenticated(self) -> bool:
+        if self._is_authenticated is True and self.is_unifi_os is True:
+            # Check if token is expired.
+            cookies = self.req.cookie_jar.filter_cookies(self._base_url)
+            tokenCookie = cookies.get("TOKEN")
+            if tokenCookie is None:
+                return False
+            try:
+                jwt.decode(
+                    tokenCookie.value,
+                    options={"verify_signature": False, "verify_exp": True},
+                )
+            except jwt.ExpiredSignatureError:
+                _LOGGER.debug("Authentication token has expired.")
+                return False
+            except Exception as e:
+                _LOGGER.debug("Authentication token decode error: %s", e)
+                return False
+
+        return self._is_authenticated
 
     async def _get_api_access_key(self) -> str:
         """get API Access Key."""
@@ -125,6 +155,9 @@ class UpvServer:
 
     async def _get_camera_list(self) -> None:
         """Get a list of Cameras connected to the NVR."""
+
+        await self.ensureAuthenticated()
+
         bootstrap_uri = f"{self._base_url}/{self.api_path}/bootstrap"
         async with self.req.get(
             bootstrap_uri, headers=self.headers, verify_ssl=self._verify_ssl,
@@ -205,6 +238,9 @@ class UpvServer:
 
     async def _get_motion_events(self, lookback: int = 86400) -> None:
         """Load the Event Log and loop through items to find motion events."""
+
+        await self.ensureAuthenticated()
+
         event_start = datetime.datetime.now() - datetime.timedelta(seconds=lookback)
         event_end = datetime.datetime.now() + datetime.timedelta(seconds=10)
         start_time = int(time.mktime(event_start.timetuple())) * 1000
@@ -253,6 +289,8 @@ class UpvServer:
 
     async def get_thumbnail(self, camera_id: str, width: int = 640) -> bytes:
         """Returns the last recorded Thumbnail, based on Camera ID."""
+
+        await self.ensureAuthenticated()
         await self._get_motion_events()
 
         thumbnail_id = self.device_data[camera_id]["motion_thumbnail"]
@@ -281,6 +319,9 @@ class UpvServer:
 
     async def get_snapshot_image(self, camera_id: str) -> bytes:
         """ Returns a Snapshot image of a recording event. """
+
+        await self.ensureAuthenticated()
+
         access_key = await self._get_api_access_key()
         time_since = int(time.mktime(datetime.datetime.now().timetuple())) * 1000
         model_type = self.device_data[camera_id]["type"]
@@ -313,6 +354,9 @@ class UpvServer:
         """ Sets the camera recoding mode to what is supplied with 'mode'.
             Valid inputs for mode: never, motion, always
         """
+
+        await self.ensureAuthenticated()
+
         cam_uri = f"{self._base_url}/{self.api_path}/cameras/{camera_id}"
         data = {
             "recordingSettings": {
@@ -339,6 +383,9 @@ class UpvServer:
         """ Sets the camera infrared settings to what is supplied with 'mode'.
             Valid inputs for mode: auto, on, autoFilterOnly
         """
+
+        await self.ensureAuthenticated()
+
         if mode == "led_off":
             mode = "autoFilterOnly"
         elif mode == "always_on":
@@ -361,18 +408,10 @@ class UpvServer:
                     % (response.status, response.reason)
                 )
 
-    async def request(self, method, path=None, json=None, url=None, **kwargs):
+    async def request(self, method, url, json=None, **kwargs):
         """Make a request to the API."""
-        if not url:
-            if self.is_unifi_os:
-                url = f"{self._base_url}/proxy/protect/api/"
-            else:
-                url = f"{self._base_url}"
 
-            if path is not None:
-                url += f"{path}"
-
-        _LOGGER.debug("%s", url)
+        _LOGGER.debug("Request url: %s", url)
 
         try:
             async with self.req.request(

@@ -1,0 +1,21 @@
+default_config:
+cloud:
+
+stream:
+
+unifiprotect:
+  host: !secret unifiprotect_host
+  port: !secret unifiprotect_port
+  username: !secret unifiprotect_user
+  password: !secret unifiprotect_password
+
+camera:
+  - platform: unifiprotect
+
+binary_sensor:
+  - platform: unifiprotect
+
+logger:
+  default: error
+  logs:
+    custom_components.unifiprotect: debug

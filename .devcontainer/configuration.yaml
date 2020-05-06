@@ -4,8 +4,8 @@ cloud:
 stream:
 
 unifiprotect:
-  host: 192.168.1.1
-  port: 443
+  host: !secret unifiprotect_host
+  port: !secret unifiprotect_port
   username: !secret unifiprotect_user
   password: !secret unifiprotect_password
 

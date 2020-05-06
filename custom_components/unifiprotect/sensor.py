@@ -17,9 +17,6 @@ _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ["unifiprotect"]
 
-# # Update Frequently as we are only reading from Memory
-# SCAN_INTERVAL = timedelta(seconds=10)
-
 ATTR_CAMERA_TYPE = "camera_type"
 ATTR_BRAND = "brand"
 

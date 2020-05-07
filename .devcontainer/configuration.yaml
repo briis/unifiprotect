@@ -1,5 +1,5 @@
 default_config:
-cloud:
+# cloud:
 
 stream:
 
@@ -13,6 +13,12 @@ camera:
   - platform: unifiprotect
 
 binary_sensor:
+  - platform: unifiprotect
+
+sensor:
+  - platform: unifiprotect
+
+switch:
   - platform: unifiprotect
 
 logger:

@@ -17,6 +17,12 @@ camera:
 binary_sensor:
   - platform: unifiprotect
 
+sensor:
+  - platform: unifiprotect
+
+switch:
+  - platform: unifiprotect
+
 logger:
   default: error
   logs:

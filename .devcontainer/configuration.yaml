@@ -1,5 +1,4 @@
 default_config:
-cloud:
 
 ptvsd:
   wait: False # Set to True if you want hass to break and wait for debugger to attach

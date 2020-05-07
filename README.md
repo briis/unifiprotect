@@ -12,12 +12,13 @@ Basically what this does, is integrating the Camera feeds from Unifi Protect in 
 
 Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
 
-1. **Local User needs to be added** Open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select an existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.
-2. **RTSP Stream** Select each camera under the CAMERAS tab, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one, the integration will pick the one with the highest resolution.  
+1. **Local User** If Unifi Protect is installed on a UDMP, then you can skip this step, and instead use the username and password you use to login to the UDMP.
+If your are on a CloudKey+ then open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select an existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.
+2. **RTSP Stream** Select each camera under the CAMERAS tab, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one, the integration will pick the one with the highest resolution.
 
 ![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png) ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
-**Note:**  
+**Note:**
 
 * This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.0-beta.16 and higher. I cannot guarantee that this will work on a lower version than that.
 * As of version 0.3.0, this Integration also supports the UDM Pro with UnifiOS, thanks to the work of @msvinth.
@@ -61,27 +62,27 @@ unifiprotect:
   minimum_score: <minimum score before motion detection is activated>
 ```
 
-**host**:  
+**host**:
 (string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`
 
 * **Important** If you run UnifiOS this must be the IP Address. of your UDMP
 
-**username**:  
-(string)(Required) The local username you setup under the *Prerequisites* section.  
+**username**:
+(string)(Required) The local username you setup under the *Prerequisites* section.
 
-**password**  
-(string)(Required) The local password you setup under the *Prerequisites* section.  
+**password**
+(string)(Required) The local password you setup under the *Prerequisites* section.
 
-**port**  
+**port**
 (int)(Optional) The port used to communicate with the NVR. Default is 7443.
 
 * **Important** If run UnifiOS the port *must* be specified and it must be 443.
 
-**image_width**  
+**image_width**
 (int)(Optional) The width of the Thumbnail Image. Default is 640px
 
-**minimum_score**  
-(int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored  
+**minimum_score**
+(int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored
 
 ### Camera
 
@@ -162,10 +163,10 @@ switch:
     ir_off: <Optional, type what mode defines off for Infrared>
 ```
 
-**ir_on**  
+**ir_on**
 (string)(Optional) The mode that defines Infrared On. Values are: *auto* and *always_on*. Default is *auto*
 
-**ir_off**  
+**ir_off**
 (string)(Optional) The mode that defines Infrared OFF. Values are: *led_off* and *always_off*. Default is *always_off*
 
 ## Automating Services
@@ -173,8 +174,8 @@ switch:
 If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.
 These Services support more than 2 different modes each, and as such it would be good to have a list to select from when switching the mode of those settings. I have not found a way to create a listbox as Custom Component, but it is fairly simpel to use an *input_select* integration and an *Automation* to achieve a UI friendly way of changing these modes. Below is an example that creates an *input*select* integration for one of the Cameras and then an example of an automation that is triggered whenever the user selects a new value in the dropdown list.
 
-Start by creating the *input_select* integration. If you are on Version 107.x or greater that can now be done directly from the menu under *Configuration* and then *Helpers*. Click the PLUS sign at the bottom and use the *Dropdown* option.  
-**Important** Fill in the *Option* part as seen below for the Infrared Service.  
+Start by creating the *input_select* integration. If you are on Version 107.x or greater that can now be done directly from the menu under *Configuration* and then *Helpers*. Click the PLUS sign at the bottom and use the *Dropdown* option.
+**Important** Fill in the *Option* part as seen below for the Infrared Service.
 If you do it manually add the following to your *configuration.yaml* file:
 
 ```yaml

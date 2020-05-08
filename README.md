@@ -213,3 +213,22 @@ Now add a new Automation, like the following:
 ```
 
 Thats it. Whenever you now select a new value from the Dropdown, the automation is activated, and the service is called to change the IR mode. The same can then be achieved for the *recording_mode* by changing the options and the service call in the automation.
+
+## Contribute to project and developing with a devcontainer
+
+1. Fork and clone the repository.
+
+2. Open in VSCode and choose to open in devcontainer. Must have VSCode devcontainer prerequisites.
+
+3. Create a secrets.yaml file in .devcontainer/secrets.yaml with content
+
+```yaml
+unifiprotect_host: 192.168.1.1 # Your protect address
+unifiprotect_port: 443  # The port. Typically 7443 for CloudKey+ or 443 for UnifiOS
+unifiprotect_user: YOUR_USERNAME
+unifiprotect_password: YOUR_PASSWORD
+````
+
+4. Run the command container start from VSCode terminal
+
+5. A fresh Home Assistant test instance will install and will eventually be running on port 9123 with this integration running

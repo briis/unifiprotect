@@ -70,7 +70,7 @@ class UpvServer:
         """Updates the status of devices."""
 
         await self._get_camera_list()
-        await self._get_motion_events(10)
+        await self._get_events(10)
         return self.devices
 
     async def check_unifi_os(self):
@@ -254,7 +254,7 @@ class UpvServer:
                     f"Fetching Camera List failed: {response.status} - Reason: {response.reason}"
                 )
 
-    async def _get_motion_events(self, lookback: int = 86400) -> None:
+    async def _get_events(self, lookback: int = 86400) -> None:
         """Load the Event Log and loop through items to find motion events."""
 
         await self.ensureAuthenticated()
@@ -316,7 +316,7 @@ class UpvServer:
         """Returns the last recorded Thumbnail, based on Camera ID."""
 
         await self.ensureAuthenticated()
-        await self._get_motion_events()
+        await self._get_events()
 
         thumbnail_id = self.device_data[camera_id]["event_thumbnail"]
 

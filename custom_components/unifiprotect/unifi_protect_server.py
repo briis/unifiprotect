@@ -237,7 +237,7 @@ class UpvServer:
                                 "event_score": 0,
                                 "event_thumbnail": None,
                                 "event_on": False,
-                                "ring_on": False,
+                                "event_type": None,
                             }
                         }
                         self.device_data.update(item)
@@ -300,6 +300,7 @@ class UpvServer:
                         self.device_data[camera_id]["event_start"] = start_time
                         self.device_data[camera_id]["event_score"] = event["score"]
                         self.device_data[camera_id]["event_on"] = event_on
+                        self.device_data[camera_id]["event_type"] = event["type"]
                         if (
                             event["thumbnail"] is not None
                         ):  # Only update if there is a new Motion Event

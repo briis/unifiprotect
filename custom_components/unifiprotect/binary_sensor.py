@@ -81,7 +81,10 @@ class UfpBinarySensor(BinarySensorDevice):
         # self._event_score = self._camera["event_score"]
         # self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         # self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
-        _LOGGER.debug(f"UNIFIPROTECT BINARY SENSOR CREATED: {self._name}")
+        if self._device_class == DEVICE_CLASS_DOORBELL:
+            _LOGGER.debug(f"UNIFIPROTECT DOORBELL SENSOR CREATED: {self._name}")
+        else:
+            _LOGGER.debug(f"UNIFIPROTECT MOTION SENSOR CREATED: {self._name}")
 
     @property
     def unique_id(self):

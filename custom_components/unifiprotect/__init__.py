@@ -38,6 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 ATTR_CAMERA_ID = "camera_id"
 ATTR_UP_SINCE = "up_since"
 ATTR_LAST_MOTION = "last_motion"
+ATTR_LAST_RING = "last_ring"
 ATTR_ONLINE = "online"
 
 CONF_THUMB_WIDTH = "image_width"

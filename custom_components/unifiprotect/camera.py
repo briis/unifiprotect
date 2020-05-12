@@ -51,7 +51,7 @@ class UnifiVideoCamera(Camera):
         self._camera = coordinator.data[camera]
 
         self._name = self._camera["name"]
-        self._model = self._camera["type"]
+        self._model = self._camera["model"]
         self._up_since = self._camera["up_since"]
         self._last_motion = self._camera["last_motion"]
         self._online = self._camera["online"]

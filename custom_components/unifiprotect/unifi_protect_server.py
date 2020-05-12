@@ -193,6 +193,12 @@ class UpvServer:
                         ).strftime("%Y-%m-%d %H:%M:%S")
                     )
 
+                    device_type = (
+                        "camera"
+                        if "doorbell" not in str(camera["type"]).lower()
+                        else "doorbell"
+                    )
+
                     if camera["id"] not in self.device_data:
                         # Add rtsp streaming url if enabled
                         rtsp = None
@@ -210,7 +216,8 @@ class UpvServer:
                         item = {
                             str(camera["id"]): {
                                 "name": str(camera["name"]),
-                                "type": str(camera["type"]),
+                                "type": device_type,
+                                "model": str(camera["type"]),
                                 "recording_mode": recording_mode,
                                 "ir_mode": ir_mode,
                                 "rtsp": rtsp,
@@ -324,7 +331,7 @@ class UpvServer:
 
         access_key = await self._get_api_access_key()
         time_since = int(time.mktime(datetime.datetime.now().timetuple())) * 1000
-        model_type = self.device_data[camera_id]["type"]
+        model_type = self.device_data[camera_id]["model"]
         if model_type.find("G4") != -1:
             image_width = "1280"
             image_height = "720"

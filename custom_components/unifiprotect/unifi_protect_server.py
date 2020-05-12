@@ -264,6 +264,8 @@ class UpvServer:
         event_end = datetime.datetime.now() + datetime.timedelta(seconds=10)
         start_time = int(time.mktime(event_start.timetuple())) * 1000
         end_time = int(time.mktime(event_end.timetuple())) * 1000
+        event_on = False
+        event_ring_on = False
 
         event_uri = f"{self._base_url}/{self.api_path}/events"
         params = {

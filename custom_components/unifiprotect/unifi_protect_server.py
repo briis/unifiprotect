@@ -284,7 +284,7 @@ class UpvServer:
                         else:
                             start_time = None
                         if event["type"] == "motion":
-                            event_ring_on = False
+                            # event_ring_on = False
                             if event["end"]:
                                 event_on = False
                             else:
@@ -293,10 +293,11 @@ class UpvServer:
                                 else:
                                     event_on = False
                         else:
-                            event_on = False
+                            # event_on = False
                             if event["end"]:
                                 event_ring_on = False
                             else:
+                                _LOGGER.debug("EVENT: DOORBELL IS RINGING")
                                 event_ring_on = True
 
                         camera_id = event["camera"]

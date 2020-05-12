@@ -90,7 +90,10 @@ class UfpBinarySensor(BinarySensorDevice):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self.coordinator.data[self._camera_id]["event_on"]
+        if self._device_class == DEVICE_CLASS_DOORBELL:
+            return self.coordinator.data[self._camera_id]["event_ring_on"]
+        else:
+            return self.coordinator.data[self._camera_id]["event_on"]
 
     @property
     def device_class(self):

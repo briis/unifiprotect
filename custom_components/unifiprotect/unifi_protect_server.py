@@ -237,6 +237,7 @@ class UpvServer:
                                 "event_score": 0,
                                 "event_thumbnail": None,
                                 "event_on": False,
+                                "event_ring_on": False,
                                 "event_type": None,
                             }
                         }
@@ -283,6 +284,7 @@ class UpvServer:
                         else:
                             start_time = None
                         if event["type"] == "motion":
+                            event_ring_on = False
                             if event["end"]:
                                 event_on = False
                             else:
@@ -291,15 +293,17 @@ class UpvServer:
                                 else:
                                     event_on = False
                         else:
+                            event_on = False
                             if event["end"]:
-                                event_on = False
+                                event_ring_on = False
                             else:
-                                event_on = True
+                                event_ring_on = True
 
                         camera_id = event["camera"]
                         self.device_data[camera_id]["event_start"] = start_time
                         self.device_data[camera_id]["event_score"] = event["score"]
                         self.device_data[camera_id]["event_on"] = event_on
+                        self.device_data[camera_id]["event_ring_on"] = event_ring_on
                         self.device_data[camera_id]["event_type"] = event["type"]
                         if (
                             event["thumbnail"] is not None

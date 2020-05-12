@@ -184,6 +184,14 @@ class UpvServer:
                             int(camera["lastMotion"]) / 1000
                         ).strftime("%Y-%m-%d %H:%M:%S")
                     )
+                    # Get the last time doorbell was ringing
+                    lastring = (
+                        None
+                        if camera["lastRing"] is None
+                        else datetime.datetime.fromtimestamp(
+                            int(camera["lastRing"]) / 1000
+                        ).strftime("%Y-%m-%d %H:%M:%S")
+                    )
                     # Get when the camera came online
                     upsince = (
                         "Offline"
@@ -223,17 +231,20 @@ class UpvServer:
                                 "rtsp": rtsp,
                                 "up_since": upsince,
                                 "last_motion": lastmotion,
+                                "last_ring": lastring,
                                 "online": online,
-                                "motion_start": None,
-                                "motion_score": 0,
-                                "motion_thumbnail": None,
-                                "motion_on": False,
+                                "event_start": None,
+                                "event_score": 0,
+                                "event_thumbnail": None,
+                                "event_on": False,
+                                "ring_on": False,
                             }
                         }
                         self.device_data.update(item)
                     else:
                         camera_id = camera["id"]
                         self.device_data[camera_id]["last_motion"] = lastmotion
+                        self.device_data[camera_id]["last_ring"] = lastring
                         self.device_data[camera_id]["online"] = online
                         self.device_data[camera_id]["up_since"] = upsince
                         self.device_data[camera_id]["recording_mode"] = recording_mode
@@ -257,7 +268,6 @@ class UpvServer:
         params = {
             "end": str(end_time),
             "start": str(start_time),
-            "type": "motion",
         }
         async with self.req.get(
             event_uri, params=params, headers=self.headers, verify_ssl=self._verify_ssl,
@@ -265,30 +275,37 @@ class UpvServer:
             if response.status == 200:
                 events = await response.json()
                 for event in events:
-                    if event["start"]:
-                        start_time = datetime.datetime.fromtimestamp(
-                            int(event["start"]) / 1000
-                        ).strftime("%Y-%m-%d %H:%M:%S")
-                    else:
-                        start_time = None
-                    if event["end"]:
-                        motion_on = False
-                    else:
-                        if int(event["score"]) >= self._minimum_score:
-                            motion_on = True
+                    if event["type"] == "motion" or event["type"] == "ring":
+                        if event["start"]:
+                            start_time = datetime.datetime.fromtimestamp(
+                                int(event["start"]) / 1000
+                            ).strftime("%Y-%m-%d %H:%M:%S")
                         else:
-                            motion_on = False
+                            start_time = None
+                        if event["type"] == "motion":
+                            if event["end"]:
+                                event_on = False
+                            else:
+                                if int(event["score"]) >= self._minimum_score:
+                                    event_on = True
+                                else:
+                                    event_on = False
+                        else:
+                            if event["end"]:
+                                event_on = False
+                            else:
+                                event_on = True
 
-                    camera_id = event["camera"]
-                    self.device_data[camera_id]["motion_start"] = start_time
-                    self.device_data[camera_id]["motion_score"] = event["score"]
-                    self.device_data[camera_id]["motion_on"] = motion_on
-                    if (
-                        event["thumbnail"] is not None
-                    ):  # Only update if there is a new Motion Event
-                        self.device_data[camera_id]["motion_thumbnail"] = event[
-                            "thumbnail"
-                        ]
+                        camera_id = event["camera"]
+                        self.device_data[camera_id]["event_start"] = start_time
+                        self.device_data[camera_id]["event_score"] = event["score"]
+                        self.device_data[camera_id]["event_on"] = event_on
+                        if (
+                            event["thumbnail"] is not None
+                        ):  # Only update if there is a new Motion Event
+                            self.device_data[camera_id]["event_thumbnail"] = event[
+                                "thumbnail"
+                            ]
             else:
                 raise NvrError(
                     f"Fetching Eventlog failed: {response.status} - Reason: {response.reason}"
@@ -300,7 +317,7 @@ class UpvServer:
         await self.ensureAuthenticated()
         await self._get_motion_events()
 
-        thumbnail_id = self.device_data[camera_id]["motion_thumbnail"]
+        thumbnail_id = self.device_data[camera_id]["event_thumbnail"]
 
         if thumbnail_id is not None:
             height = float(width) / 16 * 9

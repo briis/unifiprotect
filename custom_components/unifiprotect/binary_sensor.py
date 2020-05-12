@@ -4,14 +4,24 @@ import voluptuous as vol
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.binary_sensor import BinarySensorDevice
+from homeassistant.components.binary_sensor import (
+    BinarySensorDevice,
+    DEVICE_CLASS_MOTION,
+)
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,
+    ATTR_TRIPPED,
+    ATTR_LAST_TRIP_TIME,
     CONF_MONITORED_CONDITIONS,
 )
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
-from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND
+from . import (
+    UPV_DATA,
+    DEFAULT_ATTRIBUTION,
+    DEFAULT_BRAND,
+    DEVICE_CLASS_DOORBELL,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +49,13 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
         return
 
     sensors = []
-    for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
-        for camera in coordinator.data:
-            sensors.append(UfpBinarySensor(coordinator, camera, sensor_type))
+    # for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
+    #     for camera in coordinator.data:
+    #         sensors.append(UfpBinarySensor(coordinator, camera, sensor_type))
+    for camera in coordinator.data:
+        if coordinator.data[camera]["type"] == "doorbell":
+            sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_DOORBELL))
+        sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_MOTION))
 
     async_add_entities(sensors, True)
 
@@ -53,14 +67,19 @@ class UfpBinarySensor(BinarySensorDevice):
         self.coordinator = coordinator
         self._camera_id = camera
         self._camera = coordinator.data[camera]
-        self._name = "{0} {1}".format(
-            SENSOR_TYPES[sensor_type][0], self._camera["name"]
-        )
+        self._name = f"{sensor_type.capitalize()} {self._camera['name']}"
         self._unique_id = self._name.lower().replace(" ", "_")
-        self._sensor_type = sensor_type
+        self._device_class = sensor_type
         self._event_score = self._camera["event_score"]
-        self._class = SENSOR_TYPES.get(self._sensor_type)[1]
-        self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
+
+        # self._name = "{0} {1}".format(
+        #     SENSOR_TYPES[sensor_type][0], self._camera["name"]
+        # )
+        # self._unique_id = self._name.lower().replace(" ", "_")
+        # self._sensor_type = sensor_type
+        # self._event_score = self._camera["event_score"]
+        # self._class = SENSOR_TYPES.get(self._sensor_type)[1]
+        # self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
         _LOGGER.debug("UfpBinarySensor: %s created", self._name)
 
     @property
@@ -76,7 +95,7 @@ class UfpBinarySensor(BinarySensorDevice):
     @property
     def device_class(self):
         """Return the device class of the sensor."""
-        return self._class
+        return self._device_class
 
     @property
     def device_state_attributes(self):

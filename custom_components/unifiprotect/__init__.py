@@ -64,6 +64,8 @@ DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
 DEFAULT_SSL = False
 DEFAULT_THUMB_WIDTH = 640
 
+DEVICE_CLASS_DOORBELL = "doorbell"
+
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN
 

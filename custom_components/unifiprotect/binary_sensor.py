@@ -7,6 +7,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.components.binary_sensor import (
     BinarySensorDevice,
     DEVICE_CLASS_MOTION,
+    DEVICE_CLASS_OCCUPANCY,
 )
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
@@ -31,15 +32,15 @@ ATTR_BRAND = "brand"
 ATTR_EVENT_SCORE = "event_score"
 
 # sensor_type [ description, unit, icon ]
-SENSOR_TYPES = {"motion": ["Motion", "motion", "motionDetected"]}
+# SENSOR_TYPES = {"motion": ["Motion", "motion", "motionDetected"]}
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_MONITORED_CONDITIONS, default=list(SENSOR_TYPES)): vol.All(
-            cv.ensure_list, [vol.In(SENSOR_TYPES)]
-        ),
-    }
-)
+# PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+#     {
+#         vol.Required(CONF_MONITORED_CONDITIONS, default=list(SENSOR_TYPES)): vol.All(
+#             cv.ensure_list, [vol.In(SENSOR_TYPES)]
+#         ),
+#     }
+# )
 
 
 async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
@@ -80,7 +81,7 @@ class UfpBinarySensor(BinarySensorDevice):
         # self._event_score = self._camera["event_score"]
         # self._class = SENSOR_TYPES.get(self._sensor_type)[1]
         # self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
-        _LOGGER.debug("UfpBinarySensor: %s created", self._name)
+        _LOGGER.debug(f"UNIFIPROTECT BINARY SENSOR CREATED: {self._name}")
 
     @property
     def unique_id(self):
@@ -99,6 +100,15 @@ class UfpBinarySensor(BinarySensorDevice):
     def device_class(self):
         """Return the device class of the sensor."""
         return self._device_class
+
+    @property
+    def icon(self):
+        """Select icon to display in Frontend."""
+        if self._device_class == DEVICE_CLASS_DOORBELL:
+            if self.coordinator.data[self._camera_id]["event_ring_on"]:
+                return "mdi:bell-ring-outline"
+            else:
+                return "mdi:doorbell-video"
 
     @property
     def device_state_attributes(self):

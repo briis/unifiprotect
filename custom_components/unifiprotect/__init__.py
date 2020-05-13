@@ -37,7 +37,6 @@ _LOGGER = logging.getLogger(__name__)
 
 ATTR_CAMERA_ID = "camera_id"
 ATTR_UP_SINCE = "up_since"
-ATTR_LAST_MOTION = "last_motion"
 ATTR_ONLINE = "online"
 
 CONF_THUMB_WIDTH = "image_width"
@@ -62,6 +61,8 @@ DEFAULT_IR_MODE = TYPE_IR_AUTO
 DEFAULT_SCAN_INTERVAL = timedelta(seconds=2)
 DEFAULT_SSL = False
 DEFAULT_THUMB_WIDTH = 640
+
+DEVICE_CLASS_DOORBELL = "doorbell"
 
 DOMAIN = "unifiprotect"
 UPV_DATA = DOMAIN

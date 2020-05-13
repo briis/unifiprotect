@@ -4,14 +4,14 @@ import asyncio
 from datetime import timedelta
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
-from homeassistant.const import ATTR_ATTRIBUTION
+from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
+
 from . import (
     UPV_DATA,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     ATTR_CAMERA_ID,
     ATTR_UP_SINCE,
-    ATTR_LAST_MOTION,
     ATTR_ONLINE,
 )
 
@@ -51,13 +51,15 @@ class UnifiVideoCamera(Camera):
         self._camera = coordinator.data[camera]
 
         self._name = self._camera["name"]
-        self._model = self._camera["type"]
+        self._device_type = self._camera["type"]
+        self._model = self._camera["model"]
         self._up_since = self._camera["up_since"]
         self._last_motion = self._camera["last_motion"]
+        self._last_ring = self._camera["last_ring"]
         self._online = self._camera["online"]
         self._motion_status = self._camera["recording_mode"]
         self._stream_source = self._camera["rtsp"]
-        self._thumbnail = self._camera["motion_thumbnail"]
+        self._thumbnail = self._camera["event_thumbnail"]
         self._isrecording = False
         self._camera = None
         self._last_image = None
@@ -66,7 +68,7 @@ class UnifiVideoCamera(Camera):
         if self._motion_status != "never" and self._online:
             self._isrecording = True
 
-        _LOGGER.debug("Camera %s added to Home Assistant", self._name)
+        _LOGGER.debug(f"UNIFIPROTECT CAMERA CREATED: {self._name}")
 
     @property
     def should_poll(self):
@@ -114,9 +116,12 @@ class UnifiVideoCamera(Camera):
         attrs = {}
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_UP_SINCE] = self._up_since
-        attrs[ATTR_LAST_MOTION] = self._last_motion
         attrs[ATTR_ONLINE] = self._online
         attrs[ATTR_CAMERA_ID] = self._camera_id
+        if self._device_type == "doorbell":
+            attrs[ATTR_LAST_TRIP_TIME] = self._last_ring
+        else:
+            attrs[ATTR_LAST_TRIP_TIME] = self._last_motion
 
         return attrs
 
@@ -128,6 +133,7 @@ class UnifiVideoCamera(Camera):
         self._online = camera["online"]
         self._up_since = camera["up_since"]
         self._last_motion = camera["last_motion"]
+        self._last_ring = camera["last_ring"]
         self._motion_status = camera["recording_mode"]
         if self._motion_status != "never" and self._online:
             self._isrecording = True

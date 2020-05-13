@@ -12,7 +12,7 @@ Basically what this does, is integrating the Camera feeds from Unifi Protect in 
 
 Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
 
-1. **Local User** 
+1. **Local User**
   * If Unifi Protect is installed on a **UDMP**, then you can skip this step, and instead use the username and password you use to login to the UDMP. But it is recommended that you add a specific user on your UDMP, as described [here](https://community.home-assistant.io/t/custom-component-unifi-protect/158041/138?u=briis)
   * If your are on a **CloudKey+** then open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select an existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.
 2. **RTSP Stream** Select each camera under the CAMERAS tab, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one, the integration will pick the one with the highest resolution.
@@ -60,30 +60,24 @@ unifiprotect:
   password: <Your local Unifi Protect Password>
   port: <Port used to communicate with your Unifi Protect NVR>
   image_width: <Size of the Thumbnail Image>
-  minimum_score: <minimum score before motion detection is activated>
 ```
 
-**host**:
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`
-
+**host**:<br>
+(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`<br>
 * **Important** If you run UnifiOS this must be the IP Address. of your UDMP
 
-**username**:
+**username**:<br>
 (string)(Required) The local username you setup under the *Prerequisites* section.
 
-**password**
+**password**<br>
 (string)(Required) The local password you setup under the *Prerequisites* section.
 
-**port**
-(int)(Optional) The port used to communicate with the NVR. Default is 7443.
-
+**port**<br>
+(int)(Optional) The port used to communicate with the NVR. Default is 7443.<br>
 * **Important** If run UnifiOS the port *must* be specified and it must be 443.
 
-**image_width**
+**image_width**<br>
 (int)(Optional) The width of the Thumbnail Image. Default is 640px
-
-**minimum_score**
-(int)(Optional) Minimum Score of Motion Event before motion is triggered. Integer between 0 and 100. Default is 0, and with that value, this option is ignored
 
 ### Camera
 

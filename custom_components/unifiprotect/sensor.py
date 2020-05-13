@@ -61,9 +61,9 @@ class UnifiProtectSensor(Entity):
         self._unique_id = self._name.lower().replace(" ", "_")
         self._sensor_type = sensor_type
         self._icon = "mdi:{}".format(SENSOR_TYPES.get(self._sensor_type)[2])
-        self._camera_type = self._camera["type"]
+        self._camera_type = self._camera["model"]
         self._attr = SENSOR_TYPES.get(self._sensor_type)[3]
-        _LOGGER.debug("UnifiProtectSensor: %s created", self._name)
+        _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {self._name}")
 
     @property
     def unique_id(self):

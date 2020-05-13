@@ -69,7 +69,7 @@ class UnifiVideoCamera(Camera):
         if self._motion_status != "never" and self._online:
             self._isrecording = True
 
-        _LOGGER.debug("Camera %s added to Home Assistant", self._name)
+        _LOGGER.debug(f"UNIFIPROTECT CAMERA CREATED: {self._name}")
 
     @property
     def should_poll(self):

@@ -98,10 +98,14 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
-        attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
-            "event_start"
-        ]
-        if self._device_class != DEVICE_CLASS_DOORBELL:
+        if self._device_class == DEVICE_CLASS_DOORBELL:
+            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
+                "last_ring"
+            ]
+        else:
+        if self._device_class == DEVICE_CLASS_DOORBELL:
+                "last_motion"
+            ]
             attrs[ATTR_EVENT_SCORE] = self.coordinator.data[self._camera_id][
                 "event_score"
             ]

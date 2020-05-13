@@ -62,7 +62,7 @@ unifiprotect:
   image_width: <Size of the Thumbnail Image>
 ```
 
-**host**:
+**host**:<br>
 (string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`
 
 * **Important** If you run UnifiOS this must be the IP Address. of your UDMP

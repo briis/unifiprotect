@@ -22,6 +22,8 @@ from . import (
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
+    ATTR_LAST_MOTION,
+    ATTR_LAST_RING,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -121,8 +123,17 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
-        attrs[ATTR_EVENT_SCORE] = self.coordinator.data[self._camera_id]["event_score"]
-
+        if self._device_class == DEVICE_CLASS_DOORBELL:
+            attrs[ATTR_LAST_RING] = self.coordinator.data[self._camera_id][
+                "event_ring_start"
+            ]
+        else:
+            attrs[ATTR_EVENT_SCORE] = self.coordinator.data[self._camera_id][
+                "event_score"
+            ]
+            attrs[ATTR_LAST_MOTION] = self.coordinator.data[self._camera_id][
+                "event_start"
+            ]
         return attrs
 
     @property

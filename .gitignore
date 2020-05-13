@@ -134,3 +134,4 @@ met.no.json
 custom_components/unifiprotect/test.py
 
 .devcontainer/secrets.yaml
+custom_components/unifiprotect/unifi_protect_server_new.py

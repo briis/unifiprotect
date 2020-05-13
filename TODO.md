@@ -2,9 +2,7 @@
 
 The following are items that are on my ToDo List.
 
-* **Convert to Integration** - To make this in to a V1.0 product, it needs to conform with the way Home Assistant is driving new development. This means that we need to get away from the Yaml configuration and make it in to a real Integration that can be configured from the Integration Page.
-
-In order to do that, I will have to do the following:
+* **Convert to Integration** - To make this in to a V1.0 product, it needs to conform with the way Home Assistant is driving new development. This means that we need to get away from the Yaml configuration and make it in to a real Integration that can be configured from the Integration Page. In order to do that, I will have to do the following:
   * A good first step has already been taken as the whole component is now converted to Async, to adhere to the standards of Home Assistant.
   * Next step will be to separate the I/O logic (`unifi_protect_server.py`) in to a *PyPi* component, so that it is separated from the HA modules. I have already reserved *pyunifiprotect* as a module name, and converting the current logic to this, is not that difficult.
   * With that done, all the modules that depend on `unifi_protect_server.py` need to call the new I/O logic module

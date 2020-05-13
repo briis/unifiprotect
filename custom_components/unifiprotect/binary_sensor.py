@@ -12,7 +12,6 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,
-    ATTR_TRIPPED,
     ATTR_LAST_TRIP_TIME,
     CONF_MONITORED_CONDITIONS,
 )
@@ -22,8 +21,6 @@ from . import (
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
-    ATTR_LAST_MOTION,
-    ATTR_LAST_RING,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -124,14 +121,14 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
         if self._device_class == DEVICE_CLASS_DOORBELL:
-            attrs[ATTR_LAST_RING] = self.coordinator.data[self._camera_id][
+            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
                 "event_ring_start"
             ]
         else:
             attrs[ATTR_EVENT_SCORE] = self.coordinator.data[self._camera_id][
                 "event_score"
             ]
-            attrs[ATTR_LAST_MOTION] = self.coordinator.data[self._camera_id][
+            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
                 "event_start"
             ]
         return attrs

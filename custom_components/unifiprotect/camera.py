@@ -4,15 +4,14 @@ import asyncio
 from datetime import timedelta
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
-from homeassistant.const import ATTR_ATTRIBUTION
+from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
+
 from . import (
     UPV_DATA,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     ATTR_CAMERA_ID,
     ATTR_UP_SINCE,
-    ATTR_LAST_MOTION,
-    ATTR_LAST_RING,
     ATTR_ONLINE,
 )
 
@@ -120,9 +119,9 @@ class UnifiVideoCamera(Camera):
         attrs[ATTR_ONLINE] = self._online
         attrs[ATTR_CAMERA_ID] = self._camera_id
         if self._device_type == "doorbell":
-            attrs[ATTR_LAST_RING] = self._last_ring
+            attrs[ATTR_LAST_TRIP_TIME] = self._last_ring
         else:
-            attrs[ATTR_LAST_MOTION] = self._last_motion
+            attrs[ATTR_LAST_TRIP_TIME] = self._last_motion
 
         return attrs
 

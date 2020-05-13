@@ -331,7 +331,7 @@ class UpvServer:
             if response.status == 200:
                 events = await response.json()
                 for event in events:
-                    if event["start"] and self._ring_event_count = 0:
+                    if event["start"] and self._ring_event_count == 0:
                         start_time = datetime.datetime.fromtimestamp(
                             int(event["start"]) / 1000
                         ).strftime("%Y-%m-%d %H:%M:%S")
@@ -340,7 +340,7 @@ class UpvServer:
                         _LOGGER.debug("UNIFIPROTECT: RING EVENT DETECTED")
                     else:
                         self._ring_event_count += 1
-                        if self._ring_event_count = 2:
+                        if self._ring_event_count == 2:
                             self._ring_event_count = 0
                             ring_on = False
                             _LOGGER.debug("UNIFIPROTECT: RING EVENT ENDED")

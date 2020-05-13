@@ -103,7 +103,7 @@ class UfpBinarySensor(BinarySensorDevice):
                 "last_ring"
             ]
         else:
-        if self._device_class == DEVICE_CLASS_DOORBELL:
+            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
                 "last_motion"
             ]
             attrs[ATTR_EVENT_SCORE] = self.coordinator.data[self._camera_id][

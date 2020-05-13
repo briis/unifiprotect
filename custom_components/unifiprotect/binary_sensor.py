@@ -7,13 +7,11 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.components.binary_sensor import (
     BinarySensorDevice,
     DEVICE_CLASS_MOTION,
-    DEVICE_CLASS_OCCUPANCY,
 )
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,
     ATTR_LAST_TRIP_TIME,
-    CONF_MONITORED_CONDITIONS,
 )
 from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 from . import (

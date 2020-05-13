@@ -30,17 +30,6 @@ DEPENDENCIES = ["unifiprotect"]
 ATTR_BRAND = "brand"
 ATTR_EVENT_SCORE = "event_score"
 
-# sensor_type [ description, unit, icon ]
-# SENSOR_TYPES = {"motion": ["Motion", "motion", "motionDetected"]}
-
-# PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-#     {
-#         vol.Required(CONF_MONITORED_CONDITIONS, default=list(SENSOR_TYPES)): vol.All(
-#             cv.ensure_list, [vol.In(SENSOR_TYPES)]
-#         ),
-#     }
-# )
-
 
 async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
     """Set up an Unifi Protect binary sensor."""
@@ -49,9 +38,6 @@ async def async_setup_platform(hass, config, async_add_entities, _discovery_info
         return
 
     sensors = []
-    # for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
-    #     for camera in coordinator.data:
-    #         sensors.append(UfpBinarySensor(coordinator, camera, sensor_type))
     for camera in coordinator.data:
         if coordinator.data[camera]["type"] == "doorbell":
             sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_DOORBELL))
@@ -72,14 +58,6 @@ class UfpBinarySensor(BinarySensorDevice):
         self._device_class = sensor_type
         self._event_score = self._camera["event_score"]
 
-        # self._name = "{0} {1}".format(
-        #     SENSOR_TYPES[sensor_type][0], self._camera["name"]
-        # )
-        # self._unique_id = self._name.lower().replace(" ", "_")
-        # self._sensor_type = sensor_type
-        # self._event_score = self._camera["event_score"]
-        # self._class = SENSOR_TYPES.get(self._sensor_type)[1]
-        # self._attr = SENSOR_TYPES.get(self._sensor_type)[2]
         if self._device_class == DEVICE_CLASS_DOORBELL:
             _LOGGER.debug(f"UNIFIPROTECT DOORBELL SENSOR CREATED: {self._name}")
         else:
@@ -120,16 +98,12 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
         attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
-        if self._device_class == DEVICE_CLASS_DOORBELL:
-            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
-                "event_ring_start"
-            ]
-        else:
+        attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
+            "event_start"
+        ]
+        if self._device_class != DEVICE_CLASS_DOORBELL:
             attrs[ATTR_EVENT_SCORE] = self.coordinator.data[self._camera_id][
                 "event_score"
-            ]
-            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
-                "event_start"
             ]
         return attrs
 

@@ -358,7 +358,7 @@ class UpvServer:
         """Returns the last recorded Thumbnail, based on Camera ID."""
 
         await self.ensureAuthenticated()
-        await self._get_events()
+        await self._get_motion_events()
 
         thumbnail_id = self.device_data[camera_id]["event_thumbnail"]
 

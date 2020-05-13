@@ -266,12 +266,10 @@ class UpvServer:
         end_time = int(time.mktime(event_end.timetuple())) * 1000
         event_on = False
         event_ring_on = False
-        # Test
         event_ring_check = datetime.datetime.now() - datetime.timedelta(seconds=3)
         event_ring_check_converted = (
             int(time.mktime(event_ring_check.timetuple())) * 1000
         )
-        # End test
 
         event_uri = f"{self._base_url}/{self.api_path}/events"
         params = {
@@ -292,7 +290,6 @@ class UpvServer:
                         else:
                             start_time = None
                         if event["type"] == "motion":
-                            # event_ring_on = False
                             if event["end"]:
                                 event_on = False
                             else:
@@ -301,9 +298,7 @@ class UpvServer:
                                 else:
                                     event_on = False
                         else:
-                            # event_on = False
                             if event["end"]:
-                                # test
                                 if (
                                     event["start"] >= event_ring_check_converted
                                     and event["end"] >= event_ring_check_converted
@@ -317,7 +312,6 @@ class UpvServer:
                                         "EVENT: DOORBELL WAS NOT RUNG IN LAST 3 SECONDS"
                                     )
                                     event_ring_on = False
-                                # end test
                             else:
                                 _LOGGER.debug("EVENT: DOORBELL IS RINGING")
                                 event_ring_on = True

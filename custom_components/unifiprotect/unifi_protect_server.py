@@ -339,7 +339,8 @@ class UpvServer:
                         ring_on = True
                         _LOGGER.debug("UNIFIPROTECT: RING EVENT DETECTED")
                     else:
-                        self._ring_event_count += 1
+                        if ring_on:
+                            self._ring_event_count += 1
                         if self._ring_event_count == 2:
                             self._ring_event_count = 0
                             ring_on = False

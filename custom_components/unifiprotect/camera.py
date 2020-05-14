@@ -1,50 +1,61 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
-import asyncio
 from datetime import timedelta
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
-from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
+from homeassistant.const import (
+    ATTR_ATTRIBUTION,
+    ATTR_LAST_TRIP_TIME,
+    CONF_ID,
+)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.util import slugify
 
-from . import (
-    UPV_DATA,
-    DEFAULT_ATTRIBUTION,
-    DEFAULT_BRAND,
+from .const import (
     ATTR_CAMERA_ID,
     ATTR_UP_SINCE,
     ATTR_ONLINE,
+    DOMAIN,
+    DEFAULT_ATTRIBUTION,
+    DEFAULT_BRAND,
+    DEVICE_CLASS_DOORBELL,
+    ENTITY_ID_CAMERA_FORMAT,
+    ENTITY_UNIQUE_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = timedelta(seconds=10)
 
-DEPENDENCIES = ["unifiprotect"]
 
-
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_entry(
+    hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
+) -> None:
     """Discover cameras on a Unifi Protect NVR."""
-    upv_object = hass.data[UPV_DATA]["upv"]
-    coordinator = hass.data[UPV_DATA]["coordinator"]
+    upv_object = hass.data[DOMAIN][entry.data[CONF_ID]]["upv"]
+    coordinator = hass.data[DOMAIN][entry.data[CONF_ID]]["coordinator"]
     if not coordinator.data:
         return
 
     cameras = [camera for camera in coordinator.data]
 
     async_add_entities(
-        [UnifiVideoCamera(hass, upv_object, coordinator, camera) for camera in cameras]
+        [
+            UnifiProtectCamera(upv_object, coordinator, camera, entry.data[CONF_ID])
+            for camera in cameras
+        ]
     )
 
     return True
 
 
-class UnifiVideoCamera(Camera):
-    """A Ubiquiti Unifi Video Camera."""
+class UnifiProtectCamera(Camera):
+    """A Ubiquiti Unifi Protect Camera."""
 
-    def __init__(self, hass, upv_object, coordinator, camera):
+    def __init__(self, upv_object, coordinator, camera, instance):
         """Initialize an Unifi camera."""
         super().__init__()
-        self.hass = hass
         self.upv_object = upv_object
         self.coordinator = coordinator
         self._camera_id = camera
@@ -64,6 +75,10 @@ class UnifiVideoCamera(Camera):
         self._camera = None
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
+        self.entity_id = ENTITY_ID_CAMERA_FORMAT.format(
+            slugify(instance), slugify(self._name).replace(" ", "_")
+        )
+        self._unique_id = ENTITY_UNIQUE_ID.format(slugify(instance), self._camera_id)
 
         if self._motion_status != "never" and self._online:
             self._isrecording = True
@@ -83,7 +98,7 @@ class UnifiVideoCamera(Camera):
     @property
     def unique_id(self):
         """Return a unique ID."""
-        return self._camera_id
+        return self._unique_id
 
     @property
     def name(self):
@@ -118,7 +133,7 @@ class UnifiVideoCamera(Camera):
         attrs[ATTR_UP_SINCE] = self._up_since
         attrs[ATTR_ONLINE] = self._online
         attrs[ATTR_CAMERA_ID] = self._camera_id
-        if self._device_type == "doorbell":
+        if self._device_type == DEVICE_CLASS_DOORBELL:
             attrs[ATTR_LAST_TRIP_TIME] = self._last_ring
         else:
             attrs[ATTR_LAST_TRIP_TIME] = self._last_motion
@@ -139,7 +154,6 @@ class UnifiVideoCamera(Camera):
             self._isrecording = True
         else:
             self._isrecording = False
-        # self._thumbnail = camera["motion_thumbnail"]
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""

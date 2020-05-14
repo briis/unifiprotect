@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.4.0
+
+**BREAKING** From this version on the only way to configure Unifi Protect is from the Integration Page in the Settings Menu. All Yaml configuration has been removed. I am aware that this is not what everybody wants, but it is the way Home Assistant is moving, and I don't want to maintain two different ways of Configuration.<br>
+So before you install this version, please remove all `unifiprotect` entries from your configurations files, and restart Home Assistant. Then you can upgrade via HACS and go to the Integration Page and install Unifi Protect.
+
+**Possible Errors**<br>
+* Error with jwt decode. It seems that both jwt and PyJwt are installed as version 0.111 - You need to uninstall both and then install PyJWT.
+
 ## Version 0.3.2
 
 **NOTE** When upgrading Home Assistant to +0.110 you will receive warnings during startup about deprecated BinaryDevice and SwitchDevice. There has been a change to SwitchEntity and BinaryEntity in HA 0.110. For now this will not be changed, as not everybody is on 0.110 and if changing it this Component will break for users not on that version as it is not backwards compatible.

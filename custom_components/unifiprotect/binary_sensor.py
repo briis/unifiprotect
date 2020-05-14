@@ -12,49 +12,94 @@ from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,
     ATTR_LAST_TRIP_TIME,
+    CONF_ID,
 )
-from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
-from . import (
-    UPV_DATA,
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.util import slugify
+from .const import (
+    ATTR_EVENT_SCORE,
+    DOMAIN,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
+    ENTITY_ID_BINARY_SENSOR_FORMAT,
+    ENTITY_UNIQUE_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ["unifiprotect"]
-
-ATTR_BRAND = "brand"
-ATTR_EVENT_SCORE = "event_score"
+# ATTR_BRAND = "brand"
 
 
-async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
-    """Set up an Unifi Protect binary sensor."""
-    coordinator = hass.data[UPV_DATA]["coordinator"]
+async def async_setup_entry(
+    hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
+) -> None:
+    """Discover cameras on a Unifi Protect NVR."""
+    # upv_object = hass.data[DOMAIN][entry.data[CONF_ID]]["upv"]
+    coordinator = hass.data[DOMAIN][entry.data[CONF_ID]]["coordinator"]
     if not coordinator.data:
         return
 
     sensors = []
     for camera in coordinator.data:
-        if coordinator.data[camera]["type"] == "doorbell":
-            sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_DOORBELL))
-        sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_MOTION))
+        if coordinator.data[camera]["type"] == DEVICE_CLASS_DOORBELL:
+            sensors.append(
+                UnifiProtectBinarySensor(
+                    coordinator, camera, DEVICE_CLASS_DOORBELL, entry.data[CONF_ID]
+                )
+            )
+        sensors.append(
+            UnifiProtectBinarySensor(
+                coordinator, camera, DEVICE_CLASS_MOTION, entry.data[CONF_ID]
+            )
+        )
 
     async_add_entities(sensors, True)
 
+    # cameras = [camera for camera in coordinator.data]
 
-class UfpBinarySensor(BinarySensorDevice):
+    # async_add_entities(
+    #     [
+    #         UnifiProtectCamera(
+    #             hass, upv_object, coordinator, camera, entry.data[CONF_ID]
+    #         )
+    #         for camera in cameras
+    #     ]
+    # )
+
+    return True
+
+
+# async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
+#     """Set up an Unifi Protect binary sensor."""
+#     coordinator = hass.data[UPV_DATA]["coordinator"]
+#     if not coordinator.data:
+#         return
+
+#     sensors = []
+#     for camera in coordinator.data:
+#         if coordinator.data[camera]["type"] == "doorbell":
+#             sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_DOORBELL))
+#         sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_MOTION))
+
+#     async_add_entities(sensors, True)
+
+
+class UnifiProtectBinarySensor(BinarySensorDevice):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, coordinator, camera, sensor_type):
+    def __init__(self, coordinator, camera, sensor_type, instance):
         self.coordinator = coordinator
         self._camera_id = camera
         self._camera = coordinator.data[camera]
         self._name = f"{sensor_type.capitalize()} {self._camera['name']}"
-        self._unique_id = self._name.lower().replace(" ", "_")
         self._device_class = sensor_type
         self._event_score = self._camera["event_score"]
+        self.entity_id = ENTITY_ID_BINARY_SENSOR_FORMAT.format(
+            slugify(instance), slugify(self._name).replace(" ", "_")
+        )
+        self._unique_id = ENTITY_UNIQUE_ID.format(slugify(instance), self._camera_id)
 
         if self._device_class == DEVICE_CLASS_DOORBELL:
             _LOGGER.debug(f"UNIFIPROTECT DOORBELL SENSOR CREATED: {self._name}")
@@ -94,7 +139,6 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs = {}
 
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
-        attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
         if self._device_class == DEVICE_CLASS_DOORBELL:
             attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][

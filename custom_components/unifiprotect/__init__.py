@@ -10,8 +10,6 @@ from aiohttp import CookieJar
 
 from pyunifiprotect import UpvServer, NotAuthorized, NvrError
 
-# from . import unifi_protect_server as upv
-
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     CONF_ID,

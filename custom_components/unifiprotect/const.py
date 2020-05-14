@@ -10,7 +10,7 @@ UNIQUE_ID = "unique_id"
 ENTITY_ID_CAMERA_FORMAT = CAMERA_DOMAIN + "." + "{}_{}"
 ENTITY_ID_SENSOR_FORMAT = SENSOR_DOMAIN + "." + "{}_{}"
 ENTITY_ID_BINARY_SENSOR_FORMAT = BINARY_SENSOR_DOMAIN + "." + "{}_{}"
-ENTITY_UNIQUE_ID = DOMAIN + "_{}_{}"
+ENTITY_UNIQUE_ID = DOMAIN + "_{}_{}_{}"
 
 ATTR_CAMERA_ID = "camera_id"
 ATTR_UP_SINCE = "up_since"
@@ -39,6 +39,6 @@ TYPE_IR_OFF = "always_off"
 UNIFI_PROTECT_PLATFORMS = [
     "camera",
     "binary_sensor",
-    # "sensor",
+    "sensor",
     # "switch",
 ]

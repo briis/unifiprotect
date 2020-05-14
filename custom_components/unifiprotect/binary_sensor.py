@@ -1,7 +1,6 @@
 """ This component provides binary sensors for Unifi Protect."""
 import logging
 import voluptuous as vol
-from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.binary_sensor import (
@@ -29,14 +28,11 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# ATTR_BRAND = "brand"
-
 
 async def async_setup_entry(
     hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
 ) -> None:
-    """Discover cameras on a Unifi Protect NVR."""
-    # upv_object = hass.data[DOMAIN][entry.data[CONF_ID]]["upv"]
+    """A Ubiquiti Unifi Protect Binary Sensor."""
     coordinator = hass.data[DOMAIN][entry.data[CONF_ID]]["coordinator"]
     if not coordinator.data:
         return
@@ -57,33 +53,7 @@ async def async_setup_entry(
 
     async_add_entities(sensors, True)
 
-    # cameras = [camera for camera in coordinator.data]
-
-    # async_add_entities(
-    #     [
-    #         UnifiProtectCamera(
-    #             hass, upv_object, coordinator, camera, entry.data[CONF_ID]
-    #         )
-    #         for camera in cameras
-    #     ]
-    # )
-
     return True
-
-
-# async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
-#     """Set up an Unifi Protect binary sensor."""
-#     coordinator = hass.data[UPV_DATA]["coordinator"]
-#     if not coordinator.data:
-#         return
-
-#     sensors = []
-#     for camera in coordinator.data:
-#         if coordinator.data[camera]["type"] == "doorbell":
-#             sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_DOORBELL))
-#         sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_MOTION))
-
-#     async_add_entities(sensors, True)
 
 
 class UnifiProtectBinarySensor(BinarySensorDevice):
@@ -99,7 +69,9 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         self.entity_id = ENTITY_ID_BINARY_SENSOR_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
-        self._unique_id = ENTITY_UNIQUE_ID.format(slugify(instance), self._camera_id)
+        self._unique_id = ENTITY_UNIQUE_ID.format(
+            slugify(instance), "binary", self._camera_id
+        )
 
         if self._device_class == DEVICE_CLASS_DOORBELL:
             _LOGGER.debug(f"UNIFIPROTECT DOORBELL SENSOR CREATED: {self._name}")

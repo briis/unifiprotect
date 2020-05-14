@@ -78,7 +78,9 @@ class UnifiProtectCamera(Camera):
         self.entity_id = ENTITY_ID_CAMERA_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
-        self._unique_id = ENTITY_UNIQUE_ID.format(slugify(instance), self._camera_id)
+        self._unique_id = ENTITY_UNIQUE_ID.format(
+            slugify(instance), "camera", self._camera_id
+        )
 
         if self._motion_status != "never" and self._online:
             self._isrecording = True

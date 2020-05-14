@@ -1,68 +1,75 @@
 """ This component provides sensors for Unifi Protect."""
 import logging
 import voluptuous as vol
-from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.entity import Entity
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,
-    CONF_MONITORED_CONDITIONS,
+    CONF_ID,
 )
-from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
-from homeassistant.helpers.entity import Entity
-from . import UPV_DATA, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, TYPE_RECORD_NEVER
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.util import slugify
+from .const import (
+    ATTR_EVENT_SCORE,
+    DOMAIN,
+    DEFAULT_ATTRIBUTION,
+    TYPE_RECORD_NEVER,
+    ENTITY_ID_SENSOR_FORMAT,
+    ENTITY_UNIQUE_ID,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ["unifiprotect"]
-
 ATTR_CAMERA_TYPE = "camera_type"
-ATTR_BRAND = "brand"
 
 SENSOR_TYPES = {
     "motion_recording": ["Motion Recording", None, "camcorder", "motion_recording"]
 }
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_MONITORED_CONDITIONS, default=list(SENSOR_TYPES)): vol.All(
-            cv.ensure_list, [vol.In(SENSOR_TYPES)]
-        ),
-    }
-)
 
-
-async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
-    """Set up an Unifi Protect sensor."""
-    coordinator = hass.data[UPV_DATA]["coordinator"]
+async def async_setup_entry(
+    hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
+) -> None:
+    """A Ubiquiti Unifi Protect Sensor."""
+    coordinator = hass.data[DOMAIN][entry.data[CONF_ID]]["coordinator"]
     if not coordinator.data:
         return
 
     sensors = []
-    for sensor_type in config.get(CONF_MONITORED_CONDITIONS):
+    for sensor in SENSOR_TYPES:
         for camera in coordinator.data:
-            sensors.append(UnifiProtectSensor(coordinator, camera, sensor_type))
+            sensors.append(
+                UnifiProtectSensor(coordinator, camera, sensor, entry.data[CONF_ID])
+            )
 
     async_add_entities(sensors, True)
 
+    return True
+
 
 class UnifiProtectSensor(Entity):
-    """A Unifi Protect Binary Sensor."""
+    """A Ubiquiti Unifi Protect Sensor."""
 
-    def __init__(self, coordinator, camera, sensor_type):
+    def __init__(self, coordinator, camera, sensor, instance):
         """Initialize an Unifi Protect sensor."""
         self.coordinator = coordinator
         self._camera_id = camera
         self._camera = self.coordinator.data[camera]
-        self._name = "{0} {1}".format(
-            SENSOR_TYPES[sensor_type][0], self._camera["name"]
-        )
-        self._unique_id = self._name.lower().replace(" ", "_")
-        self._sensor_type = sensor_type
-        self._icon = "mdi:{}".format(SENSOR_TYPES.get(self._sensor_type)[2])
+        self._name = f"{SENSOR_TYPES[sensor][0]} {self._camera['name']}"
+        self._units = SENSOR_TYPES[sensor][1]
+        self._icon = f"mdi:{SENSOR_TYPES[sensor][2]}"
         self._camera_type = self._camera["model"]
-        self._attr = SENSOR_TYPES.get(self._sensor_type)[3]
+
+        self.entity_id = ENTITY_ID_SENSOR_FORMAT.format(
+            slugify(instance), slugify(self._name).replace(" ", "_")
+        )
+        self._unique_id = ENTITY_UNIQUE_ID.format(
+            slugify(instance), "sensor", self._camera_id
+        )
+
         _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {self._name}")
 
     @property
@@ -85,7 +92,7 @@ class UnifiProtectSensor(Entity):
     @property
     def unit_of_measurement(self):
         """Return the units of measurement."""
-        return SENSOR_TYPES.get(self._sensor_type)[1]
+        return self._units
 
     @property
     def device_class(self):
@@ -98,7 +105,6 @@ class UnifiProtectSensor(Entity):
         attrs = {}
 
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
-        attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_CAMERA_TYPE] = self._camera_type
         attrs[ATTR_FRIENDLY_NAME] = self._name
 

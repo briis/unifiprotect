@@ -8,7 +8,9 @@
                     "host": "IP Address of CloudKey+ or UDMP",
                     "port": "Port Number: (7443 CloudKey+, 443 UDMP)",
                     "username": "Username",
-                    "password": "Password"
+                    "password": "Password",
+                    "ir_on": "Setting to use for Infrared Light ON",
+                    "ir_off": "Settings to use for Infrared Light OFF"
                 }
             }
         },

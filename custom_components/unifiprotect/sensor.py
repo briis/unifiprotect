@@ -67,7 +67,7 @@ class UnifiProtectSensor(Entity):
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
         self._unique_id = ENTITY_UNIQUE_ID.format(
-            slugify(instance), "sensor", self._camera_id
+            slugify(instance), sensor, self._camera_id
         )
 
         _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {self._name}")

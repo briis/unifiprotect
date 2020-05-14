@@ -21,6 +21,12 @@ from aiohttp import CookieJar
 from .const import (
     DOMAIN,
     DEFAULT_PORT,
+    CONF_IR_ON,
+    CONF_IR_OFF,
+    TYPE_IR_AUTO,
+    TYPE_IR_OFF,
+    TYPES_IR_OFF,
+    TYPES_IR_ON,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,9 +46,13 @@ class UnifiProtectFlowHandler(ConfigFlow):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_HOST): str,
-                    vol.Optional(CONF_PORT, default=DEFAULT_PORT): int,
+                    vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
                     vol.Required(CONF_USERNAME): str,
-                    vol.Optional(CONF_PASSWORD): str,
+                    vol.Required(CONF_PASSWORD): str,
+                    vol.Optional(CONF_IR_ON, default=TYPE_IR_AUTO): vol.In(TYPES_IR_ON),
+                    vol.Optional(CONF_IR_OFF, default=TYPE_IR_OFF): vol.In(
+                        TYPES_IR_OFF
+                    ),
                 }
             ),
             errors=errors or {},
@@ -89,5 +99,7 @@ class UnifiProtectFlowHandler(ConfigFlow):
                 CONF_PORT: user_input[CONF_PORT],
                 CONF_USERNAME: user_input.get(CONF_USERNAME),
                 CONF_PASSWORD: user_input.get(CONF_PASSWORD),
+                CONF_IR_ON: user_input.get(CONF_IR_ON),
+                CONF_IR_OFF: user_input.get(CONF_IR_OFF),
             },
         )

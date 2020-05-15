@@ -227,7 +227,8 @@ async def async_handle_save_thumbnail_service(hass, call, server):
 
 async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool:
     """Unload Unifi Protect config entry."""
-    await hass.config_entries.async_forward_entry_unload(entry, "camera")
+    for platform in UNIFI_PROTECT_PLATFORMS:
+        await hass.config_entries.async_forward_entry_unload(entry, platform)
 
     del hass.data[DOMAIN][entry.data[CONF_ID]]
 

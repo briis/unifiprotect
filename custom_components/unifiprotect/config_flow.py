@@ -7,6 +7,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import (
+    CONF_ID,
     CONF_HOST,
     CONF_USERNAME,
     CONF_PASSWORD,
@@ -14,7 +15,6 @@ from homeassistant.const import (
 )
 
 from homeassistant.config_entries import ConfigFlow
-from homeassistant.const import CONF_ID
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from aiohttp import CookieJar
 

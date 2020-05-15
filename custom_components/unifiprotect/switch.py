@@ -5,7 +5,12 @@ import voluptuous as vol
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.switch import SwitchDevice
+
+try:
+    from homeassistant.components.switch import SwitchEntity as SwitchDevice
+except ImportError:
+    # Prior to HA v0.110
+    from homeassistant.components.switch import SwitchDevice
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     CONF_ID,

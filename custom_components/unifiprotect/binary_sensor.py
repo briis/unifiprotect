@@ -3,10 +3,16 @@ import logging
 import voluptuous as vol
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.binary_sensor import (
-    BinarySensorDevice,
-    DEVICE_CLASS_MOTION,
-)
+
+try:
+    from homeassistant.components.binary_sensor import (
+        BinarySensorEntity as BinarySensorDevice,
+    )
+except ImportError:
+    # Prior to HA v0.110
+    from homeassistant.components.binary_sensor import BinarySensorDevice
+
+from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,

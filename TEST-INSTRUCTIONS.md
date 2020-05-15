@@ -20,9 +20,20 @@ For everyone that wants to try this out, I would like you test one or more of th
 * General stability of the system
 * The setup process using the Form - Is it logical, anything you miss to be able to specify?
 * Does it support more than ONE instance? So hopefully, someone with more HW than me, could test this.
+* If anyone wants to translate the form text to something else than English and Danish, you can go to the `translation` directory and copy the `en.json` file to your own language code, and submit the file to Github.
 
 Please don't use the Home Assistant Forum for feedback, but instead use the [Issue Page](https://github.com/briis/unifiprotect/issues) on Github for feedback and bug reporting.
 
 ## Setup Instructions
 
+I have not made this available in HACS, so it will require a manual installation while testing. 
 
+The source of this new version (Called 0.4.0) can be found [here](https://github.com/briis/unifiprotect/tree/v0.4.0/custom_components/unifiprotect)
+
+1. If you already have an earlier version of unifiprotect installed, you must remove that from your configuration files, delete the files in the `custom_components/unifiprotect` directory (or deinstall via HACS) and restart HA.
+2. Copy all the files from the directory given about to `custom_components/unifiprotect` in your Home Assistant installation and restart HA.
+3. Go to *Settings* and then *Integration* and search for Unifi Protect
+4. Select the Integration, fill out the form and press Save. Once this is done, you should now have all Entities of Unifi Protect present in Home Assistance.
+
+Have fun.
+/B

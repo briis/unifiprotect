@@ -7,8 +7,22 @@ I know some people have strong feelings about 'to Yaml or not to Yaml' but looki
 
 **Disclaimer** Even though the core of the system has not changed for this version, and as such should be *production ready*, I strongly advise that that this test version is installed on a non-critical HA Instance. During the test, basic things may change, and then you will need to de-install and install again, loosing your current setup.
 
-## Whats new
+## Whats new?
 
 There are not that many new things in here, but the ones there are will make the old setup **break**.
-* The setup is changed from adding things to `configuration.yaml` and other yaml files, to using the *Integration Page* from the *Settings Menu*. It should be clear enough what you need to enter, but that is part of the testing.
+* The setup is changed from adding settings to `configuration.yaml` and other yaml files, to using the *Integration Page* from the *Settings Menu*. It should be clear enough what you need to enter, but that is part of the testing.
 * Previously there was a module called `unifi_protect_server.py` distributed with the Custom Component. This has now been moved to *PyPi.org* as a separate module called [pyunifiprotect](https://github.com/briis/pyunifiprotect). So if anyone wants to change or develop on the core API logic, you need to Fork that module now.
+* It should now be possible to add more than one instance of this Integration to Home Assistant. So if you have more that one UDMP or CloudKey+ you should be able to add them all. I have only one CloudKey+, so I have not been able to test this.
+* Due to the support of more Instances, the naming of the Cameras, Sensors, Binary Sensors and Switches have changed. So if you would install this on an existing system, you would have to change automations etc.
+
+## What needs to be tested?
+For everyone that wants to try this out, I would like you test one or more of the following:
+* General stability of the system
+* The setup process using the Form - Is it logical, anything you miss to be able to specify?
+* Does it support more than ONE instance? So hopefully, someone with more HW than me, could test this.
+
+Please don't use the Home Assistant Forum for feedback, but instead use the [Issue Page](https://github.com/briis/unifiprotect/issues) on Github for feedback and bug reporting.
+
+## Setup Instructions
+
+

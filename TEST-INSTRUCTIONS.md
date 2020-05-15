@@ -5,7 +5,7 @@ Home Assistant is moving away from *Custom Components* and towards *Integrations
 So to achieve this, I have now converted the *unifiprotect* Custom Component to an *Integration* This means that everything is now setup using a Form from the Integrations page in Home Assistant. And as I don't want to maintain more complexity than necessary, I have decided to remove the Yaml configuration completely.  
 I know some people have strong feelings about 'to Yaml or not to Yaml' but looking at the number of Configuration Options we need for this Integration, it makes perfectly sense to me, to remove the Yaml option.
 
-**Disclaimer** Even though the core of the system has not changed for this version, and as such should be *production ready*, I strongly advise that that this test version is installed on a non-critical HA Instance. During the test, basic things may change, and then you will need to de-install and install again, loosing your current setup.
+**Disclaimer** Even though the core of the system has not changed from V0.3.3 for this version, and as such should be *production ready*, I strongly advise that that this test version is installed on a non-critical HA Instance. During the test, basic things may change, and then you will need to de-install and install again, loosing your current setup.
 
 ## Whats new?
 

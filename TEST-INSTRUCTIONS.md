@@ -9,7 +9,7 @@ I know some people have strong feelings about 'to Yaml or not to Yaml' but looki
 
 ## Whats new?
 
-There are not that many new things in here, but the ones there are will make the old setup **break**.
+There are not that many new things in here, but the ones that are will make the old setup **break**.
 * The setup is changed from adding settings to `configuration.yaml` and other yaml files, to using the *Integration Page* from the *Settings Menu*. It should be clear enough what you need to enter, but that is part of the testing.
 * Previously there was a module called `unifi_protect_server.py` distributed with the Custom Component. This has now been moved to *PyPi.org* as a separate module called [pyunifiprotect](https://github.com/briis/pyunifiprotect). So if anyone wants to change or develop on the core API logic, you need to Fork that module now.
 * It should now be possible to add more than one instance of this Integration to Home Assistant. So if you have more that one UDMP or CloudKey+ you should be able to add them all. I have only one CloudKey+, so I have not been able to test this.

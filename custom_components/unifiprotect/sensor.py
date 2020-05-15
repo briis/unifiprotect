@@ -1,9 +1,6 @@
 """ This component provides sensors for Unifi Protect."""
 import logging
 
-# import voluptuous as vol
-
-# import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.const import (
     ATTR_ATTRIBUTION,

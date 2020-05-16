@@ -158,6 +158,10 @@ class UnifiProtectSwitch(SwitchDevice):
             self.coordinator.async_add_listener(self.async_write_ha_state)
         )
 
+    async def async_will_remove_from_hass(self):
+        """When entity will be removed from hass."""
+        self.coordinator.async_remove_listener(self.async_write_ha_state)
+
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
         if self._switch_type == "record_motion":

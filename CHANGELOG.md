@@ -5,8 +5,6 @@
 **BREAKING** From this version on the only way to configure Unifi Protect is from the Integration Page in the Settings Menu. All Yaml configuration has been removed. I am aware that this is not what everybody wants, but it is the way Home Assistant is moving, and I don't want to maintain two different ways of Configuration.<br>
 So before you install this version, please remove all `unifiprotect` entries from your configurations files, and restart Home Assistant. Then you can upgrade via HACS and go to the Integration Page and install Unifi Protect.
 
-**Possible Errors**<br>
-* Error with jwt decode. It seems that both jwt and PyJwt are installed as version 0.111 - You need to uninstall both and then install PyJWT.
 
 ## Version 0.3.2
 

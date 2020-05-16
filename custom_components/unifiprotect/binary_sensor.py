@@ -76,7 +76,7 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
         self._unique_id = ENTITY_UNIQUE_ID.format(
-            slugify(instance), camera, self._camera_id
+            slugify(instance), sensor_type, self._camera_id
         )
 
         if self._device_class == DEVICE_CLASS_DOORBELL:

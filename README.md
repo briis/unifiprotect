@@ -21,8 +21,8 @@ Before you install this Integration you need to ensure that the following two se
 
 **Note:**
 
-* This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.0-beta.16 and higher. I cannot guarantee that this will work on a lower version than that.
-* As of version 0.3.0, this Integration also supports the UDM Pro with UnifiOS, thanks to the work of @msvinth.
+* This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.3-beta.4 and higher. It will not work on a lower version than that.
+* As of version 0.3.0, this Integration also supports the UDM Pro with UnifiOS, thanks to the work of @msvinth. You need the version of Unifi Protect that supports the Doorbell, or this Integration will fail.
 
 ## Manual Installation
 

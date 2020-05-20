@@ -187,7 +187,7 @@ class UpvServer:
                     # Get the last time doorbell was ringing
                     lastring = (
                         None
-                        if camera["lastRing"] is None
+                        if camera.get("lastRing") is None
                         else datetime.datetime.fromtimestamp(
                             int(camera["lastRing"]) / 1000
                         ).strftime("%Y-%m-%d %H:%M:%S")

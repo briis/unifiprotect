@@ -150,7 +150,7 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
     def device_info(self):
         return {
             "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
-            "name": self.name,
+            "name": self._name,
             "manufacturer": DEFAULT_BRAND,
             "model": self._camera_type,
             "sw_version": self._server_version,

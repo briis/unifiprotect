@@ -70,13 +70,14 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         self._camera_id = camera
         self._camera = coordinator.data[camera]
         self._name = f"{sensor_type.capitalize()} {self._camera['name']}"
+        self._mac = self._camera["mac"]
         self._device_class = sensor_type
         self._event_score = self._camera["event_score"]
         self.entity_id = ENTITY_ID_BINARY_SENSOR_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
         self._unique_id = ENTITY_UNIQUE_ID.format(
-            slugify(instance), sensor_type, self._camera_id
+            slugify(instance), sensor_type, self._mac
         )
 
         if self._device_class == DEVICE_CLASS_DOORBELL:

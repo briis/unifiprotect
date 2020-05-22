@@ -1,6 +1,10 @@
 {
     "name": "Unifi Protect Integration for Home Assistant",
-    "render_readme": true,
-    "domains": ["binary_sensor", "sensor", "camera", "switch"],
+    "domains": [
+        "binary_sensor",
+        "sensor",
+        "camera",
+        "switch"
+    ],
     "iot_class": "Local Polling"
 }

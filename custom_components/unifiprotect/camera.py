@@ -62,6 +62,7 @@ class UnifiProtectCamera(Camera):
         self._camera = coordinator.data[camera]
 
         self._name = self._camera["name"]
+        self._mac = self._camera["mac"]
         self._device_type = self._camera["type"]
         self._model = self._camera["model"]
         self._up_since = self._camera["up_since"]
@@ -78,9 +79,7 @@ class UnifiProtectCamera(Camera):
         self.entity_id = ENTITY_ID_CAMERA_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
-        self._unique_id = ENTITY_UNIQUE_ID.format(
-            slugify(instance), camera, self._camera_id
-        )
+        self._unique_id = ENTITY_UNIQUE_ID.format(slugify(instance), camera, self._mac)
 
         if self._motion_status != "never" and self._online:
             self._isrecording = True

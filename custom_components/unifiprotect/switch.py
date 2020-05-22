@@ -95,6 +95,7 @@ class UnifiProtectSwitch(SwitchDevice):
         self._camera_id = camera
         self._camera = self.coordinator.data[camera]
         self._name = f"{SWITCH_TYPES[switch][0]} {self._camera['name']}"
+        self._mac = self._camera["mac"]
         self._icon = f"mdi:{SWITCH_TYPES[switch][2]}"
         self._ir_on_cmd = ir_on
         self._ir_off_cmd = ir_off
@@ -104,9 +105,7 @@ class UnifiProtectSwitch(SwitchDevice):
         self.entity_id = ENTITY_ID_SWITCH_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
-        self._unique_id = ENTITY_UNIQUE_ID.format(
-            slugify(instance), switch, self._camera_id
-        )
+        self._unique_id = ENTITY_UNIQUE_ID.format(slugify(instance), switch, self._mac)
 
         _LOGGER.debug(f"UNIFIPROTECT SWITCH CREATED: {self._name}")
 

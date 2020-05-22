@@ -19,6 +19,7 @@ from homeassistant.const import (
     ATTR_LAST_TRIP_TIME,
     CONF_ID,
 )
+import homeassistant.helpers.device_registry as dr
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.util import slugify
@@ -71,6 +72,9 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         self._camera = coordinator.data[camera]
         self._name = f"{sensor_type.capitalize()} {self._camera['name']}"
         self._mac = self._camera["mac"]
+        self._server_version = self._camera["server_version"]
+        self._server_id = self._camera["server_id"]
+        self._camera_type = self._camera["type"]
         self._device_class = sensor_type
         self._event_score = self._camera["event_score"]
         self.entity_id = ENTITY_ID_BINARY_SENSOR_FORMAT.format(
@@ -141,6 +145,17 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
     def available(self):
         """Return if entity is available."""
         return self.coordinator.last_update_success
+
+    @property
+    def device_info(self):
+        return {
+            "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
+            "name": self.name,
+            "manufacturer": DEFAULT_BRAND,
+            "model": self._camera_type,
+            "sw_version": self._server_version,
+            "via_device": (DOMAIN, self._server_id),
+        }
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""

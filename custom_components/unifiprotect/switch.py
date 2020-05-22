@@ -5,6 +5,7 @@ import voluptuous as vol
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
+import homeassistant.helpers.device_registry as dr
 
 try:
     from homeassistant.components.switch import SwitchEntity as SwitchDevice
@@ -24,6 +25,7 @@ from .const import (
     CONF_IR_OFF,
     DOMAIN,
     DEFAULT_ATTRIBUTION,
+    DEFAULT_BRAND,
     TYPE_RECORD_ALLWAYS,
     TYPE_RECORD_MOTION,
     TYPE_RECORD_NEVER,
@@ -96,6 +98,8 @@ class UnifiProtectSwitch(SwitchDevice):
         self._camera = self.coordinator.data[camera]
         self._name = f"{SWITCH_TYPES[switch][0]} {self._camera['name']}"
         self._mac = self._camera["mac"]
+        self._server_version = self._camera["server_version"]
+        self._server_id = self._camera["server_id"]
         self._icon = f"mdi:{SWITCH_TYPES[switch][2]}"
         self._ir_on_cmd = ir_on
         self._ir_off_cmd = ir_off
@@ -150,6 +154,17 @@ class UnifiProtectSwitch(SwitchDevice):
         attrs[ATTR_CAMERA_TYPE] = self._camera_type
 
         return attrs
+
+    @property
+    def device_info(self):
+        return {
+            "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
+            "name": self.name,
+            "manufacturer": DEFAULT_BRAND,
+            "model": self._camera_type,
+            "sw_version": self._server_version,
+            "via_device": (DOMAIN, self._server_id),
+        }
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""

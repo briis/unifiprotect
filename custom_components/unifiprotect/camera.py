@@ -11,6 +11,7 @@ from homeassistant.const import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.util import slugify
+import homeassistant.helpers.device_registry as dr
 
 from .const import (
     ATTR_CAMERA_ID,
@@ -22,6 +23,7 @@ from .const import (
     DEVICE_CLASS_DOORBELL,
     ENTITY_ID_CAMERA_FORMAT,
     ENTITY_UNIQUE_ID,
+    DEFAULT_BRAND,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +65,8 @@ class UnifiProtectCamera(Camera):
 
         self._name = self._camera["name"]
         self._mac = self._camera["mac"]
+        self._server_version = self._camera["server_version"]
+        self._server_id = self._camera["server_id"]
         self._device_type = self._camera["type"]
         self._model = self._camera["model"]
         self._up_since = self._camera["up_since"]
@@ -140,6 +144,17 @@ class UnifiProtectCamera(Camera):
             attrs[ATTR_LAST_TRIP_TIME] = self._last_motion
 
         return attrs
+
+    @property
+    def device_info(self):
+        return {
+            "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
+            "name": self.name,
+            "manufacturer": DEFAULT_BRAND,
+            "model": self._device_type,
+            "sw_version": self._server_version,
+            "via_device": (DOMAIN, self._server_id),
+        }
 
     def update(self):
         """ Updates Attribute States."""

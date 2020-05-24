@@ -43,6 +43,7 @@ async def async_setup_entry(
             sensors.append(
                 UnifiProtectSensor(coordinator, camera, sensor, entry.data[CONF_ID])
             )
+            _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {sensor}")
 
     async_add_entities(sensors, True)
 
@@ -56,21 +57,19 @@ class UnifiProtectSensor(Entity):
         """Initialize an Unifi Protect sensor."""
         self.coordinator = coordinator
         self._camera_id = camera
-        self._camera = self.coordinator.data[camera]
-        self._name = f"{SENSOR_TYPES[sensor][0]} {self._camera['name']}"
-        self._mac = self._camera["mac"]
-        self._firmware_version = self._camera["firmware_version"]
-        self._server_id = self._camera["server_id"]
+        self._camera_data = self.coordinator.data[self._camera_id]
+        self._name = f"{SENSOR_TYPES[sensor][0]} {self._camera_data['name']}"
+        self._mac = self._camera_data["mac"]
+        self._firmware_version = self._camera_data["firmware_version"]
+        self._server_id = self._camera_data["server_id"]
         self._units = SENSOR_TYPES[sensor][1]
         self._icon = f"mdi:{SENSOR_TYPES[sensor][2]}"
-        self._camera_type = self._camera["model"]
+        self._camera_type = self._camera_data["model"]
 
         self.entity_id = ENTITY_ID_SENSOR_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
         self._unique_id = ENTITY_UNIQUE_ID.format(sensor, self._mac)
-
-        _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {self._name}")
 
     @property
     def unique_id(self):
@@ -85,7 +84,7 @@ class UnifiProtectSensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.coordinator.data[self._camera_id]["recording_mode"]
+        return self._camera_data["recording_mode"]
 
     @property
     def icon(self):

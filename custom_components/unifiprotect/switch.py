@@ -79,6 +79,7 @@ async def async_setup_entry(
                     entry.data[CONF_ID],
                 )
             )
+            _LOGGER.debug(f"UNIFIPROTECT SWITCH CREATED: {switch}")
 
     async_add_entities(switches, True)
 
@@ -95,23 +96,21 @@ class UnifiProtectSwitch(SwitchDevice):
         self.coordinator = coordinator
         self.upv = upv_object
         self._camera_id = camera
-        self._camera = self.coordinator.data[camera]
-        self._name = f"{SWITCH_TYPES[switch][0]} {self._camera['name']}"
-        self._mac = self._camera["mac"]
-        self._firmware_version = self._camera["firmware_version"]
-        self._server_id = self._camera["server_id"]
+        self._camera_data = self.coordinator.data[self._camera_id]
+        self._name = f"{SWITCH_TYPES[switch][0]} {self._camera_data['name']}"
+        self._mac = self._camera_data["mac"]
+        self._firmware_version = self._camera_data["firmware_version"]
+        self._server_id = self._camera_data["server_id"]
         self._icon = f"mdi:{SWITCH_TYPES[switch][2]}"
         self._ir_on_cmd = ir_on
         self._ir_off_cmd = ir_off
-        self._camera_type = self._camera["type"]
+        self._camera_type = self._camera_data["type"]
         self._switch_type = SWITCH_TYPES[switch][2]
 
         self.entity_id = ENTITY_ID_SWITCH_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
         self._unique_id = ENTITY_UNIQUE_ID.format(switch, self._mac)
-
-        _LOGGER.debug(f"UNIFIPROTECT SWITCH CREATED: {self._name}")
 
     @property
     def unique_id(self):
@@ -131,13 +130,20 @@ class UnifiProtectSwitch(SwitchDevice):
     @property
     def is_on(self):
         """Return true if device is on."""
-        camera = self.coordinator.data[self._camera_id]
         if self._switch_type == "record_motion":
-            enabled = True if camera["recording_mode"] == TYPE_RECORD_MOTION else False
+            enabled = (
+                True
+                if self._camera_data["recording_mode"] == TYPE_RECORD_MOTION
+                else False
+            )
         elif self._switch_type == "record_always":
-            enabled = True if camera["recording_mode"] == TYPE_RECORD_ALLWAYS else False
+            enabled = (
+                True
+                if self._camera_data["recording_mode"] == TYPE_RECORD_ALLWAYS
+                else False
+            )
         else:
-            enabled = True if camera["ir_mode"] == self._ir_on_cmd else False
+            enabled = True if self._camera_data["ir_mode"] == self._ir_on_cmd else False
         return enabled
 
     @property

@@ -61,15 +61,15 @@ class UnifiProtectCamera(Camera):
         self.upv_object = upv_object
         self.coordinator = coordinator
         self._camera_id = camera
-        self._camera = coordinator.data[camera]
+        self._camera_data = self.coordinator.data[self._camera_id]
 
-        self._name = self._camera["name"]
-        self._mac = self._camera["mac"]
-        self._firmware_version = self._camera["firmware_version"]
-        self._server_id = self._camera["server_id"]
-        self._device_type = self._camera["type"]
-        self._model = self._camera["model"]
-        self._stream_source = self._camera["rtsp"]
+        self._name = self._camera_data["name"]
+        self._mac = self._camera_data["mac"]
+        self._firmware_version = self._camera_data["firmware_version"]
+        self._server_id = self._camera_data["server_id"]
+        self._device_type = self._camera_data["type"]
+        self._model = self._camera_data["model"]
+        self._stream_source = self._camera_data["rtsp"]
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
         self.entity_id = ENTITY_ID_CAMERA_FORMAT.format(
@@ -102,7 +102,7 @@ class UnifiProtectCamera(Camera):
     @property
     def motion_detection_enabled(self):
         """Camera Motion Detection Status."""
-        return self._camera["recording_mode"]
+        return self._camera_data["recording_mode"]
 
     @property
     def brand(self):
@@ -119,7 +119,8 @@ class UnifiProtectCamera(Camera):
         """Return true if the device is recording."""
         return (
             True
-            if self._camera["recording_mode"] != "never" and self._camera["online"]
+            if self._camera_data["recording_mode"] != "never"
+            and self._camera_data["online"]
             else False
         )
 
@@ -128,12 +129,12 @@ class UnifiProtectCamera(Camera):
         """Add additional Attributes to Camera."""
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_UP_SINCE: self._camera["up_since"],
-            ATTR_ONLINE: self._camera["online"],
+            ATTR_UP_SINCE: self._camera_data["up_since"],
+            ATTR_ONLINE: self._camera_data["online"],
             ATTR_CAMERA_ID: self._camera_id,
-            ATTR_LAST_TRIP_TIME: self._camera["last_ring"]
+            ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"]
             if self._device_type == DEVICE_CLASS_DOORBELL
-            else self._camera["last_motion"],
+            else self._camera_data["last_motion"],
         }
 
     @property

@@ -75,14 +75,14 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
     def __init__(self, coordinator, camera, sensor_type, instance):
         self.coordinator = coordinator
         self._camera_id = camera
-        self._camera = coordinator.data[camera]
-        self._name = f"{sensor_type.capitalize()} {self._camera['name']}"
-        self._mac = self._camera["mac"]
-        self._firmware_version = self._camera["firmware_version"]
-        self._server_id = self._camera["server_id"]
-        self._camera_type = self._camera["type"]
+        self._camera_data = self.coordinator.data[self._camera_id]
+
+        self._name = f"{sensor_type.capitalize()} {self._camera_data['name']}"
+        self._mac = self._camera_data["mac"]
+        self._firmware_version = self._camera_data["firmware_version"]
+        self._server_id = self._camera_data["server_id"]
+        self._camera_type = self._camera_data["type"]
         self._device_class = sensor_type
-        self._event_score = self._camera["event_score"]
         self.entity_id = ENTITY_ID_BINARY_SENSOR_FORMAT.format(
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
@@ -102,9 +102,9 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
     def is_on(self):
         """Return true if the binary sensor is on."""
         if self._device_class == DEVICE_CLASS_DOORBELL:
-            return self.coordinator.data[self._camera_id]["event_ring_on"]
+            return self._camera_data["event_ring_on"]
         else:
-            return self.coordinator.data[self._camera_id]["event_on"]
+            return self._camera_data["event_on"]
 
     @property
     def device_class(self):
@@ -115,7 +115,7 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
     def icon(self):
         """Select icon to display in Frontend."""
         if self._device_class == DEVICE_CLASS_DOORBELL:
-            if self.coordinator.data[self._camera_id]["event_ring_on"]:
+            if self._camera_data["event_ring_on"]:
                 return "mdi:bell-ring-outline"
             else:
                 return "mdi:doorbell-video"
@@ -125,10 +125,10 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         """Return the device state attributes."""
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_LAST_TRIP_TIME: self.coordinator.data[self._camera_id]["last_ring"]
+            ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"]
             if self._device_class == DEVICE_CLASS_DOORBELL
-            else self.coordinator.data[self._camera_id]["last_motion"],
-            ATTR_EVENT_SCORE: self.coordinator.data[self._camera_id]["last_ring"]
+            else self._camera_data["last_motion"],
+            ATTR_EVENT_SCORE: self._camera_data["last_ring"]
             if self._device_class != DEVICE_CLASS_DOORBELL
             else None,
         }

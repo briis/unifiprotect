@@ -70,13 +70,7 @@ async def async_setup_entry(
         for camera in coordinator.data:
             switches.append(
                 UnifiProtectSwitch(
-                    coordinator,
-                    upv_object,
-                    camera,
-                    switch,
-                    ir_on,
-                    ir_off,
-                    entry.data[CONF_ID],
+                    coordinator, upv_object, camera, switch, ir_on, ir_off,
                 )
             )
             _LOGGER.debug(f"UNIFIPROTECT SWITCH CREATED: {switch}")
@@ -89,9 +83,7 @@ async def async_setup_entry(
 class UnifiProtectSwitch(SwitchDevice):
     """A Unifi Protect Switch."""
 
-    def __init__(
-        self, coordinator, upv_object, camera, switch, ir_on, ir_off, instance
-    ):
+    def __init__(self, coordinator, upv_object, camera, switch, ir_on, ir_off):
         """Initialize an Unifi Protect Switch."""
         self.coordinator = coordinator
         self.upv = upv_object
@@ -106,10 +98,6 @@ class UnifiProtectSwitch(SwitchDevice):
         self._ir_off_cmd = ir_off
         self._camera_type = self._camera_data["type"]
         self._switch_type = SWITCH_TYPES[switch][2]
-
-        self.entity_id = ENTITY_ID_SWITCH_FORMAT.format(
-            slugify(instance), slugify(self._name).replace(" ", "_")
-        )
         self._unique_id = ENTITY_UNIQUE_ID.format(switch, self._mac)
 
     @property

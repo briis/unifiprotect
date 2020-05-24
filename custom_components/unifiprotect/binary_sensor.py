@@ -47,18 +47,14 @@ async def async_setup_entry(
     for camera in coordinator.data:
         if coordinator.data[camera]["type"] == DEVICE_CLASS_DOORBELL:
             sensors.append(
-                UnifiProtectBinarySensor(
-                    coordinator, camera, DEVICE_CLASS_DOORBELL, entry.data[CONF_ID]
-                )
+                UnifiProtectBinarySensor(coordinator, camera, DEVICE_CLASS_DOORBELL)
             )
             _LOGGER.debug(
                 f"UNIFIPROTECT DOORBELL SENSOR CREATED: {coordinator.data[camera]['name']}"
             )
 
         sensors.append(
-            UnifiProtectBinarySensor(
-                coordinator, camera, DEVICE_CLASS_MOTION, entry.data[CONF_ID]
-            )
+            UnifiProtectBinarySensor(coordinator, camera, DEVICE_CLASS_MOTION)
         )
         _LOGGER.debug(
             f"UNIFIPROTECT MOTION SENSOR CREATED: {coordinator.data[camera]['name']}"
@@ -72,7 +68,7 @@ async def async_setup_entry(
 class UnifiProtectBinarySensor(BinarySensorDevice):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, coordinator, camera, sensor_type, instance):
+    def __init__(self, coordinator, camera, sensor_type):
         self.coordinator = coordinator
         self._camera_id = camera
         self._camera_data = self.coordinator.data[self._camera_id]
@@ -83,9 +79,6 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         self._server_id = self._camera_data["server_id"]
         self._camera_type = self._camera_data["type"]
         self._device_class = sensor_type
-        self.entity_id = ENTITY_ID_BINARY_SENSOR_FORMAT.format(
-            slugify(instance), slugify(self._name).replace(" ", "_")
-        )
         self._unique_id = ENTITY_UNIQUE_ID.format(sensor_type, self._mac)
 
     @property

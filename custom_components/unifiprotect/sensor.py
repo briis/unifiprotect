@@ -40,9 +40,7 @@ async def async_setup_entry(
     sensors = []
     for sensor in SENSOR_TYPES:
         for camera in coordinator.data:
-            sensors.append(
-                UnifiProtectSensor(coordinator, camera, sensor, entry.data[CONF_ID])
-            )
+            sensors.append(UnifiProtectSensor(coordinator, camera, sensor))
             _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {sensor}")
 
     async_add_entities(sensors, True)
@@ -53,7 +51,7 @@ async def async_setup_entry(
 class UnifiProtectSensor(Entity):
     """A Ubiquiti Unifi Protect Sensor."""
 
-    def __init__(self, coordinator, camera, sensor, instance):
+    def __init__(self, coordinator, camera, sensor):
         """Initialize an Unifi Protect sensor."""
         self.coordinator = coordinator
         self._camera_id = camera
@@ -65,10 +63,6 @@ class UnifiProtectSensor(Entity):
         self._units = SENSOR_TYPES[sensor][1]
         self._icon = f"mdi:{SENSOR_TYPES[sensor][2]}"
         self._camera_type = self._camera_data["model"]
-
-        self.entity_id = ENTITY_ID_SENSOR_FORMAT.format(
-            slugify(instance), slugify(self._name).replace(" ", "_")
-        )
         self._unique_id = ENTITY_UNIQUE_ID.format(sensor, self._mac)
 
     @property

@@ -43,10 +43,7 @@ async def async_setup_entry(
     cameras = [camera for camera in coordinator.data]
 
     async_add_entities(
-        [
-            UnifiProtectCamera(upv_object, coordinator, camera, entry.data[CONF_ID])
-            for camera in cameras
-        ]
+        [UnifiProtectCamera(upv_object, coordinator, camera) for camera in cameras]
     )
 
     return True
@@ -55,7 +52,7 @@ async def async_setup_entry(
 class UnifiProtectCamera(Camera):
     """A Ubiquiti Unifi Protect Camera."""
 
-    def __init__(self, upv_object, coordinator, camera, instance):
+    def __init__(self, upv_object, coordinator, camera):
         """Initialize an Unifi camera."""
         super().__init__()
         self.upv_object = upv_object
@@ -72,9 +69,6 @@ class UnifiProtectCamera(Camera):
         self._stream_source = self._camera_data["rtsp"]
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
-        self.entity_id = ENTITY_ID_CAMERA_FORMAT.format(
-            slugify(instance), slugify(self._name).replace(" ", "_")
-        )
         self._unique_id = ENTITY_UNIQUE_ID.format(camera, self._mac)
 
         _LOGGER.debug(f"UNIFIPROTECT CAMERA CREATED: {self._name}")

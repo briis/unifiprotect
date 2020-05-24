@@ -2,25 +2,19 @@
 import logging
 
 from homeassistant.helpers.entity import Entity
-from homeassistant.const import (
-    ATTR_ATTRIBUTION,
-    CONF_ID,
-)
-import homeassistant.helpers.device_registry as dr
+from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.typing import HomeAssistantType
-from homeassistant.util import slugify
 from .const import (
+    ATTR_CAMERA_TYPE,
     ATTR_EVENT_SCORE,
     DOMAIN,
     DEFAULT_ATTRIBUTION,
     TYPE_RECORD_NEVER,
-    DEFAULT_BRAND,
 )
+from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
-
-ATTR_CAMERA_TYPE = "camera_type"
 
 SENSOR_TYPES = {
     "motion_recording": ["Motion Recording", None, "camcorder", "motion_recording"]
@@ -31,6 +25,7 @@ async def async_setup_entry(
     hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
 ) -> None:
     """A Ubiquiti Unifi Protect Sensor."""
+    upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     if not coordinator.data:
         return
@@ -38,7 +33,7 @@ async def async_setup_entry(
     sensors = []
     for sensor in SENSOR_TYPES:
         for camera in coordinator.data:
-            sensors.append(UnifiProtectSensor(coordinator, camera, sensor))
+            sensors.append(UnifiProtectSensor(upv_object, coordinator, camera, sensor))
             _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {sensor}")
 
     async_add_entities(sensors, True)
@@ -46,27 +41,16 @@ async def async_setup_entry(
     return True
 
 
-class UnifiProtectSensor(Entity):
+class UnifiProtectSensor(UnifiProtectEntity, Entity):
     """A Ubiquiti Unifi Protect Sensor."""
 
-    def __init__(self, coordinator, camera, sensor):
+    def __init__(self, upv_object, coordinator, camera_id, sensor):
         """Initialize an Unifi Protect sensor."""
-        self.coordinator = coordinator
-        self._camera_id = camera
-        self._camera_data = self.coordinator.data[self._camera_id]
+        super().__init__(upv_object, coordinator, camera_id, sensor)
         self._name = f"{SENSOR_TYPES[sensor][0]} {self._camera_data['name']}"
-        self._mac = self._camera_data["mac"]
-        self._firmware_version = self._camera_data["firmware_version"]
-        self._server_id = self._camera_data["server_id"]
         self._units = SENSOR_TYPES[sensor][1]
         self._icon = f"mdi:{SENSOR_TYPES[sensor][2]}"
         self._camera_type = self._camera_data["model"]
-        self._unique_id = f"{DOMAIN}_{sensor}_{self._mac}"
-
-    @property
-    def unique_id(self):
-        """Return a unique ID."""
-        return self._unique_id
 
     @property
     def name(self):
@@ -104,28 +88,6 @@ class UnifiProtectSensor(Entity):
         }
 
     @property
-    def should_poll(self):
-        """No need to poll. Coordinator notifies entity of updates."""
-        return False
-
-    @property
     def available(self):
         """Return if entity is available."""
         return self.coordinator.last_update_success
-
-    @property
-    def device_info(self):
-        return {
-            "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
-            "name": self.name,
-            "manufacturer": DEFAULT_BRAND,
-            "model": self._camera_type,
-            "sw_version": self._firmware_version,
-            "via_device": (DOMAIN, self._server_id),
-        }
-
-    async def async_added_to_hass(self):
-        """When entity is added to hass."""
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self.async_write_ha_state)
-        )

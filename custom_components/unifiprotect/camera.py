@@ -1,17 +1,12 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
-from datetime import timedelta
-
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_LAST_TRIP_TIME,
-    CONF_ID,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.typing import HomeAssistantType
-from homeassistant.util import slugify
-import homeassistant.helpers.device_registry as dr
 
 from .const import (
     ATTR_CAMERA_ID,
@@ -22,10 +17,9 @@ from .const import (
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
 )
+from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
-
-SCAN_INTERVAL = timedelta(seconds=10)
 
 
 async def async_setup_entry(
@@ -46,47 +40,26 @@ async def async_setup_entry(
     return True
 
 
-class UnifiProtectCamera(Camera):
+class UnifiProtectCamera(UnifiProtectEntity, Camera):
     """A Ubiquiti Unifi Protect Camera."""
 
-    def __init__(self, upv_object, coordinator, camera):
+    def __init__(self, upv_object, coordinator, camera_id):
         """Initialize an Unifi camera."""
-        super().__init__()
-        self.upv_object = upv_object
-        self.coordinator = coordinator
-        self._camera_id = camera
-        self._camera_data = self.coordinator.data[self._camera_id]
-
+        super().__init__(upv_object, coordinator, camera_id, None)
         self._name = self._camera_data["name"]
-        self._mac = self._camera_data["mac"]
-        self._firmware_version = self._camera_data["firmware_version"]
-        self._server_id = self._camera_data["server_id"]
-        self._device_type = self._camera_data["type"]
-        self._model = self._camera_data["model"]
         self._stream_source = self._camera_data["rtsp"]
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
-        self._unique_id = f"{DOMAIN}_{self._camera_id}_{self._mac}"
-
-    @property
-    def should_poll(self):
-        """Poll Cameras to update attributes."""
-        return False
-
-    @property
-    def supported_features(self):
-        """Return supported features for this camera."""
-        return self._supported_features
-
-    @property
-    def unique_id(self):
-        """Return a unique ID."""
-        return self._unique_id
 
     @property
     def name(self):
         """Return the name of this camera."""
         return self._name
+
+    @property
+    def supported_features(self):
+        """Return supported features for this camera."""
+        return self._supported_features
 
     @property
     def motion_detection_enabled(self):
@@ -129,17 +102,6 @@ class UnifiProtectCamera(Camera):
             ATTR_LAST_TRIP_TIME: last_trip_time,
         }
 
-    @property
-    def device_info(self):
-        return {
-            "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
-            "name": self.name,
-            "manufacturer": DEFAULT_BRAND,
-            "model": self._device_type,
-            "sw_version": self._firmware_version,
-            "via_device": (DOMAIN, self._server_id),
-        }
-
     async def async_update(self):
         """Update the entity.
 
@@ -170,9 +132,3 @@ class UnifiProtectCamera(Camera):
     async def stream_source(self):
         """ Return the Stream Source. """
         return self._stream_source
-
-    async def async_added_to_hass(self):
-        """When entity is added to hass."""
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self.async_write_ha_state)
-        )

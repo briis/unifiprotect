@@ -8,13 +8,6 @@ from homeassistant.components.binary_sensor import DOMAIN as BINARY_SENSOR_DOMAI
 DOMAIN = "unifiprotect"
 UNIQUE_ID = "unique_id"
 
-# ENTITY_ID_CAMERA_FORMAT = CAMERA_DOMAIN + "." + "{}_{}"
-# ENTITY_ID_SENSOR_FORMAT = SENSOR_DOMAIN + "." + "{}_{}"
-# ENTITY_ID_SWITCH_FORMAT = SWITCH_DOMAIN + "." + "{}_{}"
-# ENTITY_ID_BINARY_SENSOR_FORMAT = BINARY_SENSOR_DOMAIN + "." + "{}_{}"
-# ENTITY_UNIQUE_ID = DOMAIN + "_{}_{}"
-# ENTITY_UNIQUE_ID2 = DOMAIN + "_{}_{}"
-
 ATTR_CAMERA_ID = "camera_id"
 ATTR_CAMERA_TYPE = "camera_type"
 ATTR_UP_SINCE = "up_since"

@@ -1,0 +1,25 @@
+{
+    "config": {
+        "abort": {
+            "server_exists": "Denne Unifi Protect Server er allerede konfigureret."
+        },
+        "error": {
+            "connection_error": "Kan ikke forbinde. Forkert IP eller Brugernavn/Kodeord.",
+            "nvr_error": "Kan ikke hente data fra Unifi Protect."
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "host": "IP adresse på CloudKey+ eller UDMP",
+                    "port": "Port nummer: (7443 CloudKey+, 443 UDMP)",
+                    "username": "Brugernavn",
+                    "password": "Kodeord",
+                    "ir_on": "Instilling til Infrarødt Lys TÆNDT",
+                    "ir_off": "Instilling til Infrarødt Lys SLUKKET"
+                },
+                "description": "Konfigurer Unifi Protect for at monitorere kameraer og sensorer.",
+                "title": "Unifi Protect"
+            }
+        }
+    }
+}

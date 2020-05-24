@@ -1,0 +1,25 @@
+{
+    "config": {
+        "abort": {
+            "server_exists": "Unifi Protect Server allready configured."
+        },
+        "error": {
+            "connection_error": "Failed to connect. Wrong IP or Username/Password.",
+            "nvr_error": "Error retrieving data from Unifi Protect."
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "host": "IP Address of CloudKey+ or UDMP",
+                    "port": "Port Number: (7443 CloudKey+, 443 UDMP)",
+                    "username": "Username",
+                    "password": "Password",
+                    "ir_on": "Setting to use for Infrared Light ON",
+                    "ir_off": "Setting to use for Infrared Light OFF"
+                },
+                "description": "Set up Unifi Protect to monitor cameras and sensors.",
+                "title": "Unifi Protect"
+            }
+        }
+    }
+}

@@ -51,10 +51,17 @@ async def async_setup_entry(
                     coordinator, camera, DEVICE_CLASS_DOORBELL, entry.data[CONF_ID]
                 )
             )
+            _LOGGER.debug(
+                f"UNIFIPROTECT DOORBELL SENSOR CREATED: {coordinator.data[camera]['name']}"
+            )
+
         sensors.append(
             UnifiProtectBinarySensor(
                 coordinator, camera, DEVICE_CLASS_MOTION, entry.data[CONF_ID]
             )
+        )
+        _LOGGER.debug(
+            f"UNIFIPROTECT MOTION SENSOR CREATED: {coordinator.data[camera]['name']}"
         )
 
     async_add_entities(sensors, True)
@@ -80,11 +87,6 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
             slugify(instance), slugify(self._name).replace(" ", "_")
         )
         self._unique_id = ENTITY_UNIQUE_ID.format(sensor_type, self._mac)
-
-        if self._device_class == DEVICE_CLASS_DOORBELL:
-            _LOGGER.debug(f"UNIFIPROTECT DOORBELL SENSOR CREATED: {self._name}")
-        else:
-            _LOGGER.debug(f"UNIFIPROTECT MOTION SENSOR CREATED: {self._name}")
 
     @property
     def unique_id(self):

@@ -1,7 +1,6 @@
 """ This component provides binary sensors for Unifi Protect."""
 import logging
 import voluptuous as vol
-from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
 
@@ -12,54 +11,76 @@ try:
 except ImportError:
     # Prior to HA v0.110
     from homeassistant.components.binary_sensor import BinarySensorDevice
+
 from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     ATTR_FRIENDLY_NAME,
     ATTR_LAST_TRIP_TIME,
+    CONF_ID,
 )
-from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
-from . import (
-    UPV_DATA,
+import homeassistant.helpers.device_registry as dr
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.util import slugify
+from .const import (
+    ATTR_EVENT_SCORE,
+    DOMAIN,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
+    ENTITY_ID_BINARY_SENSOR_FORMAT,
+    ENTITY_UNIQUE_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ["unifiprotect"]
 
-ATTR_BRAND = "brand"
-ATTR_EVENT_SCORE = "event_score"
-
-
-async def async_setup_platform(hass, config, async_add_entities, _discovery_info=None):
-    """Set up an Unifi Protect binary sensor."""
-    coordinator = hass.data[UPV_DATA]["coordinator"]
+async def async_setup_entry(
+    hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
+) -> None:
+    """A Ubiquiti Unifi Protect Binary Sensor."""
+    coordinator = hass.data[DOMAIN][entry.data[CONF_ID]]["coordinator"]
     if not coordinator.data:
         return
 
     sensors = []
     for camera in coordinator.data:
-        if coordinator.data[camera]["type"] == "doorbell":
-            sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_DOORBELL))
-        sensors.append(UfpBinarySensor(coordinator, camera, DEVICE_CLASS_MOTION))
+        if coordinator.data[camera]["type"] == DEVICE_CLASS_DOORBELL:
+            sensors.append(
+                UnifiProtectBinarySensor(
+                    coordinator, camera, DEVICE_CLASS_DOORBELL, entry.data[CONF_ID]
+                )
+            )
+        sensors.append(
+            UnifiProtectBinarySensor(
+                coordinator, camera, DEVICE_CLASS_MOTION, entry.data[CONF_ID]
+            )
+        )
 
     async_add_entities(sensors, True)
 
+    return True
 
-class UfpBinarySensor(BinarySensorDevice):
+
+class UnifiProtectBinarySensor(BinarySensorDevice):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, coordinator, camera, sensor_type):
+    def __init__(self, coordinator, camera, sensor_type, instance):
         self.coordinator = coordinator
         self._camera_id = camera
         self._camera = coordinator.data[camera]
         self._name = f"{sensor_type.capitalize()} {self._camera['name']}"
-        self._unique_id = self._name.lower().replace(" ", "_")
+        self._mac = self._camera["mac"]
+        self._firmware_version = self._camera["firmware_version"]
+        self._server_id = self._camera["server_id"]
+        self._camera_type = self._camera["type"]
         self._device_class = sensor_type
         self._event_score = self._camera["event_score"]
+        self.entity_id = ENTITY_ID_BINARY_SENSOR_FORMAT.format(
+            slugify(instance), slugify(self._name).replace(" ", "_")
+        )
+        self._unique_id = ENTITY_UNIQUE_ID.format(sensor_type, self._mac)
 
         if self._device_class == DEVICE_CLASS_DOORBELL:
             _LOGGER.debug(f"UNIFIPROTECT DOORBELL SENSOR CREATED: {self._name}")
@@ -99,7 +120,6 @@ class UfpBinarySensor(BinarySensorDevice):
         attrs = {}
 
         attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
-        attrs[ATTR_BRAND] = DEFAULT_BRAND
         attrs[ATTR_FRIENDLY_NAME] = self._name
         if self._device_class == DEVICE_CLASS_DOORBELL:
             attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
@@ -124,8 +144,23 @@ class UfpBinarySensor(BinarySensorDevice):
         """Return if entity is available."""
         return self.coordinator.last_update_success
 
+    @property
+    def device_info(self):
+        return {
+            "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
+            "name": self._name,
+            "manufacturer": DEFAULT_BRAND,
+            "model": self._camera_type,
+            "sw_version": self._firmware_version,
+            "via_device": (DOMAIN, self._server_id),
+        }
+
     async def async_added_to_hass(self):
         """When entity is added to hass."""
         self.async_on_remove(
             self.coordinator.async_add_listener(self.async_write_ha_state)
         )
+
+    # async def async_will_remove_from_hass(self):
+    #     """When entity will be removed from hass."""
+    #     self.coordinator.async_remove_listener(self.async_write_ha_state)

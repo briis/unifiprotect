@@ -69,15 +69,7 @@ class UnifiProtectCamera(Camera):
         self._server_id = self._camera["server_id"]
         self._device_type = self._camera["type"]
         self._model = self._camera["model"]
-        self._up_since = self._camera["up_since"]
-        self._last_motion = self._camera["last_motion"]
-        self._last_ring = self._camera["last_ring"]
-        self._online = self._camera["online"]
-        self._motion_status = self._camera["recording_mode"]
         self._stream_source = self._camera["rtsp"]
-        self._thumbnail = self._camera["event_thumbnail"]
-        self._isrecording = False
-        self._camera = None
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
         self.entity_id = ENTITY_ID_CAMERA_FORMAT.format(
@@ -85,15 +77,12 @@ class UnifiProtectCamera(Camera):
         )
         self._unique_id = ENTITY_UNIQUE_ID.format(camera, self._mac)
 
-        if self._motion_status != "never" and self._online:
-            self._isrecording = True
-
         _LOGGER.debug(f"UNIFIPROTECT CAMERA CREATED: {self._name}")
 
     @property
     def should_poll(self):
         """Poll Cameras to update attributes."""
-        return True
+        return False
 
     @property
     def supported_features(self):
@@ -113,7 +102,7 @@ class UnifiProtectCamera(Camera):
     @property
     def motion_detection_enabled(self):
         """Camera Motion Detection Status."""
-        return self._motion_status
+        return self._camera["recording_mode"]
 
     @property
     def brand(self):
@@ -128,19 +117,23 @@ class UnifiProtectCamera(Camera):
     @property
     def is_recording(self):
         """Return true if the device is recording."""
-        return self._isrecording
+        return (
+            True
+            if self._camera["recording_mode"] != "never" and self._camera["online"]
+            else False
+        )
 
     @property
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_UP_SINCE: self._up_since,
-            ATTR_ONLINE: self._online,
+            ATTR_UP_SINCE: self._camera["up_since"],
+            ATTR_ONLINE: self._camera["online"],
             ATTR_CAMERA_ID: self._camera_id,
-            ATTR_LAST_TRIP_TIME: self._last_ring
+            ATTR_LAST_TRIP_TIME: self._camera["last_ring"]
             if self._device_type == DEVICE_CLASS_DOORBELL
-            else self._last_motion,
+            else self._camera["last_motion"],
         }
 
     @property
@@ -154,29 +147,18 @@ class UnifiProtectCamera(Camera):
             "via_device": (DOMAIN, self._server_id),
         }
 
-    def update(self):
-        """ Updates Attribute States."""
-        data = self.coordinator.data
-        camera = data[self._camera_id]
+    async def async_update(self):
+        """Update the entity.
 
-        self._online = camera["online"]
-        self._up_since = camera["up_since"]
-        self._last_motion = camera["last_motion"]
-        self._last_ring = camera["last_ring"]
-        self._motion_status = camera["recording_mode"]
-        if self._motion_status != "never" and self._online:
-            self._isrecording = True
-        else:
-            self._isrecording = False
+        Only used by the generic entity update service.
+        """
+        await self.coordinator.async_request_refresh()
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""
         ret = await self.upv_object.set_camera_recording(self._camera_id, "motion")
         if not ret:
             return
-
-        self._motion_status = "motion"
-        self._isrecording = True
         _LOGGER.debug("Motion Detection Enabled for Camera: %s", self._name)
 
     async def async_disable_motion_detection(self):
@@ -184,9 +166,6 @@ class UnifiProtectCamera(Camera):
         ret = await self.upv_object.set_camera_recording(self._camera_id, "never")
         if not ret:
             return
-
-        self._motion_status = "never"
-        self._isrecording = False
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self._name)
 
     async def async_camera_image(self):

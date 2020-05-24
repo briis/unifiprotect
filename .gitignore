@@ -137,4 +137,3 @@ custom_components/unifiprotect/test.py
 custom_components/unifiprotect/unifi_protect_server_new.py
 custom_components/unifiprotect/unifi_protect_server_org.py
 .devcontainer/secret.yaml
-custom_components/unifiprotect/entity.py

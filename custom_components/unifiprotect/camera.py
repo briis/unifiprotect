@@ -35,8 +35,8 @@ async def async_setup_entry(
     hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Discover cameras on a Unifi Protect NVR."""
-    upv_object = hass.data[DOMAIN][entry.data[CONF_ID]]["upv"]
-    coordinator = hass.data[DOMAIN][entry.data[CONF_ID]]["coordinator"]
+    upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
+    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     if not coordinator.data:
         return
 

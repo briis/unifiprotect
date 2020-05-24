@@ -97,9 +97,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         entry.data[CONF_PASSWORD],
     )
 
-    unique_id = entry.data[CONF_ID]
-
-    hass.data.setdefault(DOMAIN, {})[unique_id] = protectserver
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = protectserver
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -110,7 +108,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
     )
     # Fetch initial data so we have data when entities subscribe
     await coordinator.async_refresh()
-    hass.data[DOMAIN][entry.data[CONF_ID]] = {
+    hass.data[DOMAIN][entry.entry_id] = {
         "coordinator": coordinator,
         "upv": protectserver,
     }
@@ -121,20 +119,18 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
     async def async_set_recording_mode(call):
         """Call Set Recording Mode."""
         await async_handle_set_recording_mode(
-            hass, call, hass.data[DOMAIN][entry.data[CONF_ID]]
+            hass, call, hass.data[DOMAIN][entry.entry_id]
         )
 
     async def async_save_thumbnail(call):
         """Call save video service handler."""
         await async_handle_save_thumbnail_service(
-            hass, call, hass.data[DOMAIN][entry.data[CONF_ID]]
+            hass, call, hass.data[DOMAIN][entry.entry_id]
         )
 
     async def async_set_ir_mode(call):
         """Call Set Infrared Mode."""
-        await async_handle_set_ir_mode(
-            hass, call, hass.data[DOMAIN][entry.data[CONF_ID]]
-        )
+        await async_handle_set_ir_mode(hass, call, hass.data[DOMAIN][entry.entry_id])
 
     hass.services.async_register(
         DOMAIN,
@@ -164,7 +160,6 @@ async def _async_get_or_create_nvr_device_in_registry(
     hass: HomeAssistantType, entry: ConfigEntry, nvr
 ) -> None:
     device_registry = await dr.async_get_registry(hass)
-    _LOGGER.debug(f"ENTRY ID: {entry.entry_id}")
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         connections={(dr.CONNECTION_NETWORK_MAC, nvr["server_id"])},
@@ -251,6 +246,6 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> boo
     for platform in UNIFI_PROTECT_PLATFORMS:
         await hass.config_entries.async_forward_entry_unload(entry, platform)
 
-    del hass.data[DOMAIN][entry.data[CONF_ID]]
+    del hass.data[DOMAIN][entry.entry_id]
 
     return True

@@ -33,7 +33,7 @@ async def async_setup_entry(
     hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
 ) -> None:
     """A Ubiquiti Unifi Protect Sensor."""
-    coordinator = hass.data[DOMAIN][entry.data[CONF_ID]]["coordinator"]
+    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     if not coordinator.data:
         return
 

@@ -15,8 +15,6 @@ from .const import (
     DOMAIN,
     DEFAULT_ATTRIBUTION,
     TYPE_RECORD_NEVER,
-    ENTITY_ID_SENSOR_FORMAT,
-    ENTITY_UNIQUE_ID,
     DEFAULT_BRAND,
 )
 
@@ -63,7 +61,7 @@ class UnifiProtectSensor(Entity):
         self._units = SENSOR_TYPES[sensor][1]
         self._icon = f"mdi:{SENSOR_TYPES[sensor][2]}"
         self._camera_type = self._camera_data["model"]
-        self._unique_id = ENTITY_UNIQUE_ID.format(sensor, self._mac)
+        self._unique_id = f"{DOMAIN}_{sensor}_{self._mac}"
 
     @property
     def unique_id(self):

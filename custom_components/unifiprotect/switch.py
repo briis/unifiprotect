@@ -33,8 +33,6 @@ from .const import (
     TYPE_IR_OFF,
     TYPE_IR_LED_OFF,
     TYPE_IR_ON,
-    ENTITY_ID_SWITCH_FORMAT,
-    ENTITY_UNIQUE_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -98,7 +96,7 @@ class UnifiProtectSwitch(SwitchDevice):
         self._ir_off_cmd = ir_off
         self._camera_type = self._camera_data["type"]
         self._switch_type = SWITCH_TYPES[switch][2]
-        self._unique_id = ENTITY_UNIQUE_ID.format(switch, self._mac)
+        self._unique_id = f"{DOMAIN}_{switch}_{self._mac}"
 
     @property
     def unique_id(self):

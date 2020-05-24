@@ -28,8 +28,6 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
-    ENTITY_ID_BINARY_SENSOR_FORMAT,
-    ENTITY_UNIQUE_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,7 +77,7 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         self._server_id = self._camera_data["server_id"]
         self._camera_type = self._camera_data["type"]
         self._device_class = sensor_type
-        self._unique_id = ENTITY_UNIQUE_ID.format(sensor_type, self._mac)
+        self._unique_id = f"{DOMAIN}_{self._device_class}_{self._mac}"
 
     @property
     def unique_id(self):

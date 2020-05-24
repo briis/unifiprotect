@@ -21,9 +21,6 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
-    ENTITY_ID_CAMERA_FORMAT,
-    ENTITY_UNIQUE_ID,
-    DEFAULT_BRAND,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,9 +66,7 @@ class UnifiProtectCamera(Camera):
         self._stream_source = self._camera_data["rtsp"]
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
-        self._unique_id = ENTITY_UNIQUE_ID.format(camera, self._mac)
-
-        _LOGGER.debug(f"UNIFIPROTECT CAMERA CREATED: {self._name}")
+        self._unique_id = f"{DOMAIN}_{self._camera_id}_{self._mac}"
 
     @property
     def should_poll(self):
@@ -121,14 +116,17 @@ class UnifiProtectCamera(Camera):
     @property
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
+        if self._device_type == DEVICE_CLASS_DOORBELL:
+            last_trip_time = self._camera_data["last_ring"]
+        else:
+            last_trip_time = self._camera_data["last_motion"]
+
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_UP_SINCE: self._camera_data["up_since"],
             ATTR_ONLINE: self._camera_data["online"],
             ATTR_CAMERA_ID: self._camera_id,
-            ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"]
-            if self._device_type == DEVICE_CLASS_DOORBELL
-            else self._camera_data["last_motion"],
+            ATTR_LAST_TRIP_TIME: last_trip_time,
         }
 
     @property

@@ -218,7 +218,7 @@ async def async_handle_save_thumbnail_service(hass, call, server):
     image_width = call.data[CONF_THUMB_WIDTH]
 
     if not hass.config.is_allowed_path(filename):
-        _LOGGER.error("Can't write %s, no access to path!", filename)
+        _LOGGER.error(f"Can't write {filename}, no access to path!")
         return
 
     async def _write_thumbnail(camera_id, filename, image_width, server):
@@ -226,19 +226,18 @@ async def async_handle_save_thumbnail_service(hass, call, server):
         image_data = await server["upv"].get_thumbnail(camera_id, image_width)
         if image_data is None:
             _LOGGER.warning(
-                "Last recording not found for Camera %s",
-                entity_state.attributes["friendly_name"],
+                f"Last recording not found for Camera {entity_state.attributes['friendly_name']}"
             )
             return False
         # We got an image, now write the image to disk
         with open(filename, "wb") as img_file:
             img_file.write(image_data)
-            _LOGGER.debug("Thumbnail Image written to %s", filename)
+            _LOGGER.debug(f"Thumbnail Image written to {filename}")
 
     try:
         await _write_thumbnail(camera_id, filename, image_width, server)
     except OSError as err:
-        _LOGGER.error("Can't write image to file: %s", err)
+        _LOGGER.error(f"Can't write image to file: {err}")
 
 
 async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool:

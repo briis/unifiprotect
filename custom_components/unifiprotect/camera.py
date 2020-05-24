@@ -133,17 +133,15 @@ class UnifiProtectCamera(Camera):
     @property
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
-        attrs = {}
-        attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
-        attrs[ATTR_UP_SINCE] = self._up_since
-        attrs[ATTR_ONLINE] = self._online
-        attrs[ATTR_CAMERA_ID] = self._camera_id
-        if self._device_type == DEVICE_CLASS_DOORBELL:
-            attrs[ATTR_LAST_TRIP_TIME] = self._last_ring
-        else:
-            attrs[ATTR_LAST_TRIP_TIME] = self._last_motion
-
-        return attrs
+        return {
+            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            ATTR_UP_SINCE: self._up_since,
+            ATTR_ONLINE: self._online,
+            ATTR_CAMERA_ID: self._camera_id,
+            ATTR_LAST_TRIP_TIME: self._last_ring
+            if self._device_type == DEVICE_CLASS_DOORBELL
+            else self._last_motion,
+        }
 
     @property
     def device_info(self):

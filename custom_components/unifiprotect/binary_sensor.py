@@ -15,7 +15,6 @@ except ImportError:
 from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
-    ATTR_FRIENDLY_NAME,
     ATTR_LAST_TRIP_TIME,
     CONF_ID,
 )
@@ -93,6 +92,11 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         return self._unique_id
 
     @property
+    def name(self):
+        """Return name of the sensor."""
+        return self._name
+
+    @property
     def is_on(self):
         """Return true if the binary sensor is on."""
         if self._device_class == DEVICE_CLASS_DOORBELL:
@@ -117,22 +121,15 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
     @property
     def device_state_attributes(self):
         """Return the device state attributes."""
-        attrs = {}
-
-        attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
-        attrs[ATTR_FRIENDLY_NAME] = self._name
-        if self._device_class == DEVICE_CLASS_DOORBELL:
-            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
-                "last_ring"
-            ]
-        else:
-            attrs[ATTR_LAST_TRIP_TIME] = self.coordinator.data[self._camera_id][
-                "last_motion"
-            ]
-            attrs[ATTR_EVENT_SCORE] = self.coordinator.data[self._camera_id][
-                "event_score"
-            ]
-        return attrs
+        return {
+            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            ATTR_LAST_TRIP_TIME: self.coordinator.data[self._camera_id]["last_ring"]
+            if self._device_class == DEVICE_CLASS_DOORBELL
+            else self.coordinator.data[self._camera_id]["last_motion"],
+            ATTR_EVENT_SCORE: self.coordinator.data[self._camera_id]["last_ring"]
+            if self._device_class != DEVICE_CLASS_DOORBELL
+            else None,
+        }
 
     @property
     def should_poll(self):
@@ -148,7 +145,7 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
     def device_info(self):
         return {
             "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
-            "name": self._name,
+            "name": self.name,
             "manufacturer": DEFAULT_BRAND,
             "model": self._camera_type,
             "sw_version": self._firmware_version,
@@ -160,7 +157,3 @@ class UnifiProtectBinarySensor(BinarySensorDevice):
         self.async_on_remove(
             self.coordinator.async_add_listener(self.async_write_ha_state)
         )
-
-    # async def async_will_remove_from_hass(self):
-    #     """When entity will be removed from hass."""
-    #     self.coordinator.async_remove_listener(self.async_write_ha_state)

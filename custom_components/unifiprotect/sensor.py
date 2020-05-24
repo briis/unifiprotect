@@ -4,7 +4,6 @@ import logging
 from homeassistant.helpers.entity import Entity
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
-    ATTR_FRIENDLY_NAME,
     CONF_ID,
 )
 import homeassistant.helpers.device_registry as dr
@@ -79,6 +78,11 @@ class UnifiProtectSensor(Entity):
         return self._unique_id
 
     @property
+    def name(self):
+        """Return name of the sensor."""
+        return self._name
+
+    @property
     def state(self):
         """Return the state of the sensor."""
         return self.coordinator.data[self._camera_id]["recording_mode"]
@@ -103,13 +107,10 @@ class UnifiProtectSensor(Entity):
     @property
     def device_state_attributes(self):
         """Return the device state attributes."""
-        attrs = {}
-
-        attrs[ATTR_ATTRIBUTION] = DEFAULT_ATTRIBUTION
-        attrs[ATTR_CAMERA_TYPE] = self._camera_type
-        attrs[ATTR_FRIENDLY_NAME] = self._name
-
-        return attrs
+        return {
+            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            ATTR_CAMERA_TYPE: self._camera_type,
+        }
 
     @property
     def should_poll(self):
@@ -125,7 +126,7 @@ class UnifiProtectSensor(Entity):
     def device_info(self):
         return {
             "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
-            "name": self._name,
+            "name": self.name,
             "manufacturer": DEFAULT_BRAND,
             "model": self._camera_type,
             "sw_version": self._firmware_version,
@@ -137,7 +138,3 @@ class UnifiProtectSensor(Entity):
         self.async_on_remove(
             self.coordinator.async_add_listener(self.async_write_ha_state)
         )
-
-    # async def async_will_remove_from_hass(self):
-    #     """When entity will be removed from hass."""
-    #     self.coordinator.async_remove_listener(self.async_write_ha_state)

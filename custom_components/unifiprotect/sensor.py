@@ -34,7 +34,7 @@ async def async_setup_entry(
     for sensor in SENSOR_TYPES:
         for camera in coordinator.data:
             sensors.append(UnifiProtectSensor(upv_object, coordinator, camera, sensor))
-            _LOGGER.debug(f"UNIFIPROTECT SENSOR CREATED: {sensor}")
+            _LOGGER.debug("UNIFIPROTECT SENSOR CREATED: %s", sensor)
 
     async_add_entities(sensors, True)
 

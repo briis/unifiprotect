@@ -46,7 +46,8 @@ async def async_setup_entry(
                 )
             )
             _LOGGER.debug(
-                f"UNIFIPROTECT DOORBELL SENSOR CREATED: {coordinator.data[camera]['name']}"
+                "UNIFIPROTECT DOORBELL SENSOR CREATED: %s",
+                coordinator.data[camera]["name"],
             )
 
         sensors.append(
@@ -55,7 +56,7 @@ async def async_setup_entry(
             )
         )
         _LOGGER.debug(
-            f"UNIFIPROTECT MOTION SENSOR CREATED: {coordinator.data[camera]['name']}"
+            "UNIFIPROTECT MOTION SENSOR CREATED: %s", coordinator.data[camera]["name"]
         )
 
     async_add_entities(sensors, True)

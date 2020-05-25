@@ -62,7 +62,7 @@ async def async_setup_entry(
                     upv_object, coordinator, camera, switch, ir_on, ir_off,
                 )
             )
-            _LOGGER.debug(f"UNIFIPROTECT SWITCH CREATED: {switch}")
+            _LOGGER.debug("UNIFIPROTECT SWITCH CREATED: %s", switch)
 
     async_add_entities(switches, True)
 

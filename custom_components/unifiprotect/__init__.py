@@ -4,8 +4,6 @@ import asyncio
 from datetime import timedelta
 import logging
 
-# from typing import Optional
-
 from aiohttp import CookieJar
 
 from pyunifiprotect import UpvServer, NotAuthorized, NvrError

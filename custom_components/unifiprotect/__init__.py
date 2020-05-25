@@ -3,9 +3,9 @@
 import asyncio
 from datetime import timedelta
 import logging
-from typing import Optional
 
-import voluptuous as vol
+# from typing import Optional
+
 from aiohttp import CookieJar
 
 from pyunifiprotect import UpvServer, NotAuthorized, NvrError
@@ -15,7 +15,6 @@ from homeassistant.const import (
     CONF_ID,
     CONF_HOST,
     CONF_PORT,
-    CONF_SSL,
     CONF_USERNAME,
     CONF_PASSWORD,
     CONF_FILENAME,
@@ -25,7 +24,6 @@ from homeassistant.const import (
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType
 from homeassistant.helpers.event import async_track_time_interval

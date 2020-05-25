@@ -1,9 +1,11 @@
 """ Constant definitions for Unifi Protect Integration."""
 
-from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
-from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
-from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
-from homeassistant.components.binary_sensor import DOMAIN as BINARY_SENSOR_DOMAIN
+import voluptuous as vol
+from homeassistant.helpers import config_validation as cv
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    CONF_FILENAME,
+)
 
 DOMAIN = "unifiprotect"
 UNIQUE_ID = "unique_id"
@@ -26,6 +28,10 @@ DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_THUMB_WIDTH = 640
 
 DEVICE_CLASS_DOORBELL = "doorbell"
+
+SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
+SERVICE_SET_RECORDING_MODE = "set_recording_mode"
+SERVICE_SET_IR_MODE = "set_ir_mode"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
@@ -51,3 +57,25 @@ UNIFI_PROTECT_PLATFORMS = [
     "sensor",
     "switch",
 ]
+
+SAVE_THUMBNAIL_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Required(CONF_FILENAME): cv.string,
+        vol.Optional(CONF_THUMB_WIDTH, default=DEFAULT_THUMB_WIDTH): cv.string,
+    }
+)
+
+SET_RECORDING_MODE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Optional(CONF_RECORDING_MODE, default=TYPE_RECORD_MOTION): cv.string,
+    }
+)
+
+SET_IR_MODE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Optional(CONF_IR_MODE, default=TYPE_IR_AUTO): cv.string,
+    }
+)

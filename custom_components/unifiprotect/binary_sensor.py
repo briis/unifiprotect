@@ -112,8 +112,3 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
             if self._device_class != DEVICE_CLASS_DOORBELL
             else None,
         }
-
-    @property
-    def available(self):
-        """Return if entity is available."""
-        return self.coordinator.last_update_success

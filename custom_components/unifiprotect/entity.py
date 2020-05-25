@@ -47,6 +47,11 @@ class UnifiProtectEntity(Entity):
             "via_device": (DOMAIN, self._server_id),
         }
 
+    @property
+    def available(self):
+        """Return if entity is available."""
+        return self.coordinator.last_update_success
+
     async def async_added_to_hass(self):
         """When entity is added to hass."""
         self.async_on_remove(

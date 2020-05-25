@@ -24,6 +24,7 @@ from homeassistant.const import (
 )
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType
@@ -43,6 +44,12 @@ from .const import (
     DEFAULT_THUMB_WIDTH,
     DEFAULT_BRAND,
     DOMAIN,
+    SERVICE_SAVE_THUMBNAIL,
+    SERVICE_SET_RECORDING_MODE,
+    SERVICE_SET_IR_MODE,
+    SAVE_THUMBNAIL_SCHEMA,
+    SET_RECORDING_MODE_SCHEMA,
+    SET_IR_MODE_SCHEMA,
     TYPE_IR_AUTO,
     TYPE_RECORD_MOTION,
     UNIFI_PROTECT_PLATFORMS,
@@ -51,32 +58,6 @@ from .const import (
 SCAN_INTERVAL = timedelta(seconds=2)
 
 _LOGGER = logging.getLogger(__name__)
-
-SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
-SERVICE_SET_RECORDING_MODE = "set_recording_mode"
-SERVICE_SET_IR_MODE = "set_ir_mode"
-
-SAVE_THUMBNAIL_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Required(CONF_FILENAME): cv.string,
-        vol.Optional(CONF_THUMB_WIDTH, default=DEFAULT_THUMB_WIDTH): cv.string,
-    }
-)
-
-SET_RECORDING_MODE_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Optional(CONF_RECORDING_MODE, default=TYPE_RECORD_MOTION): cv.string,
-    }
-)
-
-SET_IR_MODE_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Optional(CONF_IR_MODE, default=TYPE_IR_AUTO): cv.string,
-    }
-)
 
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType) -> bool:
@@ -106,14 +87,23 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         update_method=protectserver.update,
         update_interval=SCAN_INTERVAL,
     )
-    # Fetch initial data so we have data when entities subscribe
+
+    try:
+        nvr_info = await protectserver.server_information()
+    except NotAuthorized:
+        _LOGGER.error(
+            "Could not Authorize against Unifi Protect. Please reinstall the Integration."
+        )
+        return
+    except NvrError:
+        raise ConfigEntryNotReady
+
     await coordinator.async_refresh()
     hass.data[DOMAIN][entry.entry_id] = {
         "coordinator": coordinator,
         "upv": protectserver,
     }
 
-    nvr_info = await protectserver.server_information()
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
     async def async_set_recording_mode(call):

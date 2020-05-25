@@ -86,8 +86,3 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_CAMERA_TYPE: self._camera_type,
         }
-
-    @property
-    def available(self):
-        """Return if entity is available."""
-        return self.coordinator.last_update_success

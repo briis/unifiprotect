@@ -52,10 +52,10 @@ TYPES_IR_ON = [
 ]
 
 UNIFI_PROTECT_PLATFORMS = [
-    "camera",
     "binary_sensor",
     "sensor",
     "switch",
+    "camera",
 ]
 
 SAVE_THUMBNAIL_SCHEMA = vol.Schema(

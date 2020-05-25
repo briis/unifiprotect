@@ -21,11 +21,10 @@ class UnifiProtectEntity(Entity):
         self._server_id = self._camera_data["server_id"]
         self._device_type = self._camera_data["type"]
         self._model = self._camera_data["model"]
-        self._unique_id = (
-            f"{DOMAIN}_{self._camera_id}_{self._mac}"
-            if sensor_type is None
-            else f"{DOMAIN}_{sensor_type}_{self._mac}"
-        )
+        if sensor_type is None:
+            self._unique_id = f"{self._camera_id}_{self._mac}"
+        else:
+            self._unique_id = f"{sensor_type}_{self._mac}"
 
     @property
     def should_poll(self):

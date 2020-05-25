@@ -7,6 +7,7 @@ from homeassistant.const import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.helpers import entity_platform
 
 from .const import (
     ATTR_CAMERA_ID,
@@ -16,6 +17,12 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
+    SERVICE_SET_IR_MODE,
+    SERVICE_SET_RECORDING_MODE,
+    SERVICE_SAVE_THUMBNAIL,
+    SET_IR_MODE_SCHEMA,
+    SET_RECORDING_MODE_SCHEMA,
+    SAVE_THUMBNAIL_SCHEMA,
 )
 from .entity import UnifiProtectEntity
 
@@ -35,6 +42,22 @@ async def async_setup_entry(
 
     async_add_entities(
         [UnifiProtectCamera(upv_object, coordinator, camera) for camera in cameras]
+    )
+
+    platform = entity_platform.current_platform.get()
+
+    platform.async_register_entity_service(
+        SERVICE_SET_RECORDING_MODE,
+        SET_RECORDING_MODE_SCHEMA,
+        "async_set_recording_mode",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_IR_MODE, SET_IR_MODE_SCHEMA, "async_set_ir_mode"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SAVE_THUMBNAIL, SAVE_THUMBNAIL_SCHEMA, "async_save_thumbnail"
     )
 
     return True
@@ -101,6 +124,37 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_CAMERA_ID: self._camera_id,
             ATTR_LAST_TRIP_TIME: last_trip_time,
         }
+
+    async def async_set_recording_mode(self, recording_mode):
+        """Set Camera Recording Mode."""
+        await self.upv_object.set_camera_recording(self._camera_id, recording_mode)
+
+    async def async_save_thumbnail(self, filename, image_width):
+        """Save Thumbnail Image."""
+
+        if not self.hass.config.is_allowed_path(filename):
+            _LOGGER.error("Can't write %s, no access to path!", filename)
+            return
+
+        async def _write_thumbnail(camera_id, filename, image_width):
+            """Call thumbnail write."""
+            image_data = await self.upv_object.get_thumbnail(camera_id, image_width)
+            if image_data is None:
+                _LOGGER.warning("Last recording not found for Camera %s", self.name)
+                return False
+
+            with open(filename, "wb") as img_file:
+                img_file.write(image_data)
+                _LOGGER.debug("Thumbnail Image written to %s", filename)
+
+        try:
+            await _write_thumbnail(self._camera_id, filename, image_width)
+        except OSError as err:
+            _LOGGER.error("Can't write image to file: %s", err)
+
+    async def async_set_ir_mode(self, ir_mode):
+        """Set camera ir mode."""
+        await self.upv_object.set_camera_ir(self._camera_id, ir_mode)
 
     async def async_update(self):
         """Update the entity.

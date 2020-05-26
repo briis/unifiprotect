@@ -136,19 +136,19 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             _LOGGER.error("Can't write %s, no access to path!", filename)
             return
 
-        async def _write_thumbnail(camera_id, filename, image_width):
-            """Call thumbnail write."""
-            image_data = await self.upv_object.get_thumbnail(camera_id, image_width)
-            if image_data is None:
-                _LOGGER.warning("Last recording not found for Camera %s", self.name)
-                return False
+        image = await self.upv_object.get_thumbnail(self._camera_id, image_width)
+        if image is None:
+            _LOGGER.error("Last recording not found for Camera %s", self.name)
+            return
 
-            with open(filename, "wb") as img_file:
+        def _write_image(to_file, image_data):
+            """Executor helper to write image."""
+            with open(to_file, "wb") as img_file:
                 img_file.write(image_data)
                 _LOGGER.debug("Thumbnail Image written to %s", filename)
 
         try:
-            await _write_thumbnail(self._camera_id, filename, image_width)
+            await self.hass.async_add_executor_job(_write_image, filename, image)
         except OSError as err:
             _LOGGER.error("Can't write image to file: %s", err)
 

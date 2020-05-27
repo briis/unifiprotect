@@ -103,12 +103,14 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
     @property
     def device_state_attributes(self):
         """Return the device state attributes."""
-        return {
+        if self._device_class == DEVICE_CLASS_DOORBELL:            
+            return{
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"]
-            if self._device_class == DEVICE_CLASS_DOORBELL
-            else self._camera_data["last_motion"],
-            ATTR_EVENT_SCORE: self._camera_data["last_ring"]
-            if self._device_class != DEVICE_CLASS_DOORBELL
-            else None,
-        }
+            }
+        else:
+            return{
+            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,       
+            ATTR_LAST_TRIP_TIME: self._camera_data["last_motion"],
+            ATTR_EVENT_SCORE: self._camera_data["event_score"]
+            }

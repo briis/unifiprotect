@@ -19,6 +19,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.util import slugify
 from .const import (
     ATTR_EVENT_SCORE,
+    ATTR_EVENT_LENGTH,
     DOMAIN,
     DEFAULT_ATTRIBUTION,
     DEVICE_CLASS_DOORBELL,
@@ -103,14 +104,15 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
     @property
     def device_state_attributes(self):
         """Return the device state attributes."""
-        if self._device_class == DEVICE_CLASS_DOORBELL:            
-            return{
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"]
+        if self._device_class == DEVICE_CLASS_DOORBELL:
+            return {
+                ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+                ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"],
             }
         else:
-            return{
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,       
-            ATTR_LAST_TRIP_TIME: self._camera_data["last_motion"],
-            ATTR_EVENT_SCORE: self._camera_data["event_score"]
+            return {
+                ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+                ATTR_LAST_TRIP_TIME: self._camera_data["last_motion"],
+                ATTR_EVENT_SCORE: self._camera_data["event_score"],
+                ATTR_EVENT_LENGTH: self._camera_data["event_length"],
             }

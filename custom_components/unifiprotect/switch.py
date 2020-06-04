@@ -29,8 +29,8 @@ from .entity import UnifiProtectEntity
 _LOGGER = logging.getLogger(__name__)
 
 SWITCH_TYPES = {
-    "record_motion": ["Record Motion", "camcorder", "record_motion"],
-    "record_always": ["Record Always", "camcorder", "record_always"],
+    "record_motion": ["Record Motion", "video-outline", "record_motion"],
+    "record_always": ["Record Always", "video", "record_always"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode"],
 }
 
@@ -77,7 +77,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         super().__init__(upv_object, coordinator, camera_id, switch)
         self.upv = upv_object
         self._name = f"{SWITCH_TYPES[switch][0]} {self._camera_data['name']}"
-        self._icon = f"mdi:{SWITCH_TYPES[switch][2]}"
+        self._icon = f"mdi:{SWITCH_TYPES[switch][1]}"
         self._ir_on_cmd = ir_on
         self._ir_off_cmd = ir_off
         self._switch_type = SWITCH_TYPES[switch][2]

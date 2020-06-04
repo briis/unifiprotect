@@ -17,7 +17,7 @@ from .entity import UnifiProtectEntity
 _LOGGER = logging.getLogger(__name__)
 
 SENSOR_TYPES = {
-    "motion_recording": ["Motion Recording", None, "camcorder", "motion_recording"]
+    "motion_recording": ["Motion Recording", None, "video-outline,video-off-outline"]
 }
 
 
@@ -49,7 +49,7 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         super().__init__(upv_object, coordinator, camera_id, sensor)
         self._name = f"{SENSOR_TYPES[sensor][0]} {self._camera_data['name']}"
         self._units = SENSOR_TYPES[sensor][1]
-        self._icon = f"mdi:{SENSOR_TYPES[sensor][2]}"
+        self._icons = SENSOR_TYPES[sensor][2]
         self._camera_type = self._camera_data["model"]
 
     @property
@@ -65,8 +65,9 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
     @property
     def icon(self):
         """Icon to use in the frontend, if any."""
+        icons = self._icons.split(",")
         return (
-            "mdi:camcorder" if self.state != TYPE_RECORD_NEVER else "mdi:camcorder-off"
+            f"mdi:{icons[0]}" if self.state != TYPE_RECORD_NEVER else f"mdi:{icons[1]}"
         )
 
     @property

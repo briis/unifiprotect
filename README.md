@@ -41,18 +41,22 @@ If the Unifi Protect Server is found on the network it will be added to your ins
 
 ### CONFIGURATION VARIABLES
 **host**:<br>
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`<br>
-* **Important** If you run UnifiOS this must be the IP Address. of your UDMP
+  *(string)(Required)*<br>
+  Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`<br>
+  **Important** If you run UnifiOS this must be the IP Address. of your UDMP
 
-**port**<br>
-(int)(Optional) The port used to communicate with the NVR. Default is 7443.<br>
-* **Important** If run UnifiOS the port *must* be specified and it must be 443.
+**port**:<br>
+  *(int)(Optional)*<br>
+  The port used to communicate with the NVR. Default is 7443.<br>
+  **Important** If run UnifiOS the port *must* be specified and it must be 443.
 
 **username**:<br>
-(string)(Required) The local username you setup under the *Prerequisites* section.
+  *(string)(Required)*<br>
+  The local username you setup under the *Prerequisites* section.
 
-**password**<br>
-(string)(Required) The local password you setup under the *Prerequisites* section.
+**password**:<br>
+  *(string)(Required)*<br>
+  The local password you setup under the *Prerequisites* section.
 
 ### SPECIAL UNIFI PROTECT SERVICES
 The Integration adds specific *Unifi Protect* services and supports the standard camera services. Below is a list of the *Unifi Protect* specific services:

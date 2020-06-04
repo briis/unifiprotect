@@ -53,10 +53,10 @@ TYPES_IR_ON = [
 ]
 
 UNIFI_PROTECT_PLATFORMS = [
+    "camera",
     "binary_sensor",
     "sensor",
     "switch",
-    "camera",
 ]
 
 VALID_IR_MODES = [TYPE_IR_ON, TYPE_IR_AUTO, TYPE_IR_OFF, TYPE_IR_LED_OFF]

@@ -16,7 +16,7 @@ class UnifiProtectEntity(Entity):
         self._sensor_type = sensor_type
 
         self._camera_data = self.coordinator.data[self._camera_id]
-        self._name = self._camera_data["name"]
+        self._camera_name = self._camera_data["name"]
         self._mac = self._camera_data["mac"]
         self._firmware_version = self._camera_data["firmware_version"]
         self._server_id = self._camera_data["server_id"]
@@ -39,14 +39,9 @@ class UnifiProtectEntity(Entity):
 
     @property
     def device_info(self):
-        # Only add a name if we setup a Camera
-        if self._sensor_type is None:
-            device_name = self._name
-        else:
-            device_name = None
         return {
             "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
-            "name": device_name,
+            "name": self._camera_name,
             "manufacturer": DEFAULT_BRAND,
             "model": self._device_type,
             "sw_version": self._firmware_version,

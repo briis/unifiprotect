@@ -1,5 +1,41 @@
 # Changelog
 
+## Release 0.5 - Fully Integration based
+
+The Beta release 0.4 has been out for a while now, and I belive we are at a stage where I will release it officially, and it will be called Version 0.5.
+
+After the conversion to use all the Async Libraries, it became obvious to also move away from *Yaml Configuration*, to the fully UI based Integration. As I wrote in the Tester Notes, I know there are some people with strong feelings about this, but I made the decision to make the move, and going forward **only** to support this way of adding Unifi Protect to Home Assistant.
+
+### ***** BREAKING CHANGES *****
+Once setup, the base functionality will be the same as before, with the addition of a few minor changes. But behind the scene there are many changes in all modules, which also makes this a lot more ready for becoming an official Integration in Home Assistant Core.
+
+I want to send a BIG THANK YOU to @bdraco who has made a lot of code review, and helped me shape this to conform to Home Assistant standards. I learned so much from your suggestions and advice, so thank you!
+
+Here are the Breaking changes:
+
+1. Configuration can only be done from the *Integration* menu on the *Configuration* tab. So you will have to remove all references to *unifiprotect* from your configuration files.
+2. All entities will get the `unifiprotect_` prefix removed from them, so you will have to change automations and scripts where you use these entities. This is done to make sure that entities have a Unique Id and as such can be renamed from the UI as required by Home Assistant. I will give a 99% guarantee, that we do not need to change entity names again.
+
+### Upgrading and Installing
+If you have not used Unifi Protect before, go to step 4.
+
+If you are already runing a version of *Unifi Protect* with version 0.3.x or lower:
+
+1. Remove the previous installation
+ * If you have installed through HACS, then go to HACS and remove the Custom Component
+ * If you manually copied the files to your system, go to the `custom_components` directory and delete the `unifiprotect` directory.
+* Edit `configuration.yaml` and remove all references to *unifiprotect*. Some have split the setup in to multiple files, so remember to remove references to unifiprotect from these files also.
+* I recommend to restart Home Assistant at this point, but in theory it should not be necessary.
+
+4. Install the new version
+ * If you use HACS, go there, and add Unifi Protect V0.5 or later.
+ * If you do it manually, go to [Github](https://github.com/briis/unifiprotect/tree/master/custom_components/unifiprotect) and copy the files to `custom_components/unifiprotect`. Remember to include the `translations` directory and the files in here.
+* Restart Home Assistant
+* Now go to the *Integration* menu on the *Configuration* tab, and search for *Unifi Protect*. If it does not show up, try and clear your browser cache, and refresh your browser.
+* From there, it should be self explanatory.
+
+I will leave Release 0.3.4 as an option in HACS, so if you want to stick with the Yaml version, feel free to do so, but please note that I will not make any changes to this version going forward.
+
 ## Version 0.3.2
 
 **NOTE** When upgrading Home Assistant to +0.110 you will receive warnings during startup about deprecated BinaryDevice and SwitchDevice. There has been a change to SwitchEntity and BinaryEntity in HA 0.110. For now this will not be changed, as not everybody is on 0.110 and if changing it this Component will break for users not on that version as it is not backwards compatible.

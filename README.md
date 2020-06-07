@@ -1,12 +1,17 @@
 
-# Unifi Protect for Home Assistant
+# // Unifi Protect for Home Assistant
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/briis/unifiprotect?style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/custom-components/hacs) [![](https://img.shields.io/badge/COMMUNITY-FORUM-success?style=flat-square)](https://community.home-assistant.io/t/custom-component-unifi-protect/158041)
 
+The Unifi Protect Integration adds support for retrieving Camera feeds and Sensor data from a Unifi Protect installation on either a Ubiquiti CloudKey+ or Ubiquiti Unifi Dream Machine Pro.
 
-This is a Home Assistant Integration for Ubiquiti's Unifi Protect Surveillance system.
+There is support for the following device types within Home Assistant:
+* Camera
+* Sensor
+* Binary Sensor
+* Switch
 
-Basically what this does, is integrating the Camera feeds from Unifi Protect in to Home Assistant, and furthermore there is an option to get Binary Motion Sensors and Sensors that show the current Recording Settings pr. camera.
+It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 
 ## Prerequisites
 
@@ -21,81 +26,39 @@ Before you install this Integration you need to ensure that the following two se
 
 **Note:**
 
-* This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.3-beta.4 and higher. It will not work on a lower version than that.
+* This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.3-beta.4 and higher. It will not work on a lower version than that due to the support of the Doorbell.
 * As of version 0.3.0, this Integration also supports the UDM Pro with UnifiOS, thanks to the work of @msvinth. You need the version of Unifi Protect that supports the Doorbell, or this Integration will fail.
 
-## Manual Installation
-
-To add Unifi Protect to your installation, create this folder structure in your /config directory:
-
-`custom_components/unifiprotect`.
-Then, drop the following files into that folder:
-
-```yaml
-__init__.py
-manifest.json
-sensor.py
-binary_sensor.py
-camera.py
-switch.py
-unifi_protect_server.py
-services.yaml
-```
-
-## HACS Installation
-
+## Installation
 This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.
 
 ## Configuration
+To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add a CloudKey+ or UDMP by providing the Host IP, Port Number, Username and Password.
 
-Start by configuring the core platform. No matter which of the entities you activate, this has to be configured. The core platform by itself does nothing else than establish a link the *Unifi Protect NVR*, so by activating this you will not see any entities being created in Home Assistant.
+If the Unifi Protect Server is found on the network it will be added to your installation. After that, you can add more Unifi Protect Servers, should have more than one installed.
 
-Edit your *configuration.yaml* file and add the *unifiprotect* component to the file:
+**You can only add Unifi Protect through the Integration page, Yaml configuration is no longer supported.**
 
-```yaml
-# Example configuration.yaml entry
-unifiprotect:
-  host: <Internal ip address of your Unifi Protect NVR>
-  username: <your local Unifi Protect username>
-  password: <Your local Unifi Protect Password>
-  port: <Port used to communicate with your Unifi Protect NVR>
-  image_width: <Size of the Thumbnail Image>
-```
-
+### CONFIGURATION VARIABLES
 **host**:<br>
-(string)(Required) Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`<br>
-* **Important** If you run UnifiOS this must be the IP Address. of your UDMP
+  *(string)(Required)*<br>
+  Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.10`<br>
+  **Important** If you run UnifiOS this must be the IP Address. of your UDMP
+
+**port**:<br>
+  *(int)(Optional)*<br>
+  The port used to communicate with the NVR. Default is 7443.<br>
+  **Important** If run UnifiOS the port *must* be specified and it must be 443.
 
 **username**:<br>
-(string)(Required) The local username you setup under the *Prerequisites* section.
+  *(string)(Required)*<br>
+  The local username you setup under the *Prerequisites* section.
 
-**password**<br>
-(string)(Required) The local password you setup under the *Prerequisites* section.
+**password**:<br>
+  *(string)(Required)*<br>
+  The local password you setup under the *Prerequisites* section.
 
-**port**<br>
-(int)(Optional) The port used to communicate with the NVR. Default is 7443.<br>
-* **Important** If run UnifiOS the port *must* be specified and it must be 443.
-
-**image_width**<br>
-(int)(Optional) The width of the Thumbnail Image. Default is 640px
-
-### Camera
-
-The Integration will add all Cameras currently connected to Unifi Protect. If you add more cameras, you will have to restart Home Assistant to see them in Home Assistant.
-
-#### Remember
-
-* if you already setup the camera using another platform, like the `Generic IP Platform` then remove those before you setup this Platform, as cameras with the same name cannot co-exist.
-* Also, if you are running your Home Assistant installation directly on a Mac, you might need to enable `stream:` in your `configuration.yaml` to be able to do live streaming.
-
-Edit your *configuration.yaml* file and add the *unifiprotect* component to the file:
-
-```yaml
-# Example configuration.yaml entry
-camera:
-  - platform: unifiprotect
-```
-
+### SPECIAL UNIFI PROTECT SERVICES
 The Integration adds specific *Unifi Protect* services and supports the standard camera services. Below is a list of the *Unifi Protect* specific services:
 
 Service | Parameters | Description
@@ -106,66 +69,7 @@ Service | Parameters | Description
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 
-### Binary Sensor
-
-If this component is enabled a Binary Motion Sensor for each camera configured, will be created.
-
-In order to use the Binary Sensors, add the following to your *configuration.yaml* file:
-
-```yaml
-# Example configuration.yaml entry
-binary_sensor:
-  - platform: unifiprotect
-```
-
-There is a little delay for when this will be triggered, as the way the data is retrieved is through the Unifi Protect event log, and that has a small delay before updated.
-
-**Note:** This will only work if Recording state is set to `motion` or `always` as there is nothing written to the event log, if recording is disabled.
-
-### Sensor
-
-If this component is enabled a Sensor describing the current Recording state for each camera configured, will be created.
-
-In order to use the Sensors, add the following to your *configuration.yaml* file:
-
-```yaml
-# Example configuration.yaml entry
-sensor:
-  - platform: unifiprotect
-```
-
-The sensor can have 3 different states:
-
-1. `never` - There will be no recording on the camera
-2. `motion` - Recording will happen only when motion is detected
-3. `always` - The camera will record everything, and motion events will be logged in Unfi Protect
-
-### Switch
-
-If this component is enabled three Switches are created per Camera.
-
-1. Enable or disable motion recording
-2. Enable or disable constant recording
-3. Enable or disable Infrared sensors. This switch also supports extra options to define what setting is ON and what settings is OFF. See more below.
-
-In order to use the Switch component, add the following to your *configuration.yaml* file:
-
-```yaml
-# Example configuration.yaml entry
-switch:
-  - platform: unifiprotect
-    ir_on: <Optional, type what mode defines on for Infrared>
-    ir_off: <Optional, type what mode defines off for Infrared>
-```
-
-**ir_on**
-(string)(Optional) The mode that defines Infrared On. Values are: *auto* and *always_on*. Default is *auto*
-
-**ir_off**
-(string)(Optional) The mode that defines Infrared OFF. Values are: *led_off* and *always_off*. Default is *always_off*
-
-## Automating Services
-
+### AUTOMATING SERVICES
 If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.
 These Services support more than 2 different modes each, and as such it would be good to have a list to select from when switching the mode of those settings. I have not found a way to create a listbox as Custom Component, but it is fairly simpel to use an *input_select* integration and an *Automation* to achieve a UI friendly way of changing these modes. Below is an example that creates an *input*select* integration for one of the Cameras and then an example of an automation that is triggered whenever the user selects a new value in the dropdown list.
 
@@ -208,21 +112,14 @@ Now add a new Automation, like the following:
 
 Thats it. Whenever you now select a new value from the Dropdown, the automation is activated, and the service is called to change the IR mode. The same can then be achieved for the *recording_mode* by changing the options and the service call in the automation.
 
-## Contribute to project and developing with a devcontainer
+### CONTRIBUTE TO THE PROJECT AND DEVELOPING WITH A DEVCONTAINER
 
 1. Fork and clone the repository.
 
 2. Open in VSCode and choose to open in devcontainer. Must have VSCode devcontainer prerequisites.
 
-3. Create a secrets.yaml file in .devcontainer/secrets.yaml with content
+3. Run the command container start from VSCode terminal
 
-```yaml
-unifiprotect_host: 192.168.1.1 # Your protect address
-unifiprotect_port: 443  # The port. Typically 7443 for CloudKey+ or 443 for UnifiOS
-unifiprotect_user: YOUR_USERNAME
-unifiprotect_password: YOUR_PASSWORD
-````
+4. A fresh Home Assistant test instance will install and will eventually be running on port 9123 with this integration running
 
-4. Run the command container start from VSCode terminal
-
-5. A fresh Home Assistant test instance will install and will eventually be running on port 9123 with this integration running
+5. When the container is running, go to http://localhost:9123 and the add Unifi Protect from the Integration Page.

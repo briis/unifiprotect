@@ -5,24 +5,6 @@ ptvsd:
 
 stream:
 
-unifiprotect:
-  host: !secret unifiprotect_host
-  port: !secret unifiprotect_port
-  username: !secret unifiprotect_user
-  password: !secret unifiprotect_password
-
-camera:
-  - platform: unifiprotect
-
-binary_sensor:
-  - platform: unifiprotect
-
-sensor:
-  - platform: unifiprotect
-
-switch:
-  - platform: unifiprotect
-
 logger:
   default: error
   logs:

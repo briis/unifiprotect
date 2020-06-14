@@ -24,7 +24,7 @@ CONF_IR_ON = "ir_on"
 CONF_IR_OFF = "ir_off"
 
 DEFAULT_PORT = 7443
-DEFAULT_ATTRIBUTION = "Data provided by Ubiquiti's Unifi Protect Server"
+DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_THUMB_WIDTH = 640
 

@@ -33,11 +33,12 @@ import homeassistant.helpers.device_registry as dr
 
 from .const import (
     DEFAULT_BRAND,
+    DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     UNIFI_PROTECT_PLATFORMS,
 )
 
-SCAN_INTERVAL = timedelta(seconds=2)
+SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +52,16 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool:
     """Set up the Unifi Protect config entries."""
 
+    if not entry.options:
+        hass.config_entries.async_update_entry(
+            entry,
+            options={
+                "scan_interval": entry.data.get(
+                    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+                ),
+            },
+        )
+
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
     protectserver = UpvServer(
         session,
@@ -61,13 +72,18 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
     )
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = protectserver
+    _LOGGER.debug("Connect to Unfi Protect")
+
+    events_update_interval = entry.options.get(
+        CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+    )
 
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
         name=DOMAIN,
         update_method=protectserver.update,
-        update_interval=SCAN_INTERVAL,
+        update_interval=timedelta(seconds=events_update_interval),
     )
 
     try:
@@ -92,6 +108,10 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
+
+    if not entry.update_listeners:
+        entry.add_update_listener(async_update_options)
+
     return True
 
 
@@ -108,6 +128,11 @@ async def _async_get_or_create_nvr_device_in_registry(
         model=nvr["server_model"],
         sw_version=nvr["server_version"],
     )
+
+
+async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
+    """Update options."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool:

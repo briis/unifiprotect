@@ -38,26 +38,6 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-# async def validate_input(hass: core.HomeAssistant, data):
-#     """Validate the user input allows us to connect.
-#     Data has the keys from DATA_SCHEMA with values provided by the user.
-#     """
-
-#     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
-
-#     unifiprotect = UpvServer(
-#         session,
-#         data[CONF_HOST],
-#         data[CONF_PORT],
-#         data[CONF_USERNAME],
-#         data[CONF_PASSWORD],
-#     )
-
-#     unique_id = await unifiprotect.unique_id()
-
-#     return unique_id
-
-
 class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a Unifi Protect config flow."""
 

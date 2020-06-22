@@ -5,6 +5,7 @@ from datetime import timedelta
 import logging
 
 from aiohttp import CookieJar
+from aiohttp.client_exceptions import ServerDisconnectedError
 
 from pyunifiprotect import UpvServer, NotAuthorized, NvrError
 
@@ -93,7 +94,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
             "Could not Authorize against Unifi Protect. Please reinstall the Integration."
         )
         return
-    except NvrError:
+    except (NvrError, ServerDisconnectedError):
         raise ConfigEntryNotReady
 
     await coordinator.async_refresh()

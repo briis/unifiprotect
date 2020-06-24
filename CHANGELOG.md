@@ -2,7 +2,7 @@
 
 ## Release 0.5.2
 
-* Added exception handling when the http connection is dropped on a persistent connection. The Integration will now throw a `ConfigEnrtryNotReady` instead and retry.
+* Added exception handling when the http connection is dropped on a persistent connection. The Integration will now throw a `ConfigEntryNotReady` instead and retry.
 
 ## Release 0.5.1
 

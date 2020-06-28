@@ -1,5 +1,22 @@
 # // Changelog
 
+## Release 0.5.3
+
+Fix for Issue #88 - The function for saving a Camera Snapshot works fine for most people, but it turns out that image it saves is only refreshed every 10-15 seconds. There might be a way to force a new image, but as the Protect API is not documented I have not found this. If you need the guaranteed latest image from the Camera, there is a way around it, and that is to enable Anonymous Snapshots on each Camera, as this function always gets the latest image directly from the Camera.
+
+This version introduces a new option where you can enable or disable anonymous snapshots in the Unifi Integration. If enabled, it will use a different function, than if disabled but it will only work if you login to each of your Cameras and enable the *Anonymous Snapshot*.
+
+To use the Anonymous Snapshot, after this update has been installed, do the following:
+
+1. Login to each of your Cameras by going to http://CAMERA_IP. The Username is *ubnt* and the Camera Password can be found in Unifi Protect under *Settings*.
+2. If you have never logged in to the Camera before, it might take you through a Setup procedure - just make sure to keep it in *Unifi Video* mode, so that it is managed by Unifi Protect.
+3. Once you are logged in, you will see an option on the Front page for enabling Anonymous Snapshots. Make sure this is checked, and then press the *Save Changes* button.
+4. Repeat step 3 for each of your Cameras.
+5. Now go to the Integrations page in Home Assistant. Find the Unifi Protect Widget and press options.
+6. Select the checkbox *Use Anonymous Snapshots* and press *Submit*
+
+Now the Unfi Protect Integration will use the direct Snapshot from the Camera, without going through Unfi Protect first.
+
 ## Release 0.5.2
 
 * Added exception handling when the http connection is dropped on a persistent connection. The Integration will now throw a `ConfigEntryNotReady` instead and retry.

@@ -33,6 +33,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 import homeassistant.helpers.device_registry as dr
 
 from .const import (
+    CONF_SNAPSHOT_DIRECT,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -57,9 +58,10 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         hass.config_entries.async_update_entry(
             entry,
             options={
-                "scan_interval": entry.data.get(
+                CONF_SCAN_INTERVAL: entry.data.get(
                     CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
                 ),
+                CONF_SNAPSHOT_DIRECT: entry.data.get(CONF_SNAPSHOT_DIRECT, False),
             },
         )
 
@@ -101,6 +103,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
     hass.data[DOMAIN][entry.entry_id] = {
         "coordinator": coordinator,
         "upv": protectserver,
+        "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
     }
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)

@@ -15,6 +15,7 @@
                     "username": "Brugernavn",
                     "password": "Kodeord",
                     "scan_interval": "Opdaterings frekvens for hændelser (Øg frekvens hvis mange kameraer)",
+                    "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)",
                     "ir_on": "Instilling til Infrarødt Lys TÆNDT",
                     "ir_off": "Instilling til Infrarødt Lys SLUKKET"
                 },
@@ -27,6 +28,7 @@
         "step": {
             "init": {
                 "data": {
+                    "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)",
                     "scan_interval": "Opdaterings frekvens for hændelser (Øg frekvens hvis mange kameraer)"
                 }
             }

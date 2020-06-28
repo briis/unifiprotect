@@ -35,13 +35,17 @@ async def async_setup_entry(
     """Discover cameras on a Unifi Protect NVR."""
     upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    snapshot_direct = hass.data[DOMAIN][entry.entry_id]["snapshot_direct"]
     if not coordinator.data:
         return
 
     cameras = [camera for camera in coordinator.data]
 
     async_add_entities(
-        [UnifiProtectCamera(upv_object, coordinator, camera) for camera in cameras]
+        [
+            UnifiProtectCamera(upv_object, coordinator, camera, snapshot_direct)
+            for camera in cameras
+        ]
     )
 
     platform = entity_platform.current_platform.get()
@@ -66,9 +70,10 @@ async def async_setup_entry(
 class UnifiProtectCamera(UnifiProtectEntity, Camera):
     """A Ubiquiti Unifi Protect Camera."""
 
-    def __init__(self, upv_object, coordinator, camera_id):
+    def __init__(self, upv_object, coordinator, camera_id, snapshot_direct):
         """Initialize an Unifi camera."""
         super().__init__(upv_object, coordinator, camera_id, None)
+        self._snapshot_direct = snapshot_direct
         self._name = self._camera_data["name"]
         self._stream_source = self._camera_data["rtsp"]
         self._last_image = None
@@ -179,7 +184,12 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     async def async_camera_image(self):
         """ Return the Camera Image. """
-        last_image = await self.upv_object.get_snapshot_image(self._camera_id)
+        if self._snapshot_direct:
+            last_image = await self.upv_object.get_snapshot_image_direct(
+                self._camera_id
+            )
+        else:
+            last_image = await self.upv_object.get_snapshot_image(self._camera_id)
         self._last_image = last_image
         return self._last_image
 

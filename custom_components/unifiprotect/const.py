@@ -19,6 +19,7 @@ ATTR_EVENT_LENGTH = "event_length"
 
 CONF_THUMB_WIDTH = "image_width"
 CONF_RECORDING_MODE = "recording_mode"
+CONF_SNAPSHOT_DIRECT = "snapshot_direct"
 CONF_IR_MODE = "ir_mode"
 CONF_IR_ON = "ir_on"
 CONF_IR_OFF = "ir_off"

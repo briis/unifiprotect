@@ -60,13 +60,13 @@ If the Unifi Protect Server is found on the network it will be added to your ins
 
 **scan_interval**:<br>
   *(int)(Optional)*<br>
-  How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you many Cameras (+20).<br>
-  *Default value* 2 seconds
+  How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20).<br>
+  *Default value*: `2` seconds
 
 **anonymous_snapshots**:<br>
   *(bool)(Optional)*<br>
   If you need to save a Snapshot more often than every 10 seconds, enable this function. See below for prerequisites.<br>
-  *Default value* False
+  *Default value*: `False`
 
 #### ANONYMOUS SNAPSHOTS
 To use the Anonymous Snapshot, you must ensure that each Camera is configured to allow this. This cannot be done in Unifi Protect, but has to be done on each individual Camera.

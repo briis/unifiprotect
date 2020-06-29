@@ -48,7 +48,7 @@ If the Unifi Protect Server is found on the network it will be added to your ins
 **port**:<br>
   *(int)(Optional)*<br>
   The port used to communicate with the NVR. Default is 7443.<br>
-  **Important** If run UnifiOS the port *must* be specified and it must be 443.
+  **Important** If you run UnifiOS the port *must* be specified and it must be 443.
 
 **username**:<br>
   *(string)(Required)*<br>
@@ -57,6 +57,24 @@ If the Unifi Protect Server is found on the network it will be added to your ins
 **password**:<br>
   *(string)(Required)*<br>
   The local password you setup under the *Prerequisites* section.
+
+**scan_interval**:<br>
+  *(int)(Optional)*<br>
+  How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you many Cameras (+20).<br>
+  *Default value* 2 seconds
+
+**anonymous_snapshots**:<br>
+  *(bool)(Optional)*<br>
+  If you need to save a Snapshot more often than every 10 seconds, enable this function. See below for prerequisites.<br>
+  *Default value* False
+
+#### ANONYMOUS SNAPSHOTS
+To use the Anonymous Snapshot, you must ensure that each Camera is configured to allow this. This cannot be done in Unifi Protect, but has to be done on each individual Camera.
+
+1. Login to each of your Cameras by going to http://CAMERA_IP. The Username is *ubnt* and the Camera Password can be found in Unifi Protect under *Settings*.
+2. If you have never logged in to the Camera before, it might take you through a Setup procedure - just make sure to keep it in *Unifi Video* mode, so that it is managed by Unifi Protect.
+3. Once you are logged in, you will see an option on the Front page for enabling Anonymous Snapshots. Make sure this is checked, and then press the *Save Changes* button.
+4. Repeat step 3 for each of your Cameras.
 
 ### SPECIAL UNIFI PROTECT SERVICES
 The Integration adds specific *Unifi Protect* services and supports the standard camera services. Below is a list of the *Unifi Protect* specific services:

@@ -1,5 +1,9 @@
 # // Changelog
 
+## Release 0.5.4
+
+A more permanent fix for Issue #88, where the snapshot images did not always get the current image. The API call has now been modified, so that it forces a refresh of the image when pulling it from the camera. Thank you to @rajeevan for finding the solution.
+
 ## Release 0.5.3
 
 Fix for Issue #88 - The function for saving a Camera Snapshot works fine for most people, but it turns out that the image it saves is only refreshed every 10-15 seconds. There might be a way to force a new image, but as the Protect API is not documented I have not found this yet. If you need the guaranteed latest image from the Camera, there is a way around it, and that is to enable Anonymous Snapshots on each Camera, as this function always gets the latest image directly from the Camera.

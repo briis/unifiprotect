@@ -3,6 +3,7 @@
 ## Release 0.5.4
 
 A more permanent fix for Issue #88, where the snapshot images did not always get the current image. The API call has now been modified, so that it forces a refresh of the image when pulling it from the camera. Thank you to @rajeevan for finding the solution.
+If you installed release 0.5.3 AND enabled *Anonymous Snapshots* you can now deselect that option again, and you will not have to enable the Anonymous Snapshot on each Camera.
 
 ## Release 0.5.3
 

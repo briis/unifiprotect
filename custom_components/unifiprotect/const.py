@@ -1,4 +1,4 @@
-""" Constant definitions for Unifi Protect Integration."""
+""" Constant definitions for Unifi Protect Integration.  """
 
 import voluptuous as vol
 from homeassistant.helpers import config_validation as cv

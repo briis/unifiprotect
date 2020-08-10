@@ -3,7 +3,7 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/briis/unifiprotect?style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/custom-components/hacs) [![](https://img.shields.io/badge/COMMUNITY-FORUM-success?style=flat-square)](https://community.home-assistant.io/t/custom-component-unifi-protect/158041)
 
-The Unifi Protect Integration adds support for retrieving Camera feeds and Sensor data from a Unifi Protect installation on either a Ubiquiti CloudKey+ or Ubiquiti Unifi Dream Machine Pro.
+The Unifi Protect Integration adds support for retrieving Camera feeds and Sensor data from a Unifi Protect installation on either a Ubiquiti CloudKey+ ,Ubiquiti Unifi Dream Machine Pro or UniFi Protect Network Video Recorder.
 
 There is support for the following device types within Home Assistant:
 * Camera
@@ -18,7 +18,7 @@ It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, 
 Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
 
 1. **Local User**
-  * If Unifi Protect is installed on a **UDMP**, then you can skip this step, and instead use the username and password you use to login to the UDMP. But it is recommended that you add a specific user on your UDMP, as described [here](https://community.home-assistant.io/t/custom-component-unifi-protect/158041/138?u=briis)
+  * If Unifi Protect is installed on a **UDMP** or **UNVR**, then you can skip this step, and instead use the username and password you use to login to the UDMP. But it is recommended that you add a specific user on your UDMP or UNVR, as described [here](https://community.home-assistant.io/t/custom-component-unifi-protect/158041/138?u=briis)
   * If your are on a **CloudKey+** then open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select an existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.
 2. **RTSP Stream** Select each camera under the CAMERAS tab, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one, the integration will pick the one with the highest resolution.
 
@@ -26,8 +26,8 @@ Before you install this Integration you need to ensure that the following two se
 
 **Note:**
 
-* This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.3-beta.4 and higher. It will not work on a lower version than that due to the support of the Doorbell.
-* As of version 0.3.0, this Integration also supports the UDM Pro with UnifiOS, thanks to the work of @msvinth. You need the version of Unifi Protect that supports the Doorbell, or this Integration will fail.
+* This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.3-beta.4 and higher and on a UDMP with Protect 1.14.10. It will not work on a lower version than that due to the support of the Doorbell.
+* As of version 0.3.0, this Integration also supports the Unifi Dream MachinePro and UNVR with UnifiOS, thanks to the work of @msvinth.
 
 ## Installation
 This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.

@@ -1,5 +1,11 @@
 # // Changelog
 
+## Release 0.5.5
+
+The latest beta of Unifi Protect includes the start of Ubiquiti's version of AI, and introduces a concept called Smart Detect, which currently can identify People on specific Camera models. When this is enabled on a Camera, the event type changes from a *motion* event to a *smartdetect* event, and as such these cameras will no longer trigger motion events.
+
+This release is a quick fix for the people who have upgraded to the latest Unifi Protect Beta version. I will later introduce more Integration features based on these new Unifi Protect features.
+
 ## Release 0.5.4
 
 A more permanent fix for Issue #88, where the snapshot images did not always get the current image. The API call has now been modified, so that it forces a refresh of the image when pulling it from the camera. Thank you to @rajeevan for finding the solution.

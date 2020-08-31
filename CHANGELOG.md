@@ -5,6 +5,8 @@ New feature: Turn the Status Light on or off, asked for in Issue #102. With this
 1. Use the service `unifiprotect.set_status_light`
 2. Use the new switch that will be created for each camera.
 
+Disabled the Websocket update, that was introduced in 0.5.5, as it is currently not being used, and caused error messages when HA was closing down, due to not being stopped.
+
 
 ## Release 0.5.5
 

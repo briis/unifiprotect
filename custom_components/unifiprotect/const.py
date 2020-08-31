@@ -23,6 +23,7 @@ CONF_SNAPSHOT_DIRECT = "snapshot_direct"
 CONF_IR_MODE = "ir_mode"
 CONF_IR_ON = "ir_on"
 CONF_IR_OFF = "ir_off"
+CONF_STATUS_LIGHT = "status_light"
 
 DEFAULT_PORT = 7443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
@@ -35,6 +36,7 @@ DEVICE_CLASS_DOORBELL = "doorbell"
 SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"
+SERVICE_SET_STATUS_LIGHT = "set_status_light"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
@@ -63,6 +65,7 @@ UNIFI_PROTECT_PLATFORMS = [
 
 VALID_IR_MODES = [TYPE_IR_ON, TYPE_IR_AUTO, TYPE_IR_OFF, TYPE_IR_LED_OFF]
 VALID_RECORDING_MODES = [TYPE_RECORD_MOTION, TYPE_RECORD_ALLWAYS, TYPE_RECORD_NEVER]
+VALID_LIGHT_MODES = [True, False]
 
 SAVE_THUMBNAIL_SCHEMA = vol.Schema(
     {
@@ -85,5 +88,12 @@ SET_IR_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Optional(CONF_IR_MODE, default=TYPE_IR_AUTO): vol.In(VALID_IR_MODES),
+    }
+)
+
+SET_STATUS_LIGHT_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Optional(CONF_STATUS_LIGHT, default=True): vol.In(VALID_LIGHT_MODES),
     }
 )

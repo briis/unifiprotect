@@ -20,9 +20,11 @@ from .const import (
     SERVICE_SET_IR_MODE,
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SAVE_THUMBNAIL,
+    SERVICE_SET_STATUS_LIGHT,
     SET_IR_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SAVE_THUMBNAIL_SCHEMA,
+    SET_STATUS_LIGHT_SCHEMA,
 )
 from .entity import UnifiProtectEntity
 
@@ -58,6 +60,10 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SET_IR_MODE, SET_IR_MODE_SCHEMA, "async_set_ir_mode"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_STATUS_LIGHT, SET_STATUS_LIGHT_SCHEMA, "async_set_status_light"
     )
 
     platform.async_register_entity_service(
@@ -160,6 +166,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     async def async_set_ir_mode(self, ir_mode):
         """Set camera ir mode."""
         await self.upv_object.set_camera_ir(self._camera_id, ir_mode)
+
+    async def async_set_status_light(self, on_status):
+        """Set camera Status Light."""
+        await self.upv_object.set_camera_status_light(self._camera_id, on_status)
 
     async def async_update(self):
         """Update the entity.

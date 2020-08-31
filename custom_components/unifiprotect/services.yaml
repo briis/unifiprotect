@@ -23,8 +23,17 @@ set_ir_mode:
   description: 'Set Infrared Settings for the camera'
   fields:
     entity_id:
-      description: 'string (required) camera to enable recording on'
+      description: 'string (required) camera to set IR mode for'
       example: 'camera.outdoor'
     ir_mode:
       description: '(Optional) Valid options are: always_on = IR always on, auto = Automatic, led_off = Automatic wo LEDs, always_off = Always Off. Default value is: auto'
       example: auto
+set_status_light:
+  description: 'Turn the Cameras Led Light on or off'
+  fields:
+    entity_id:
+      description: 'string (required) camera to change status light on'
+      example: 'camera.outdoor'
+    on_status:
+      description: '(Optional) Valid options are: True or False'
+      example: True

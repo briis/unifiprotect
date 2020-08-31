@@ -32,6 +32,7 @@ SWITCH_TYPES = {
     "record_motion": ["Record Motion", "video-outline", "record_motion"],
     "record_always": ["Record Always", "video", "record_always"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode"],
+    "status_light": ["Status Light On", "led-on", "status_light"],
 }
 
 
@@ -102,8 +103,10 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
                 if self._camera_data["recording_mode"] == TYPE_RECORD_ALLWAYS
                 else False
             )
-        else:
+        elif self._switch_type == "ir_mode":
             enabled = True if self._camera_data["ir_mode"] == self._ir_on_cmd else False
+        else:
+            enabled = True if self._camera_data["status_light"] == "True" else False
         return enabled
 
     @property
@@ -127,9 +130,12 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
-        else:
+        elif self._switch_type == "ir_mode":
             _LOGGER.debug("Turning on IR")
             await self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)
+        else:
+            _LOGGER.debug("Changing Status Light to On")
+            await self.upv.set_camera_status_light(self._camera_id, True)
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs):
@@ -137,6 +143,9 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         if self._switch_type == "ir_mode":
             _LOGGER.debug("Turning off IR")
             await self.upv.set_camera_ir(self._camera_id, self._ir_off_cmd)
+        elif self._switch_type == "status_light":
+            _LOGGER.debug("Changing Status Light to Off")
+            await self.upv.set_camera_status_light(self._camera_id, False)
         else:
             _LOGGER.debug("Turning off Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)

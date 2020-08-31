@@ -1,5 +1,11 @@
 # // Changelog
 
+## Release 0.5.6
+New feature: Turn the Status Light on or off, asked for in Issue #102. With this release there is now the possibility to turn the Status light on each camera On or Off. This can be done in two ways:
+1. Use the service `unifiprotect.set_status_light`
+2. Use the new switch that will be created for each camera.
+
+
 ## Release 0.5.5
 
 The latest beta of Unifi Protect includes the start of Ubiquiti's version of AI, and introduces a concept called Smart Detect, which currently can identify People on specific Camera models. When this is enabled on a Camera, the event type changes from a *motion* event to a *smartdetect* event, and as such these cameras will no longer trigger motion events.

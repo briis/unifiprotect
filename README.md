@@ -84,6 +84,7 @@ Service | Parameters | Description
 `unifiprotect.save_thumbnail_image` | `entity_id` - Name of entity to retrieve thumbnail from.<br>`filename` - Filename to store thumbnail in<br>`image_width` - (Optional) Width of the image in pixels. Height will be scaled proportionally. Default is 640. | Get the thumbnail image of the last recording event (If any), from the specified camera
 `unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, motion or never | Set the recording mode for each Camera.
 `unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, always_on, led_off or always_off | Set the infrared mode for each Camera.
+`unifiprotect.set_status_light` | `entity_id` - Name of entity to toggle status light for.<br>`light_on` - true or false | Turn the status light on or off for each Camera.
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 

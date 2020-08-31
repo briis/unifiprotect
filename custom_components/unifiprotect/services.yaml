@@ -35,5 +35,5 @@ set_status_light:
       description: 'string (required) camera to change status light on'
       example: 'camera.outdoor'
     light_on:
-      description: '(Optional) Valid options are: True or False'
+      description: '(Optional) Valid options are: true or false'
       example: True

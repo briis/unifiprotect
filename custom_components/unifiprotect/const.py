@@ -23,7 +23,7 @@ CONF_SNAPSHOT_DIRECT = "snapshot_direct"
 CONF_IR_MODE = "ir_mode"
 CONF_IR_ON = "ir_on"
 CONF_IR_OFF = "ir_off"
-CONF_STATUS_LIGHT = "status_light"
+CONF_STATUS_LIGHT = "light_on"
 
 DEFAULT_PORT = 7443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"

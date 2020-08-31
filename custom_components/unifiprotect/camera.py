@@ -167,9 +167,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Set camera ir mode."""
         await self.upv_object.set_camera_ir(self._camera_id, ir_mode)
 
-    async def async_set_status_light(self, on_status):
+    async def async_set_status_light(self, light_on):
         """Set camera Status Light."""
-        await self.upv_object.set_camera_status_light(self._camera_id, on_status)
+        await self.upv_object.set_camera_status_light(self._camera_id, light_on)
 
     async def async_update(self):
         """Update the entity.

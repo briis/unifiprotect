@@ -34,6 +34,6 @@ set_status_light:
     entity_id:
       description: 'string (required) camera to change status light on'
       example: 'camera.outdoor'
-    on_status:
+    light_on:
       description: '(Optional) Valid options are: True or False'
       example: True

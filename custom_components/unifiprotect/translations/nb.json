@@ -1,0 +1,38 @@
+  
+{
+    "config": {
+        "abort": {
+            "server_exists": "Unifi Protect Server er allerede konfigurert."
+        },
+        "error": {
+            "connection_error": "Tilkobling mislyktes. Feil IP eller brukernavn / passord.",
+            "nvr_error": "Feil ved henting av data fra Unifi Protect."
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "host": "IP-adresse til CloudKey + eller UDMP",
+                    "port": "Portnummer: (7443 CloudKey +, 443 UDMP)",
+                    "username": "Brukenavn",
+                    "password": "Passord",
+                    "scan_interval": "Skanneintervall for hendelser (sett høyere hvis mange kameraer)",
+                    "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
+                    "ir_on": "Innstilling for bruk for infrarødt lys PÅ",
+                    "ir_off": "Innstilling for bruk for infrarødt lys AV"
+                },
+                "description": "Sett opp Unifi Protect for å overvåke kameraer og sensorer.",
+                "title": "Unifi Protect"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
+                    "scan_interval": "Skanneintervall for hendelser (sett høyere hvis mange kameraer)"
+                }
+            }
+        }
+    }
+}

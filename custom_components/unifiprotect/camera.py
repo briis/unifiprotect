@@ -1,29 +1,27 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
+
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
-from homeassistant.const import (
-    ATTR_ATTRIBUTION,
-    ATTR_LAST_TRIP_TIME,
-)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
 from homeassistant.helpers import entity_platform
+from homeassistant.helpers.typing import HomeAssistantType
 
 from .const import (
     ATTR_CAMERA_ID,
-    ATTR_UP_SINCE,
     ATTR_ONLINE,
-    DOMAIN,
+    ATTR_UP_SINCE,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_CLASS_DOORBELL,
+    DOMAIN,
+    SAVE_THUMBNAIL_SCHEMA,
+    SERVICE_SAVE_THUMBNAIL,
     SERVICE_SET_IR_MODE,
     SERVICE_SET_RECORDING_MODE,
-    SERVICE_SAVE_THUMBNAIL,
     SERVICE_SET_STATUS_LIGHT,
     SET_IR_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
-    SAVE_THUMBNAIL_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
 )
 from .entity import UnifiProtectEntity
@@ -102,7 +100,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     @property
     def brand(self):
-        """The Cameras Brand."""
+        """Return the Cameras Brand."""
         return DEFAULT_BRAND
 
     @property
@@ -193,7 +191,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self._name)
 
     async def async_camera_image(self):
-        """ Return the Camera Image. """
+        """Return the Camera Image."""
         if self._snapshot_direct:
             last_image = await self.upv_object.get_snapshot_image_direct(
                 self._camera_id
@@ -204,5 +202,5 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         return self._last_image
 
     async def stream_source(self):
-        """ Return the Stream Source. """
+        """Return the Stream Source."""
         return self._stream_source

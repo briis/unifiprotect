@@ -1,35 +1,30 @@
-""" Config Flow to configure Unifi Protect Integration. """
+"""Config Flow to configure Unifi Protect Integration."""
 import logging
 
-from pyunifiprotect import UpvServer, NotAuthorized, NvrError
-
+from aiohttp import CookieJar
+from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 import voluptuous as vol
 
+# from homeassistant.config_entries import ConfigFlow
 from homeassistant import config_entries
 from homeassistant.const import (
-    CONF_ID,
     CONF_HOST,
-    CONF_USERNAME,
+    CONF_ID,
     CONF_PASSWORD,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
+    CONF_USERNAME,
 )
-
-from homeassistant.config_entries import ConfigFlow
-
-from homeassistant import config_entries, core
-import homeassistant.helpers.config_validation as cv
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from aiohttp import CookieJar
 
 from .const import (
-    DOMAIN,
+    CONF_IR_OFF,
+    CONF_IR_ON,
+    CONF_SNAPSHOT_DIRECT,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
-    CONF_SNAPSHOT_DIRECT,
-    CONF_IR_ON,
-    CONF_IR_OFF,
+    DOMAIN,
     TYPE_IR_AUTO,
     TYPE_IR_OFF,
     TYPES_IR_OFF,

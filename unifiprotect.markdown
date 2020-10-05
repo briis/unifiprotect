@@ -27,7 +27,9 @@ There is currently support for the following device types within Home Assistant:
 
 Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
 
-1. **Local User** The process of creating a local users varies depending on whether you use a CloudKey+ or an UDMP/UNVR server. Please follow the manual for either device to create a local user, that has Administrative rights for Unifi Protect.
+1. **Local User** There must be a local user with administrative rights set up on your Unifi Protect Server. The process of creating a local users varies depending on whether you use a CloudKey+ or an UDMP/UNVR server (UnifiOS devices).
+    * **CloudKey+** - open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select an existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.
+    * **UnifiOS device** - open Unifi Protect in your browser. Click the device name, and then in the bottom, click *Users*. Either select an existing user, or create a new one. It is importent that for Unifi Protect, this user is part of the Administrator group.
 
 2. **RTSP Stream** Live Streaming for Cameras is enabled by activating the RTSP stream on each attached camera. Select each camera under the CAMERAS tab in the Unfi Protect App or Web Interface, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one, the integration will pick the one with the highest resolution.
 

@@ -3,7 +3,11 @@
   "name": "Unifi Protect",
   "documentation": "https://github.com/briis/unifiprotect",
   "config_flow": true,
-  "requirements": ["pyunifiprotect==0.19.4"],
+  "requirements": [
+    "pyunifiprotect==0.19.6"
+  ],
   "dependencies": [],
-  "codeowners": ["@briis"]
+  "codeowners": [
+    "@briis"
+  ]
 }

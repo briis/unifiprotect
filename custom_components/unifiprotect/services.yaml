@@ -37,3 +37,21 @@ set_status_light:
     light_on:
       description: "(Optional) Valid options are: true or false"
       example: true
+set_hdr_mode:
+  description: "Turn the Cameras HDR mode on or off"
+  fields:
+    entity_id:
+      description: "string (required) camera to change hdr mode for"
+      example: "camera.outdoor"
+    hdr_on:
+      description: "(Optional) Valid options are: true or false"
+      example: true
+set_video_mode:
+  description: "Turn the Cameras High FPS mode on or off (Only G4 Cameras)"
+  fields:
+    entity_id:
+      description: "string (required) camera to change video mode for"
+      example: "camera.outdoor"
+    high_fps_on:
+      description: "(Optional) Valid options are: true or false"
+      example: true

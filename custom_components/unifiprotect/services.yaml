@@ -46,7 +46,7 @@ set_hdr_mode:
     hdr_on:
       description: "(Optional) Valid options are: true or false"
       example: true
-set_video_mode:
+set_highfps_video_mode:
   description: "Turn the Cameras High FPS mode on or off (Only G4 Cameras)"
   fields:
     entity_id:

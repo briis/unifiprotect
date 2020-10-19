@@ -21,12 +21,12 @@ from .const import (
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SET_STATUS_LIGHT,
     SERVICE_SET_HDR_MODE,
-    SERVICE_SET_VIDEO_MODE,
+    SERVICE_SET_HIGHFPS_VIDEO_MODE,
     SET_IR_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
     SET_HDR_MODE_SCHEMA,
-    SET_VIDEO_MODE_SCHEMA,
+    SET_HIGHFPS_VIDEO_MODE_SCHEMA,
 )
 from .entity import UnifiProtectEntity
 
@@ -73,7 +73,9 @@ async def async_setup_entry(
     )
 
     platform.async_register_entity_service(
-        SERVICE_SET_VIDEO_MODE, SET_VIDEO_MODE_SCHEMA, "async_set_video_mode"
+        SERVICE_SET_HIGHFPS_VIDEO_MODE,
+        SET_HIGHFPS_VIDEO_MODE_SCHEMA,
+        "async_set_highfps_video_mode",
     )
 
     platform.async_register_entity_service(
@@ -185,7 +187,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Set camera HDR mode."""
         await self.upv_object.set_camera_hdr_mode(self._camera_id, hdr_on)
 
-    async def async_set_video_mode(self, high_fps_on):
+    async def async_set_highfps_video_mode(self, high_fps_on):
         """Set camera High FPS video mode."""
         await self.upv_object.set_camera_video_mode_highfps(
             self._camera_id, high_fps_on

@@ -38,7 +38,7 @@ SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"
 SERVICE_SET_STATUS_LIGHT = "set_status_light"
 SERVICE_SET_HDR_MODE = "set_hdr_mode"
-SERVICE_SET_VIDEO_MODE = "set_video_mode"
+SERVICE_SET_HIGHFPS_VIDEO_MODE = "set_highfps_video_mode"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
@@ -107,7 +107,7 @@ SET_HDR_MODE_SCHEMA = vol.Schema(
     }
 )
 
-SET_VIDEO_MODE_SCHEMA = vol.Schema(
+SET_HIGHFPS_VIDEO_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Optional(CONF_HIGH_FPS_ON, default=True): vol.In(VALID_LIGHT_MODES),

@@ -20,9 +20,13 @@ from .const import (
     SERVICE_SET_IR_MODE,
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SET_STATUS_LIGHT,
+    SERVICE_SET_HDR_MODE,
+    SERVICE_SET_VIDEO_MODE,
     SET_IR_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
+    SET_HDR_MODE_SCHEMA,
+    SET_VIDEO_MODE_SCHEMA,
 )
 from .entity import UnifiProtectEntity
 
@@ -62,6 +66,14 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SET_STATUS_LIGHT, SET_STATUS_LIGHT_SCHEMA, "async_set_status_light"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_HDR_MODE, SET_HDR_MODE_SCHEMA, "async_set_hdr_mode"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_VIDEO_MODE, SET_VIDEO_MODE_SCHEMA, "async_set_video_mode"
     )
 
     platform.async_register_entity_service(
@@ -168,6 +180,16 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     async def async_set_status_light(self, light_on):
         """Set camera Status Light."""
         await self.upv_object.set_camera_status_light(self._camera_id, light_on)
+
+    async def async_set_hdr_mode(self, hdr_on):
+        """Set camera HDR mode."""
+        await self.upv_object.set_camera_hdr_mode(self._camera_id, hdr_on)
+
+    async def async_set_video_mode(self, high_fps_on):
+        """Set camera High FPS video mode."""
+        await self.upv_object.set_camera_video_mode_highfps(
+            self._camera_id, high_fps_on
+        )
 
     async def async_update(self):
         """Update the entity.

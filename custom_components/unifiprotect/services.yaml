@@ -55,3 +55,12 @@ set_highfps_video_mode:
     high_fps_on:
       description: "(Optional) Valid options are: true or false"
       example: true
+set_doorbell_lcd_message:
+  description: Display a message on the LCD Screen on the G4 Doorbell"
+  fields:
+    entity_id:
+      description: "string (required) Doorbell to display message on"
+      example: "camera.outdoor"
+    text:
+      description: "(Optional) Message to display (Default: Welcome)"
+      example: Ring the bell

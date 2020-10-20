@@ -24,6 +24,7 @@ CONF_IR_OFF = "ir_off"
 CONF_STATUS_LIGHT = "light_on"
 CONF_HDR_ON = "hdr_on"
 CONF_HIGH_FPS_ON = "high_fps_on"
+CONF_LCD_MESSAGE = "text"
 
 DEFAULT_PORT = 7443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
@@ -39,6 +40,7 @@ SERVICE_SET_IR_MODE = "set_ir_mode"
 SERVICE_SET_STATUS_LIGHT = "set_status_light"
 SERVICE_SET_HDR_MODE = "set_hdr_mode"
 SERVICE_SET_HIGHFPS_VIDEO_MODE = "set_highfps_video_mode"
+SERVICE_SET_DOORBELL_LCD_MESSAGE = "set_doorbell_lcd_message"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
@@ -111,5 +113,12 @@ SET_HIGHFPS_VIDEO_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Optional(CONF_HIGH_FPS_ON, default=True): vol.In(VALID_LIGHT_MODES),
+    }
+)
+
+SET_DOORBELL_LCD_MESSAGE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Optional(CONF_LCD_MESSAGE, default="Welcome"): cv.string,
     }
 )

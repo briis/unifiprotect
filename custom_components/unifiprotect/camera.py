@@ -22,11 +22,13 @@ from .const import (
     SERVICE_SET_STATUS_LIGHT,
     SERVICE_SET_HDR_MODE,
     SERVICE_SET_HIGHFPS_VIDEO_MODE,
+    SERVICE_SET_DOORBELL_LCD_MESSAGE,
     SET_IR_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
     SET_HDR_MODE_SCHEMA,
     SET_HIGHFPS_VIDEO_MODE_SCHEMA,
+    SET_DOORBELL_LCD_MESSAGE_SCHEMA,
 )
 from .entity import UnifiProtectEntity
 
@@ -76,6 +78,12 @@ async def async_setup_entry(
         SERVICE_SET_HIGHFPS_VIDEO_MODE,
         SET_HIGHFPS_VIDEO_MODE_SCHEMA,
         "async_set_highfps_video_mode",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_DOORBELL_LCD_MESSAGE,
+        SET_DOORBELL_LCD_MESSAGE_SCHEMA,
+        "async_set_doorbell_lcd_message",
     )
 
     platform.async_register_entity_service(
@@ -192,6 +200,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         await self.upv_object.set_camera_video_mode_highfps(
             self._camera_id, high_fps_on
         )
+
+    async def async_set_doorbell_lcd_message(self, custom_text):
+        """Set LCD Message on Doorbell display."""
+        await self.upv_object.set_doorbell_custom_text(self._camera_id, custom_text)
 
     async def async_update(self):
         """Update the entity.

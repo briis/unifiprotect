@@ -60,7 +60,7 @@ set_doorbell_lcd_message:
   fields:
     entity_id:
       description: "string (required) Doorbell to display message on"
-      example: "camera.outdoor"
+      example: "camera.doorbell"
     text:
       description: "(Optional) Message to display (Default: Welcome)"
       example: Ring the bell

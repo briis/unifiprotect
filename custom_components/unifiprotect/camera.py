@@ -201,9 +201,13 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             self._camera_id, high_fps_on
         )
 
-    async def async_set_doorbell_lcd_message(self, text):
+    async def async_set_doorbell_lcd_message(self, message, duration):
         """Set LCD Message on Doorbell display."""
-        await self.upv_object.set_doorbell_custom_text(self._camera_id, text)
+        if not duration.isnumeric():
+            duration = None
+        await self.upv_object.set_doorbell_custom_text(
+            self._camera_id, message, duration
+        )
 
     async def async_update(self):
         """Update the entity.

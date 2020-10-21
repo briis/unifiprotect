@@ -59,8 +59,11 @@ set_doorbell_lcd_message:
   description: Display a message on the LCD Screen on the G4 Doorbell"
   fields:
     entity_id:
-      description: "string (required) Doorbell to display message on"
+      description: "(Required) Doorbell to display message on"
       example: "camera.doorbell"
-    text:
-      description: "(Optional) Message to display (Default: Welcome)"
+    message:
+      description: "(Required) Message to display on LCD Panel"
       example: Ring the bell
+    duration:
+      description: "(Optional) Number of minutes to display message, before returning to default. Leave blank to display always"
+      example: "15"

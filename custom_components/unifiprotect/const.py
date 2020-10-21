@@ -24,7 +24,8 @@ CONF_IR_OFF = "ir_off"
 CONF_STATUS_LIGHT = "light_on"
 CONF_HDR_ON = "hdr_on"
 CONF_HIGH_FPS_ON = "high_fps_on"
-CONF_LCD_MESSAGE = "text"
+CONF_MESSAGE = "message"
+CONF_DURATION = "duration"
 
 DEFAULT_PORT = 7443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
@@ -119,6 +120,7 @@ SET_HIGHFPS_VIDEO_MODE_SCHEMA = vol.Schema(
 SET_DOORBELL_LCD_MESSAGE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Optional(CONF_LCD_MESSAGE, default="Welcome"): cv.string,
+        vol.Required(CONF_MESSAGE): cv.string,
+        vol.Optional(CONF_DURATION, default="None"): cv.string,
     }
 )

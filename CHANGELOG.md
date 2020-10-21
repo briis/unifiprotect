@@ -1,7 +1,7 @@
 # // Changelog
 
 
-## Release 0.5.7 (NOT RELEASED YET)
+## Release 0.5.7
 * New feature: Turn HDR mode on or off, asked for in Issue #119. Only selected Cameras support HDR mode, but for those cameras that support it, you can now switch this on or off by calling the service: `unifiprotect.set_hdr_mode`. Please note that when you use this Service the stream will reset, so expect a drop out in the stream for a little while.
 * New feature: Turn High FPS video mode on or off. The G4 Cameras support High FPS video mode. With this release there is now a service to turn this on or off. Call the service `unifiprotect.set_highfps_video_mode`.
 * New feature: Set the LCD Message on the G4 Doorbell. There is now a new service called `unifiprotect.set_doorbell_lcd_message` from where you can set a Custom Text for the LCD. Closing Issue #104

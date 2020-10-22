@@ -2,11 +2,13 @@
 
 
 ## Release 0.5.8 (NOT RELEASED YET)
-This release introduces a few new Services, as per user request. Please note that HDR and High FPS Services will require a version of Unifi Protect greater than 1.13.x. You will still be able to upgrade, but the functions might not work.
+Object Detection was introduced with 1.14 of Unifi Protect for the UDMP/UNVR with the G4 series of Cameras. (I am unsure about the CloudKey+, but this release should not break on the CloudKey+ even without object detection). This release now adds a new Attribute to the Binary Motion Sensors that will display the object detected. I have currently only seen `person` being detected, but I am happy to hear if anyone finds other objects. See below on how this could be used.
+This release also introduces a few new Services, as per user request. Please note that HDR and High FPS Services will require a version of Unifi Protect greater than 1.13.x. You will still be able to upgrade, but the functions might not work.
 
 * New feature: Turn HDR mode on or off, asked for in Issue #119. Only selected Cameras support HDR mode, but for those cameras that support it, you can now switch this on or off by calling the service: `unifiprotect.set_hdr_mode`. Please note that when you use this Service the stream will reset, so expect a drop out in the stream for a little while.
 * New feature: Turn High FPS video mode on or off. The G4 Cameras support High FPS video mode. With this release there is now a service to turn this on or off. Call the service `unifiprotect.set_highfps_video_mode`.
 * New feature: Set the LCD Message on the G4 Doorbell. There is now a new service called `unifiprotect.set_doorbell_lcd_message` from where you can set a Custom Text for the LCD. Closing Issue #104
+* New attribute `event_object` that will add the object detected when Motion occurs. It will contain the string `None Identified` if no specific object is detected. If a human is detected it will return `person` in this attribute, which you can test for in an automation.
 
 ## Release 0.5.6
 New feature: Turn the Status Light on or off, asked for in Issue #102. With this release there is now the possibility to turn the Status light on each camera On or Off. This can be done in two ways:

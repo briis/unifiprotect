@@ -17,6 +17,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 from .const import (
     ATTR_EVENT_LENGTH,
     ATTR_EVENT_SCORE,
+    ATTR_EVENT_OBJECT,
     DEFAULT_ATTRIBUTION,
     DEVICE_CLASS_DOORBELL,
     DOMAIN,
@@ -104,9 +105,15 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
                 ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
                 ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"],
             }
+        if len(self._camera_data["event_object"]) > 0:
+            detected_object = self._camera_data["event_object"][0]
+            _LOGGER.debug(f"OBJECTS: {self._camera_data['event_object']}")
+        else:
+            detected_object = "None Identified"
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_LAST_TRIP_TIME: self._camera_data["last_motion"],
             ATTR_EVENT_SCORE: self._camera_data["event_score"],
             ATTR_EVENT_LENGTH: self._camera_data["event_length"],
+            ATTR_EVENT_OBJECT: detected_object,
         }

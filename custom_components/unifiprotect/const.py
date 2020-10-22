@@ -14,6 +14,7 @@ ATTR_UP_SINCE = "up_since"
 ATTR_ONLINE = "online"
 ATTR_EVENT_SCORE = "event_score"
 ATTR_EVENT_LENGTH = "event_length"
+ATTR_EVENT_OBJECT = "event_object"
 
 CONF_THUMB_WIDTH = "image_width"
 CONF_RECORDING_MODE = "recording_mode"

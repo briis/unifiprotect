@@ -134,6 +134,28 @@ Now add a new Automation, like the following:
 
 Thats it. Whenever you now select a new value from the Dropdown, the automation is activated, and the service is called to change the IR mode. The same can then be achieved for the *recording_mode* by changing the options and the service call in the automation.
 
+### AUTOMATE PERSON DETECTION
+
+If you have G4 Series Cameras, it is possible to do object detection directly on the Camera. Currently they only seem to support detecting a Person, but maybe Cars, Animals etc. will be added in the future.
+Here is an example of how you can use this to send a notification to your phone if a Person is detected on a Camera, where Recording mode is set to `motion` or `always`. In this example the camera is called `camera.outdoor`, so the corresponding Binary Motion Sensor is called `binary_sensor.motion_outdoor`. It is a very basic example, sending a Notification via the Notify Service Pushover, when a person has been detected, but it can be used to illustrate the use case.
+
+```yaml
+- id: '1603355532588'
+  alias: Send message when person detected
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.motion_outdoor
+    to: person
+    attribute: event_object
+  condition: []
+  action:
+  - service: notify.pushover
+    data:
+      message: A person has been detected on the Camera
+  mode: single
+```
+
 ### CONTRIBUTE TO THE PROJECT AND DEVELOPING WITH A DEVCONTAINER
 
 1. Fork and clone the repository.

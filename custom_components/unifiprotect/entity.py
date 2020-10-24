@@ -8,15 +8,15 @@ from .const import DEFAULT_BRAND, DOMAIN
 class UnifiProtectEntity(Entity):
     """Base class for unifi protect entities."""
 
-    def __init__(self, upv_object, coordinator, camera_id, sensor_type):
+    def __init__(self, upv_object, protect_data, camera_id, sensor_type):
         """Initialize the entity."""
         super().__init__()
         self.upv_object = upv_object
-        self.coordinator = coordinator
+        self.protect_data = protect_data
         self._camera_id = camera_id
         self._sensor_type = sensor_type
 
-        self._camera_data = self.coordinator.data[self._camera_id]
+        self._camera_data = self.protect_data.data[self._camera_id]
         self._camera_name = self._camera_data["name"]
         self._mac = self._camera_data["mac"]
         self._firmware_version = self._camera_data["firmware_version"]
@@ -50,13 +50,22 @@ class UnifiProtectEntity(Entity):
             "via_device": (DOMAIN, self._server_id),
         }
 
+    async def async_update(self):
+        """Update the entity.
+
+        Only used by the generic entity update service.
+        """
+        await self.protect_data.async_refresh()
+
     @property
     def available(self):
         """Return if entity is available."""
-        return self.coordinator.last_update_success
+        return self.protect_data.last_update_success
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""
         self.async_on_remove(
-            self.coordinator.async_add_listener(self.async_write_ha_state)
+            self.protect_data.async_subscribe_device_id(
+                self._camera_id, self.async_write_ha_state
+            )
         )

@@ -139,7 +139,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         else:
             _LOGGER.debug("Changing Status Light to On")
             await self.upv.set_camera_status_light(self._camera_id, True)
-        await self.protect_data.async_request_refresh()
+        await self.protect_data.async_refresh()
 
     async def async_turn_off(self, **kwargs):
         """Turn the device off."""
@@ -152,4 +152,4 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         else:
             _LOGGER.debug("Turning off Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
-        await self.protect_data.async_request_refresh()
+        await self.protect_data.async_refresh()

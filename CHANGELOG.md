@@ -1,13 +1,14 @@
 # // Changelog
 
 ## Release 0.6.0 (NOT RELEASED YET)
+The Integration has now been rewritten to use Websockets for updating events, giving a lot of benefits:
 
-Motion and doorbell updates should now happen
-right away
+* Motion and doorbell updates should now happen right away
+* Reduces the amount of entity updates since we now only update cameras that change when we poll instead of them all.
 
-Reduces the amount of entity updates since we
-now only update cameras that change when we
-poll instead of them all.
+Unfortunately, Websockets are only available for UnifiOS powered devices, so this will not apply to people running on the CloudKey. Here we will still need to do polling.
+
+I want to extend a big thank you to @bdraco, who did the rewrite and @adrum for the initial work. Also a lot of credits to @hjdhjd for reverse engineering the Websocket API and writing up the description. This could not have been done without all your work.
 
 ## Release 0.5.8
 Object Detection was introduced with 1.14 of Unifi Protect for the UDMP/UNVR with the G4 series of Cameras. (I am unsure about the CloudKey+, but this release should not break on the CloudKey+ even without object detection). This release now adds a new Attribute to the Binary Motion Sensors that will display the object detected. I have currently only seen `person` being detected, but I am happy to hear if anyone finds other objects. See below on how this could be used.

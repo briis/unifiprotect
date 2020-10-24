@@ -39,11 +39,16 @@ class UnifiProtectData:
         if self._unsub_interval:
             self._unsub_interval()
             self._unsub_interval = None
+        await self._protectserver.async_disconnect_ws()
 
-    async def async_refresh(self, *_):
+    async def async_refresh(self, *_, force_camera_update=False):
         """Update the data."""
         try:
-            self._async_process_updates(await self._protectserver.update())
+            self._async_process_updates(
+                await self._protectserver.update(
+                    force_camera_update=force_camera_update
+                )
+            )
             self.last_update_success = True
         except NvrError:
             if self.last_update_success:

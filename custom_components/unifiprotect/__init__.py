@@ -1,13 +1,12 @@
 """Unifi Protect Platform."""
 
 import asyncio
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
+import homeassistant.helpers.device_registry as dr
 from aiohttp import CookieJar
 from aiohttp.client_exceptions import ServerDisconnectedError
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
@@ -19,9 +18,8 @@ from homeassistant.const import (
 )
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 
 from .const import (
     CONF_SNAPSHOT_DIRECT,
@@ -30,6 +28,7 @@ from .const import (
     DOMAIN,
     UNIFI_PROTECT_PLATFORMS,
 )
+from .data import UnifiProtectData
 
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
@@ -72,12 +71,8 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
     )
 
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name=DOMAIN,
-        update_method=protectserver.update,
-        update_interval=timedelta(seconds=events_update_interval),
+    protect_data = UnifiProtectData(
+        hass, protectserver, timedelta(seconds=events_update_interval)
     )
 
     try:
@@ -90,9 +85,9 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
     except (NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
 
-    await coordinator.async_refresh()
+    await protect_data.async_setup()
     hass.data[DOMAIN][entry.entry_id] = {
-        "coordinator": coordinator,
+        "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
     }
@@ -142,6 +137,7 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> boo
     )
 
     if unload_ok:
+        await hass.data[DOMAIN][entry.entry_id]["protect_data"].async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok

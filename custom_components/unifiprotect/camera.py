@@ -17,18 +17,18 @@ from .const import (
     DOMAIN,
     SAVE_THUMBNAIL_SCHEMA,
     SERVICE_SAVE_THUMBNAIL,
+    SERVICE_SET_DOORBELL_LCD_MESSAGE,
+    SERVICE_SET_HDR_MODE,
+    SERVICE_SET_HIGHFPS_VIDEO_MODE,
     SERVICE_SET_IR_MODE,
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SET_STATUS_LIGHT,
-    SERVICE_SET_HDR_MODE,
-    SERVICE_SET_HIGHFPS_VIDEO_MODE,
-    SERVICE_SET_DOORBELL_LCD_MESSAGE,
+    SET_DOORBELL_LCD_MESSAGE_SCHEMA,
+    SET_HDR_MODE_SCHEMA,
+    SET_HIGHFPS_VIDEO_MODE_SCHEMA,
     SET_IR_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
-    SET_HDR_MODE_SCHEMA,
-    SET_HIGHFPS_VIDEO_MODE_SCHEMA,
-    SET_DOORBELL_LCD_MESSAGE_SCHEMA,
 )
 from .entity import UnifiProtectEntity
 
@@ -40,16 +40,16 @@ async def async_setup_entry(
 ) -> None:
     """Discover cameras on a Unifi Protect NVR."""
     upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
-    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    protect_data = hass.data[DOMAIN][entry.entry_id]["protect_data"]
     snapshot_direct = hass.data[DOMAIN][entry.entry_id]["snapshot_direct"]
-    if not coordinator.data:
+    if not protect_data.data:
         return
 
-    cameras = [camera for camera in coordinator.data]
+    cameras = [camera for camera in protect_data.data]
 
     async_add_entities(
         [
-            UnifiProtectCamera(upv_object, coordinator, camera, snapshot_direct)
+            UnifiProtectCamera(upv_object, protect_data, camera, snapshot_direct)
             for camera in cameras
         ]
     )
@@ -96,9 +96,9 @@ async def async_setup_entry(
 class UnifiProtectCamera(UnifiProtectEntity, Camera):
     """A Ubiquiti Unifi Protect Camera."""
 
-    def __init__(self, upv_object, coordinator, camera_id, snapshot_direct):
+    def __init__(self, upv_object, protect_data, camera_id, snapshot_direct):
         """Initialize an Unifi camera."""
-        super().__init__(upv_object, coordinator, camera_id, None)
+        super().__init__(upv_object, protect_data, camera_id, None)
         self._snapshot_direct = snapshot_direct
         self._name = self._camera_data["name"]
         self._stream_source = self._camera_data["rtsp"]
@@ -208,13 +208,6 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         await self.upv_object.set_doorbell_custom_text(
             self._camera_id, message, duration
         )
-
-    async def async_update(self):
-        """Update the entity.
-
-        Only used by the generic entity update service.
-        """
-        await self.coordinator.async_request_refresh()
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""

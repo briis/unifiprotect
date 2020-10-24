@@ -1,5 +1,13 @@
 # // Changelog
 
+## Release 0.6.0 (NOT RELEASED YET)
+
+Motion and doorbell updates should now happen
+right away
+
+Reduces the amount of entity updates since we
+now only update cameras that change when we
+poll instead of them all.
 
 ## Release 0.5.8
 Object Detection was introduced with 1.14 of Unifi Protect for the UDMP/UNVR with the G4 series of Cameras. (I am unsure about the CloudKey+, but this release should not break on the CloudKey+ even without object detection). This release now adds a new Attribute to the Binary Motion Sensors that will display the object detected. I have currently only seen `person` being detected, but I am happy to hear if anyone finds other objects. See below on how this could be used.

@@ -12,6 +12,7 @@ All Credits for this rewrite goes to:
 * @bdraco, who did the rewrite of both the IO module and the Integration
 * @adrum for the initial work on the Websocket support
 * @hjdhjd for reverse engineering the Websocket API and writing up the description
+
 This could not have been done without all your work.
 
 ### Other changes

@@ -44,7 +44,6 @@ async def async_setup_entry(
     """Set up switches for UniFi Protect integration."""
     upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
     protect_data = hass.data[DOMAIN][entry.entry_id]["protect_data"]
-    server_info = hass.data[DOMAIN][entry.entry_id]["server_info"]
 
     if not protect_data.data:
         return
@@ -63,24 +62,14 @@ async def async_setup_entry(
     for switch in SWITCH_TYPES:
         for camera in protect_data.data:
             # Only Add Switches if Camera supports it.
-            _camera_Type = protect_data.data[camera].get("model")
-            _g4_camera = True if "G4" in _camera_Type else False
-            _firmware_ver = server_info.get("server_version").replace(".", "")
-            _is_unifios = server_info.get("unifios")
-            _LOGGER.debug(f"FW: {_firmware_ver}")
             _add_switch = True
-            if switch == "high_fps":
-                # High FPS is not supported on CloudKey and only on G4 Cameras
-                if not _g4_camera or not _is_unifios:
-                    _add_switch = False
-            if switch == "hdr_mode":
-                if _is_unifios:
-                    if _g4_camera:
-                        _add_switch = False
-                else:
-                    # HDR Mode for G4 is only supported on CloudKey FW 1.13.2 and lower
-                    if int(_firmware_ver) > 1133 and _g4_camera:
-                        _add_switch = False
+            if switch == "high_fps" and not protect_data.data[camera].get(
+                "has_highfps"
+            ):
+                # High FPS is only supported on certain cameras
+                _add_switch = False
+            if switch == "hdr_mode" and not protect_data.data[camera].get("has_hdr"):
+                _add_switch = False
 
             if _add_switch:
                 switches.append(

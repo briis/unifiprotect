@@ -69,14 +69,17 @@ async def async_setup_entry(
             _is_unifios = server_info.get("unifios")
             _LOGGER.debug(f"FW: {_firmware_ver}")
             _add_switch = True
-            if switch == "high_fps" and not _g4_camera:
-                _add_switch = False
+            if switch == "high_fps":
+                # High FPS is not supported on CloudKey and only on G4 Cameras
+                if not _g4_camera or not _is_unifios:
+                    _add_switch = False
             if switch == "hdr_mode":
                 if _is_unifios:
                     if _g4_camera:
                         _add_switch = False
                 else:
-                    if int(_firmware_ver) > 1132:
+                    # HDR Mode for G4 is only supported on CloudKey FW 1.13.2 and lower
+                    if int(_firmware_ver) > 1133 and _g4_camera:
                         _add_switch = False
 
             if _add_switch:

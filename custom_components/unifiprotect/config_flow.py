@@ -1,8 +1,9 @@
 """Config Flow to configure Unifi Protect Integration."""
 import logging
 
-import voluptuous as vol
 from aiohttp import CookieJar
+from pyunifiprotect import NotAuthorized, NvrError, UpvServer
+import voluptuous as vol
 
 # from homeassistant.config_entries import ConfigFlow
 from homeassistant import config_entries
@@ -16,7 +17,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 
 from .const import (
     CONF_IR_OFF,

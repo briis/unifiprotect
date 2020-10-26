@@ -90,6 +90,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
+        "server_info": nvr_info,
     }
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)

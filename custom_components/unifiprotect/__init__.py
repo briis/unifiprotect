@@ -1,12 +1,13 @@
 """Unifi Protect Platform."""
 
 import asyncio
-import logging
 from datetime import timedelta
+import logging
 
-import homeassistant.helpers.device_registry as dr
 from aiohttp import CookieJar
 from aiohttp.client_exceptions import ServerDisconnectedError
+from pyunifiprotect import NotAuthorized, NvrError, UpvServer
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
@@ -18,8 +19,8 @@ from homeassistant.const import (
 )
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 
 from .const import (
     CONF_SNAPSHOT_DIRECT,
@@ -86,11 +87,15 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         raise ConfigEntryNotReady from notreadyerror
 
     await protect_data.async_setup()
+
+    update_listener = entry.add_update_listener(_async_options_updated)
+
     hass.data[DOMAIN][entry.entry_id] = {
         "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
         "server_info": nvr_info,
+        "update_listener": update_listener,
     }
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
@@ -99,9 +104,6 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
-
-    if not entry.update_listeners:
-        entry.add_update_listener(async_update_options)
 
     return True
 
@@ -121,7 +123,7 @@ async def _async_get_or_create_nvr_device_in_registry(
     )
 
 
-async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
+async def _async_options_updated(hass: HomeAssistantType, entry: ConfigEntry):
     """Update options."""
     await hass.config_entries.async_reload(entry.entry_id)
 
@@ -138,7 +140,9 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> boo
     )
 
     if unload_ok:
-        await hass.data[DOMAIN][entry.entry_id]["protect_data"].async_stop()
+        entry_data = hass.data[DOMAIN][entry.entry_id]
+        entry_data["update_listener"]()
+        await entry_data["protect_data"].async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok

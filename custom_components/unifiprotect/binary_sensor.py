@@ -31,32 +31,32 @@ async def async_setup_entry(
     hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Set up binary sensors for UniFi Protect integration."""
-    upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
-    protect_data = hass.data[DOMAIN][entry.entry_id]["protect_data"]
+    entry_data = hass.data[DOMAIN][entry.entry_id]
+    upv_object = entry_data["upv"]
+    protect_data = entry_data["protect_data"]
     if not protect_data.data:
         return
 
     sensors = []
-    for camera in protect_data.data:
-        if protect_data.data[camera]["type"] == DEVICE_CLASS_DOORBELL:
+    for camera_id in protect_data.data:
+        camera_data = protect_data.data[camera_id]
+        if camera_data["type"] == DEVICE_CLASS_DOORBELL:
             sensors.append(
                 UnifiProtectBinarySensor(
-                    upv_object, protect_data, camera, DEVICE_CLASS_DOORBELL
+                    upv_object, protect_data, camera_id, DEVICE_CLASS_DOORBELL
                 )
             )
             _LOGGER.debug(
                 "UNIFIPROTECT DOORBELL SENSOR CREATED: %s",
-                protect_data.data[camera]["name"],
+                camera_data["name"],
             )
 
         sensors.append(
             UnifiProtectBinarySensor(
-                upv_object, protect_data, camera, DEVICE_CLASS_MOTION
+                upv_object, protect_data, camera_id, DEVICE_CLASS_MOTION
             )
         )
-        _LOGGER.debug(
-            "UNIFIPROTECT MOTION SENSOR CREATED: %s", protect_data.data[camera]["name"]
-        )
+        _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", camera_data["name"])
 
     async_add_entities(sensors)
 

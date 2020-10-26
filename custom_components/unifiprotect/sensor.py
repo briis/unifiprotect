@@ -20,8 +20,9 @@ async def async_setup_entry(
     hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Set up sensors for UniFi Protect integration."""
-    upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
-    protect_data = hass.data[DOMAIN][entry.entry_id]["protect_data"]
+    entry_data = hass.data[DOMAIN][entry.entry_id]
+    upv_object = entry_data["upv"]
+    protect_data = entry_data["protect_data"]
     if not protect_data.data:
         return
 

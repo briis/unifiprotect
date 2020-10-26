@@ -2,9 +2,10 @@
 
 import logging
 
+from pyunifiprotect.unifi_protect_server import NvrError
+
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_time_interval
-from pyunifiprotect.unifi_protect_server import NvrError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class UnifiProtectData:
         self.last_update_success = False
 
     async def async_setup(self):
-        """Setup the data."""
+        """Subscribe and do the refresh."""
         self._unsub_websocket = self._protectserver.subscribe_websocket(
             self._async_process_updates
         )

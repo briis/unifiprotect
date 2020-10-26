@@ -39,18 +39,17 @@ async def async_setup_entry(
     hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Discover cameras on a Unifi Protect NVR."""
-    upv_object = hass.data[DOMAIN][entry.entry_id]["upv"]
-    protect_data = hass.data[DOMAIN][entry.entry_id]["protect_data"]
-    snapshot_direct = hass.data[DOMAIN][entry.entry_id]["snapshot_direct"]
+    entry_data = hass.data[DOMAIN][entry.entry_id]
+    upv_object = entry_data["upv"]
+    protect_data = entry_data["protect_data"]
+    snapshot_direct = entry_data["snapshot_direct"]
     if not protect_data.data:
         return
 
-    cameras = [camera for camera in protect_data.data]
-
     async_add_entities(
         [
-            UnifiProtectCamera(upv_object, protect_data, camera, snapshot_direct)
-            for camera in cameras
+            UnifiProtectCamera(upv_object, protect_data, camera_id, snapshot_direct)
+            for camera_id in protect_data.data
         ]
     )
 
@@ -172,12 +171,6 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             _LOGGER.error("Last recording not found for Camera %s", self.name)
             return
 
-        def _write_image(to_file, image_data):
-            """Executor helper to write image."""
-            with open(to_file, "wb") as img_file:
-                img_file.write(image_data)
-                _LOGGER.debug("Thumbnail Image written to %s", filename)
-
         try:
             await self.hass.async_add_executor_job(_write_image, filename, image)
         except OSError as err:
@@ -211,15 +204,13 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""
-        ret = await self.upv_object.set_camera_recording(self._camera_id, "motion")
-        if not ret:
+        if not await self.upv_object.set_camera_recording(self._camera_id, "motion"):
             return
         _LOGGER.debug("Motion Detection Enabled for Camera: %s", self._name)
 
     async def async_disable_motion_detection(self):
         """Disable motion detection in camera."""
-        ret = await self.upv_object.set_camera_recording(self._camera_id, "never")
-        if not ret:
+        if not await self.upv_object.set_camera_recording(self._camera_id, "never"):
             return
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self._name)
 
@@ -237,3 +228,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     async def stream_source(self):
         """Return the Stream Source."""
         return self._stream_source
+
+
+def _write_image(to_file, image_data):
+    """Executor helper to write image."""
+    with open(to_file, "wb") as img_file:
+        img_file.write(image_data)
+        _LOGGER.debug("Thumbnail Image written to %s", to_file)

@@ -50,6 +50,8 @@ TYPE_IR_AUTO = "auto"
 TYPE_IR_ON = "always_on"
 TYPE_IR_LED_OFF = "led_off"
 TYPE_IR_OFF = "always_off"
+TYPE_HIGH_FPS_ON = "highFps"
+TYPE_HIGH_FPS_OFF = "default"
 
 TYPES_IR_OFF = [
     TYPE_IR_OFF,

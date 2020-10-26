@@ -21,6 +21,8 @@ from .const import (
     TYPE_RECORD_ALLWAYS,
     TYPE_RECORD_MOTION,
     TYPE_RECORD_NEVER,
+    TYPE_HIGH_FPS_ON,
+    TYPE_HIGH_FPS_OFF,
 )
 from .entity import UnifiProtectEntity
 
@@ -31,6 +33,8 @@ SWITCH_TYPES = {
     "record_always": ["Record Always", "video", "record_always"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode"],
     "status_light": ["Status Light On", "led-on", "status_light"],
+    "hdr_mode": ["HDR Mode", "brightness-7", "hdr_mode"],
+    "high_fps": ["High FPS", "video-high-definition", "high_fps"],
 }
 
 
@@ -56,17 +60,27 @@ async def async_setup_entry(
     switches = []
     for switch in SWITCH_TYPES:
         for camera in protect_data.data:
-            switches.append(
-                UnifiProtectSwitch(
-                    upv_object,
-                    protect_data,
-                    camera,
-                    switch,
-                    ir_on,
-                    ir_off,
+            # Only Add Switches if Camera supports it.
+            _camera_Type = protect_data.data[camera].get("model")
+            _g4_camera = True if "G4" in _camera_Type else False
+            _add_switch = True
+            if switch == "high_fps" and not _g4_camera:
+                _add_switch = False
+            if switch == "hdr_mode" and _g4_camera:
+                _add_switch = False
+
+            if _add_switch:
+                switches.append(
+                    UnifiProtectSwitch(
+                        upv_object,
+                        protect_data,
+                        camera,
+                        switch,
+                        ir_on,
+                        ir_off,
+                    )
                 )
-            )
-            _LOGGER.debug("UNIFIPROTECT SWITCH CREATED: %s", switch)
+                _LOGGER.debug("UNIFIPROTECT SWITCH CREATED: %s", switch)
 
     async_add_entities(switches)
 
@@ -108,6 +122,12 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
             )
         elif self._switch_type == "ir_mode":
             enabled = True if self._camera_data["ir_mode"] == self._ir_on_cmd else False
+        elif self._switch_type == "hdr_mode":
+            enabled = True if self._camera_data["hdr_mode"] == True else False
+        elif self._switch_type == "high_fps":
+            enabled = (
+                True if self._camera_data["video_mode"] == TYPE_HIGH_FPS_ON else False
+            )
         else:
             enabled = True if self._camera_data["status_light"] == "True" else False
         return enabled
@@ -136,6 +156,14 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         elif self._switch_type == "ir_mode":
             _LOGGER.debug("Turning on IR")
             await self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)
+        elif self._switch_type == "hdr_mode":
+            _LOGGER.debug("Turning on HDR mode")
+            await self.upv.set_camera_hdr_mode(self._camera_id, True)
+        elif self._switch_type == "high_fps":
+            _LOGGER.debug("Turning on High FPS mode")
+            await self.upv.set_camera_video_mode_highfps(
+                self._camera_id, TYPE_HIGH_FPS_ON
+            )
         else:
             _LOGGER.debug("Changing Status Light to On")
             await self.upv.set_camera_status_light(self._camera_id, True)
@@ -149,6 +177,14 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         elif self._switch_type == "status_light":
             _LOGGER.debug("Changing Status Light to Off")
             await self.upv.set_camera_status_light(self._camera_id, False)
+        elif self._switch_type == "hdr_mode":
+            _LOGGER.debug("Turning off HDR mode")
+            await self.upv.set_camera_hdr_mode(self._camera_id, False)
+        elif self._switch_type == "high_fps":
+            _LOGGER.debug("Turning off High FPS mode")
+            await self.upv.set_camera_video_mode_highfps(
+                self._camera_id, TYPE_HIGH_FPS_OFF
+            )
         else:
             _LOGGER.debug("Turning off Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)

@@ -17,7 +17,7 @@ This could not have been done without all your work.
 
 ### Other changes
 
-* When setting the LCD text on the Doorbell, this is now truncated to 30 Characters, as this is the maximum supported Characters.
+* When setting the LCD text on the Doorbell, this is now truncated to 30 Characters, as this is the maximum supported Characters. Thanks to @hjdhjd for documenting this.
 * Fixed an error were sometimes the External IP of the Server was used for the Internal Stream. Thanks to @adrum for fixing this.
 * Added Switch for changing HDR mode from Lovelace (Issue #128). This switch will only be created for None G4 Cameras as this is not supported for this series.
 * Added Switch for changing High FPS mode from Lovelace (Issue #128). This switch will only be created for G4 Cameras as this is only supported on this series.

@@ -19,6 +19,8 @@ This could not have been done without all your work.
 
 * When setting the LCD text on the Doorbell, this is now truncated to 30 Characters, as this is the maximum supported Characters.
 * Fixed an error were sometimes the External IP of the Server was used for the Internal Stream. Thanks to @adrum for fixing this.
+* Added Switch for changing HDR mode from Lovelace (Issue #128). This switch will only be created for None G4 Cameras as this is not supported for this series.
+* Added Switch for changing High FPS mode from Lovelace (Issue #128). This switch will only be created for G4 Cameras as this is only supported on this series.
 
 ## Release 0.5.8
 Object Detection was introduced with 1.14 of Unifi Protect for the UDMP/UNVR with the G4 series of Cameras. (I am unsure about the CloudKey+, but this release should not break on the CloudKey+ even without object detection). This release now adds a new Attribute to the Binary Motion Sensors that will display the object detected. I have currently only seen `person` being detected, but I am happy to hear if anyone finds other objects. See below on how this could be used.

@@ -8,6 +8,8 @@ The Integration has now been rewritten to use **Websockets** for updating events
 
 Unfortunately, Websockets are **only available for UnifiOS** powered devices (UDMP & UNVR), so this will not apply to people running on the CloudKey. Here we will still need to do polling. Hopefully Ubiquity, will soon move the CloudKey to UnifiOS or add Websockets to this device also.
 
+**NOTE:** Some testing shows that the Polling does not work in this Beta version. That is been looked at.
+
 All Credits for this rewrite goes to:
 * @bdraco, who did the rewrite of both the IO module and the Integration
 * @adrum for the initial work on the Websocket support
@@ -19,8 +21,8 @@ This could not have been done without all your work.
 
 * When setting the LCD text on the Doorbell, this is now truncated to 30 Characters, as this is the maximum supported Characters. Thanks to @hjdhjd for documenting this.
 * Fixed an error were sometimes the External IP of the Server was used for the Internal Stream. Thanks to @adrum for fixing this.
-* Added Switch for changing HDR mode from Lovelace (Issue #128). This switch will only be created for **None G4** Cameras as this is not supported for the G4 series of Cameras.
-* Added Switch for changing High FPS mode from Lovelace (Issue #128). This switch will only be created for **G4 Cameras** as this is only supported on the G4 series.
+* Added Switch for changing HDR mode from Lovelace (Issue #128). This switch will only be created for **None G4** Cameras on the UnifiOS servers. For Cameras attached to a CloudKey, it will also only be G3 Cameras, except for the poeple who run a CloudKey FW version lower than 1.13.4 - here it still supported for G4 Cameras.
+* Added Switch for changing High FPS mode from Lovelace (Issue #128). This switch will only be created for **G4 Cameras** and for UnifiOS servers, as this is only supported on the G4 series on a UDMP or UNVR.
 
 ## Release 0.5.8
 Object Detection was introduced with 1.14 of Unifi Protect for the UDMP/UNVR with the G4 series of Cameras. (I am unsure about the CloudKey+, but this release should not break on the CloudKey+ even without object detection). This release now adds a new Attribute to the Binary Motion Sensors that will display the object detected. I have currently only seen `person` being detected, but I am happy to hear if anyone finds other objects. See below on how this could be used.

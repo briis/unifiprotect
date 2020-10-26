@@ -1,6 +1,6 @@
 # // Changelog
 
-## Release 0.6.0 (NOT RELEASED YET)
+## Release 0.6.0
 The Integration has now been rewritten to use **Websockets** for updating events, giving a lot of benefits:
 
 * Motion and doorbell updates should now happen right away
@@ -23,6 +23,7 @@ This could not have been done without all your work.
 * Fixed an error were sometimes the External IP of the Server was used for the Internal Stream. Thanks to @adrum for fixing this.
 * Added Switch for changing HDR mode from Lovelace (Issue #128). This switch will only be created for Cameras that support HDR mode.
 * Added Switch for changing High FPS mode from Lovelace (Issue #128). This switch will only be created for Cameras that support High FPS mode.
+* Improved error handling
 
 ## Release 0.5.8
 Object Detection was introduced with 1.14 of Unifi Protect for the UDMP/UNVR with the G4 series of Cameras. (I am unsure about the CloudKey+, but this release should not break on the CloudKey+ even without object detection). This release now adds a new Attribute to the Binary Motion Sensors that will display the object detected. I have currently only seen `person` being detected, but I am happy to hear if anyone finds other objects. See below on how this could be used.

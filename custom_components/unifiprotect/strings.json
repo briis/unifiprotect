@@ -9,7 +9,7 @@
                     "port": "Port Number: (7443 CloudKey+, 443 UDMP)",
                     "username": "Username",
                     "password": "Password",
-                    "scan_interval": "Scan interval for Events (Set higher if many Cameras)",
+                    "scan_interval": "Scan interval for Events on CloudKey (Set higher if many Cameras)",
                     "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)",
                     "ir_on": "Setting to use for Infrared Light ON",
                     "ir_off": "Setting to use for Infrared Light OFF"
@@ -21,7 +21,7 @@
             "nvr_error": "Error retrieving data from Unifi Protect."
         },
         "abort": {
-            "server_exists": "Unifi Protect Server allready configured."
+            "server_exists": "Unifi Protect Server already configured."
         }
     },
     "options": {
@@ -29,7 +29,7 @@
             "init": {
                 "data": {
                     "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)",
-                    "scan_interval": "Scan interval for Events (Set higher if many Cameras)"
+                    "scan_interval": "Scan interval for Events on CloudKey (Set higher if many Cameras)"
                 }
             }
         }

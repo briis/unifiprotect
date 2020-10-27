@@ -1,4 +1,3 @@
-  
 {
     "config": {
         "abort": {
@@ -15,7 +14,7 @@
                     "port": "Portnummer: (7443 CloudKey +, 443 UDMP)",
                     "username": "Brukenavn",
                     "password": "Passord",
-                    "scan_interval": "Skanneintervall for hendelser (sett høyere hvis mange kameraer)",
+                    "scan_interval": "Skanneintervall for hendelser på CloudKey (sett høyere hvis mange kameraer)",
                     "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
                     "ir_on": "Innstilling for bruk for infrarødt lys PÅ",
                     "ir_off": "Innstilling for bruk for infrarødt lys AV"
@@ -30,7 +29,7 @@
             "init": {
                 "data": {
                     "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
-                    "scan_interval": "Skanneintervall for hendelser (sett høyere hvis mange kameraer)"
+                    "scan_interval": "Skanneintervall for hendelser på CloudKey (sett høyere hvis mange kameraer)"
                 }
             }
         }

@@ -5,10 +5,9 @@ The Integration has now been rewritten to use **Websockets** for updating events
 
 * Motion and doorbell updates should now happen right away
 * Reduces the amount of entity updates since we now only update cameras that change when we poll instead of them all.
+* Reduce the overall load on Home Assistant.
 
 Unfortunately, Websockets are **only available for UnifiOS** powered devices (UDMP & UNVR), so this will not apply to people running on the CloudKey. Here we will still need to do polling. Hopefully Ubiquity, will soon move the CloudKey to UnifiOS or add Websockets to this device also.
-
-**NOTE:** Some testing shows that the Polling does not work in this Beta version. That is been looked at.
 
 All Credits for this rewrite goes to:
 * @bdraco, who did the rewrite of both the IO module and the Integration
@@ -23,7 +22,8 @@ This could not have been done without all your work.
 * Fixed an error were sometimes the External IP of the Server was used for the Internal Stream. Thanks to @adrum for fixing this.
 * Added Switch for changing HDR mode from Lovelace (Issue #128). This switch will only be created for Cameras that support HDR mode.
 * Added Switch for changing High FPS mode from Lovelace (Issue #128). This switch will only be created for Cameras that support High FPS mode.
-* Improved error handling
+* Improved error handling.
+* Added German translation for Config Flow. Thank you @SeraphimSerapis
 
 ## Release 0.5.8
 Object Detection was introduced with 1.14 of Unifi Protect for the UDMP/UNVR with the G4 series of Cameras. (I am unsure about the CloudKey+, but this release should not break on the CloudKey+ even without object detection). This release now adds a new Attribute to the Binary Motion Sensors that will display the object detected. I have currently only seen `person` being detected, but I am happy to hear if anyone finds other objects. See below on how this could be used.

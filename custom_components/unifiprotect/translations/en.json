@@ -1,7 +1,7 @@
 {
     "config": {
         "abort": {
-            "server_exists": "Unifi Protect Server allready configured."
+            "server_exists": "Unifi Protect Server already configured."
         },
         "error": {
             "connection_error": "Failed to connect. Wrong IP or Username/Password.",

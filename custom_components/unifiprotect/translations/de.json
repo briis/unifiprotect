@@ -1,0 +1,37 @@
+{
+    "config": {
+        "abort": {
+            "server_exists": "Unifi Protect Server bereits konfiguriert."
+        },
+        "error": {
+            "connection_error": "Verbindung fehlgeschlagen. Falsche IP oder Username/Password.",
+            "nvr_error": "Fehler beim Datenaustausch mit Unifi Protect."
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "host": "IP-Adresse des CloudKey+ oder der UDMP",
+                    "port": "Portnummer: (7443 CloudKey+, 443 UDMP)",
+                    "username": "Username",
+                    "password": "Password",
+                    "scan_interval": "Scan-Intervall für Events (Höher setzen für mehrere Kameras)",
+                    "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)",
+                    "ir_on": "Schaltet das Infrarotlicht ein",
+                    "ir_off": "Schaltet das Infrarotlicht aus"
+                },
+                "description": "Set up Unifi Protect to monitor cameras and sensors.",
+                "title": "Unifi Protect"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)",
+                    "scan_interval": "Scan-Intervall für Events (Höher setzen für mehrere Kameras)"
+                }
+            }
+        }
+    }
+}

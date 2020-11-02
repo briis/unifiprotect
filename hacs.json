@@ -6,5 +6,5 @@
         "camera",
         "switch"
     ],
-    "iot_class": "Local Polling"
+    "iot_class": ["Local Polling", "Local Push"]
 }

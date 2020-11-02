@@ -30,10 +30,14 @@ Before you install this Integration you need to ensure that the following two se
 * As of version 0.3.0, this Integration also supports the Unifi Dream MachinePro and UNVR with UnifiOS, thanks to the work of @msvinth.
 
 ## Installation
-This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.
+This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there. 
+
+If you are not familiar with HACS, or havn't installed it, I would recommend to [look through the HACS documentation](https://hacs.xyz/), before continuing. Even though you can install the Integration manually, I would recommend using HACS, as you would always be reminded when a new release is published.
 
 ## Configuration
-To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add a CloudKey+ or UDMP by providing the Host IP, Port Number, Username and Password.
+To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add a CloudKey+ or UDMP by providing the Host IP, Port Number, Username and Password. 
+
+**Note**: If you can't find the *Unifi Protect* integration, hard refresh your browser, when you are on the Integrations page.
 
 If the Unifi Protect Server is found on the network it will be added to your installation. After that, you can add more Unifi Protect Servers, should have more than one installed.
 

@@ -13,7 +13,7 @@ from .const import (
     ATTR_UP_SINCE,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
-    DEVICE_CLASS_DOORBELL,
+    DEVICE_TYPE_DOORBELL,
     DOMAIN,
     SAVE_THUMBNAIL_SCHEMA,
     SERVICE_SAVE_THUMBNAIL,
@@ -142,7 +142,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @property
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
-        if self._device_type == DEVICE_CLASS_DOORBELL:
+        if self._device_type == DEVICE_TYPE_DOORBELL:
             last_trip_time = self._camera_data["last_ring"]
         else:
             last_trip_time = self._camera_data["last_motion"]

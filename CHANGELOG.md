@@ -1,5 +1,12 @@
 # // Changelog
 
+## Release 0.6.1
+@bdraco strikes again and fixed the following problems:
+
+* If the system is loaded, we miss events because the time has already passed.
+* If the doorbell is rung at the same time as motion, we don't see the ring event because the motion event obscures it.
+* If the hass clock and unifi clock are out of sync, we see the wrong events. (Still recommend to ensure that unifi and hass clocks are synchronized.)
+
 ## Release 0.6.0
 The Integration has now been rewritten to use **Websockets** for updating events, giving a lot of benefits:
 

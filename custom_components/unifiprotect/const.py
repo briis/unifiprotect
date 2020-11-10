@@ -28,7 +28,7 @@ CONF_HIGH_FPS_ON = "high_fps_on"
 CONF_MESSAGE = "message"
 CONF_DURATION = "duration"
 
-DEFAULT_PORT = 7443
+DEFAULT_PORT = 443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_THUMB_WIDTH = 640

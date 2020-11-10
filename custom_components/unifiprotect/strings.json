@@ -5,11 +5,11 @@
                 "title": "Unifi Protect",
                 "description": "Set up Unifi Protect to monitor cameras and sensors.",
                 "data": {
-                    "host": "IP Address of CloudKey+ or UDMP",
-                    "port": "Port Number: (7443 CloudKey+, 443 UDMP)",
+                    "host": "IP Address of Unifi Protect Server",
+                    "port": "Port Number: (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Username",
                     "password": "Password",
-                    "scan_interval": "Scan interval for Events on CloudKey (Set higher if many Cameras)",
+                    "scan_interval": "Scan interval for Events on NON UnifiOS Servers (Set higher if many Cameras)",
                     "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)",
                     "ir_on": "Setting to use for Infrared Light ON",
                     "ir_off": "Setting to use for Infrared Light OFF"
@@ -29,7 +29,7 @@
             "init": {
                 "data": {
                     "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)",
-                    "scan_interval": "Scan interval for Events on CloudKey (Set higher if many Cameras)"
+                    "scan_interval": "Scan interval for Events on NON UnifiOS Servers (Set higher if many Cameras)"
                 }
             }
         }

@@ -10,11 +10,11 @@
         "step": {
             "user": {
                 "data": {
-                    "host": "IP-Adresse des CloudKey+ oder der UDMP",
-                    "port": "Portnummer: (7443 CloudKey+, 443 UDMP)",
+                    "host": "IP-Adresse des Unifi Protect Server",
+                    "port": "Portnummer (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Username",
                     "password": "Password",
-                    "scan_interval": "Scan-Intervall für Events auf CloudKey (Höher setzen für mehrere Kameras)",
+                    "scan_interval": "Scan-Intervall für Events auf NON UnifiOS Server (Höher setzen für mehrere Kameras)",
                     "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)",
                     "ir_on": "Schaltet das Infrarotlicht ein",
                     "ir_off": "Schaltet das Infrarotlicht aus"
@@ -29,7 +29,7 @@
             "init": {
                 "data": {
                     "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)",
-                    "scan_interval": "Scan-Intervall für Events auf CloudKey (Höher setzen für mehrere Kameras)"
+                    "scan_interval": "Scan-Intervall für Events auf NON UnifiOS Server (Höher setzen für mehrere Kameras)"
                 }
             }
         }

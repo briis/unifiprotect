@@ -10,11 +10,11 @@
         "step": {
             "user": {
                 "data": {
-                    "host": "IP adresse på CloudKey+ eller UDMP",
-                    "port": "Port nummer: (7443 CloudKey+, 443 UDMP)",
+                    "host": "IP adresse på Unifi Protect Server",
+                    "port": "Port nummer (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Brugernavn",
                     "password": "Kodeord",
-                    "scan_interval": "Opdaterings frekvens for hændelser på CloudKey (Øg frekvens hvis mange kameraer)",
+                    "scan_interval": "Opdaterings frekvens for hændelser på NON UnifiOS Servere (Øg frekvens hvis mange kameraer)",
                     "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)",
                     "ir_on": "Instilling til Infrarødt Lys TÆNDT",
                     "ir_off": "Instilling til Infrarødt Lys SLUKKET"
@@ -29,7 +29,7 @@
             "init": {
                 "data": {
                     "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)",
-                    "scan_interval": "Opdaterings frekvens for hændelser (Øg frekvens hvis mange kameraer)"
+                    "scan_interval": "Opdaterings frekvens for hændelser på NON UnifiOS Servere (Øg frekvens hvis mange kameraer)"
                 }
             }
         }

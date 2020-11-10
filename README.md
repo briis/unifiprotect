@@ -62,6 +62,8 @@ Before you install this Integration you need to ensure that the following two se
       * Local Username: Must be filled out
       * Local Password: Must be filled out
     
+![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png)
+
 2. **RTSP Stream**
 
     The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
@@ -70,9 +72,8 @@ Before you install this Integration you need to ensure that the following two se
     * Click on the + Sign next to RTSP
     * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
 
-![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png) ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
+![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
-unifios_admin
 ## Installation
 This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.
 

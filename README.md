@@ -41,6 +41,8 @@ Before you install this Integration you need to ensure that the following two se
       * Account Type: *Local Access Only*
     * Click *Add* in at the bottom Right.
 
+![ADMIN_UNIFIOS](https://github.com/briis/unifiprotect/blob/master/images/screenshots/unifi_os_admin.png)
+
 
 2. **RTSP Stream**
 
@@ -59,7 +61,7 @@ Before you install this Integration you need to ensure that the following two se
       * Roles: Must be part of *Administrators* group.
       * Local Username: Must be filled out
       * Local Password: Must be filled out
-
+    
 2. **RTSP Stream**
 
     The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature

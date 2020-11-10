@@ -13,14 +13,59 @@ There is support for the following device types within Home Assistant:
 
 It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 
+## Hardware Support
+
+This Integration supports all Ubiquiti Hardware that can run Unfi Protect. Currently this includes:
+
+* Unifi Protect Network Video Recorder (**UNVR**)
+* Unifi Dream Machine Pro (**UDMP**)
+* Unifi Cloud Key Gen2 Plus (**CKGP**)
+
+The first two devices run Unifi's own operating system called UnifiOS, and the CKGP with Firmware V2.0.18 or greater also runs UnifiOS. This is important to note, as you will need to know during installation if your NVR Device runs UnifiOS or not.
+
+CKGP with Firmware V1.x **do NOT run UnifiOS**
+
+In the following we are refering to Devices that do run UnifiOS as *UnifiOS Devices* and devices that do NOT run UnifiOS as *Non UnifiOS Devices*
+
 ## Prerequisites
 
 Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
 
+### UnifiOS Devices
+
 1. **Local User**
-  * If Unifi Protect is installed on a **UDMP** or **UNVR**, then you can skip this step, and instead use the username and password you use to login to the UDMP. But it is recommended that you add a specific user on your UDMP or UNVR, as described [here](https://community.home-assistant.io/t/custom-component-unifi-protect/158041/138?u=briis). It is **important** that the local user has *Administrative* rights to Unifi Protect, or else this will not work.
-  * If your are on a **CloudKey+** then open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select an existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.
-2. **RTSP Stream** Select each camera under the CAMERAS tab, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one, the integration will pick the one with the highest resolution.
+  * Login to your *Local Portal* on your UnfiOS device, and click on *Users*
+  * In the upper right corner, click on *Add User*
+  * Click *Add Admin*, and fill out the form. Specific Fields to pay attention to:
+    * Role: Must be *Limited Admin*
+    * Account Type: *Local Access Only*
+  * Click *Add* in at the bottom Right.
+
+2. **RTSP Stream**
+
+The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
+  * open Unifi Protect and click on *Devices*
+  * Select *Manage* in the Menu bar at the top
+  * Click on the + Sign next to RTSP
+  * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
+
+### NON UnifiOS Devices (CloudKey+ with Firmware 1.x)
+
+1. **Local User**
+  * Login to Unifi Protect, and click on *Users*
+  * Either select an existing User or Create a new one.
+  * Specific Fields to pay attention to:
+    * Roles: Must be part of *Administrators* group.
+    * Local Username: Must be filled out
+    * Local Password: Must be filled out
+
+2. **RTSP Stream**
+
+The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
+  * open Unifi Protect and click on *Devices*
+  * Select *Manage* in the Menu bar at the top
+  * Click on the + Sign next to RTSP
+  * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
 
 ![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png) ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
@@ -30,12 +75,12 @@ Before you install this Integration you need to ensure that the following two se
 * As of version 0.3.0, this Integration also supports the Unifi Dream MachinePro and UNVR with UnifiOS, thanks to the work of @msvinth.
 
 ## Installation
-This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there. 
+This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.
 
 If you are not familiar with HACS, or havn't installed it, I would recommend to [look through the HACS documentation](https://hacs.xyz/), before continuing. Even though you can install the Integration manually, I would recommend using HACS, as you would always be reminded when a new release is published.
 
 ## Configuration
-To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add a CloudKey+ or UDMP by providing the Host IP, Port Number, Username and Password. 
+To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add a CloudKey+ or UDMP by providing the Host IP, Port Number, Username and Password.
 
 **Note**: If you can't find the *Unifi Protect* integration, hard refresh your browser, when you are on the Integrations page.
 

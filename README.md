@@ -21,11 +21,11 @@ This Integration supports all Ubiquiti Hardware that can run Unfi Protect. Curre
 * Unifi Dream Machine Pro (**UDMP**)
 * Unifi Cloud Key Gen2 Plus (**CKGP**)
 
-The first two devices run Unifi's own operating system called UnifiOS, and the CKGP with Firmware V2.0.18 or greater also runs UnifiOS. This is important to note, as you will need to know during installation if your NVR Device runs UnifiOS or not.
+The first two devices run Unifi's own operating system called UnifiOS, and the CKGP with Firmware V2.0.18 or greater also runs UnifiOS. This is important to note, as you will need to know this during installation if your NVR Device runs UnifiOS or not.
 
 CKGP with Firmware V1.x **do NOT run UnifiOS**
 
-In the following we are refering to Devices that do run UnifiOS as *UnifiOS Devices* and devices that do NOT run UnifiOS as *Non UnifiOS Devices*
+In the following we are refering to Devices that do run UnifiOS as *UnifiOS Devices* and devices that do NOT run UnifiOS as *NON UnifiOS Devices*
 
 ## Prerequisites
 
@@ -34,46 +34,43 @@ Before you install this Integration you need to ensure that the following two se
 ### UnifiOS Devices
 
 1. **Local User**
-  * Login to your *Local Portal* on your UnfiOS device, and click on *Users*
-  * In the upper right corner, click on *Add User*
-  * Click *Add Admin*, and fill out the form. Specific Fields to pay attention to:
-    * Role: Must be *Limited Admin*
-    * Account Type: *Local Access Only*
-  * Click *Add* in at the bottom Right.
+    * Login to your *Local Portal* on your UnfiOS device, and click on *Users*
+    * In the upper right corner, click on *Add User*
+    * Click *Add Admin*, and fill out the form. Specific Fields to pay attention to:
+      * Role: Must be *Limited Admin*
+      * Account Type: *Local Access Only*
+    * Click *Add* in at the bottom Right.
+
 
 2. **RTSP Stream**
 
-The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
-  * open Unifi Protect and click on *Devices*
-  * Select *Manage* in the Menu bar at the top
-  * Click on the + Sign next to RTSP
-  * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
+    The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
+    * open Unifi Protect and click on *Devices*
+    * Select *Manage* in the Menu bar at the top
+    * Click on the + Sign next to RTSP
+    * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
 
 ### NON UnifiOS Devices (CloudKey+ with Firmware 1.x)
 
 1. **Local User**
-  * Login to Unifi Protect, and click on *Users*
-  * Either select an existing User or Create a new one.
-  * Specific Fields to pay attention to:
-    * Roles: Must be part of *Administrators* group.
-    * Local Username: Must be filled out
-    * Local Password: Must be filled out
+    * Login to Unifi Protect, and click on *Users*
+    * Either select an existing User or Create a new one.
+    * Specific Fields to pay attention to:
+      * Roles: Must be part of *Administrators* group.
+      * Local Username: Must be filled out
+      * Local Password: Must be filled out
 
 2. **RTSP Stream**
 
-The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
-  * open Unifi Protect and click on *Devices*
-  * Select *Manage* in the Menu bar at the top
-  * Click on the + Sign next to RTSP
-  * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
+    The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
+    * open Unifi Protect and click on *Devices*
+    * Select *Manage* in the Menu bar at the top
+    * Click on the + Sign next to RTSP
+    * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
 
 ![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png) ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
-**Note:**
-
-* This has been testet on a Cloud Key Gen2+ with Unifi Protect Controller version 1.13.3-beta.4 and higher and on a UDMP with Protect 1.14.10. It will not work on a lower version than that due to the support of the Doorbell.
-* As of version 0.3.0, this Integration also supports the Unifi Dream MachinePro and UNVR with UnifiOS, thanks to the work of @msvinth.
-
+unifios_admin
 ## Installation
 This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.
 

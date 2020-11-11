@@ -39,6 +39,7 @@ Before you install this Integration you need to ensure that the following two se
     * Click *Add Admin*, and fill out the form. Specific Fields to pay attention to:
       * Role: Must be *Limited Admin*
       * Account Type: *Local Access Only*
+      * CONTROLLER PERMISSIONS - Under Unifi Protect, select Administrators.
     * Click *Add* in at the bottom Right.
 
 ![ADMIN_UNIFIOS](https://github.com/briis/unifiprotect/blob/master/images/screenshots/unifi_os_admin.png)
@@ -61,7 +62,7 @@ Before you install this Integration you need to ensure that the following two se
       * Roles: Must be part of *Administrators* group.
       * Local Username: Must be filled out
       * Local Password: Must be filled out
-    
+
 ![USER Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_user.png)
 
 2. **RTSP Stream**

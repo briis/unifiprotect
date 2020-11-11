@@ -4,7 +4,7 @@
 
 * Changed text for Config Flow, to differ between UnifiOS and NON UNifiOS devices, instead of CloudKey and UDMP. This makes more sense, now that CloudKey+ also can run UnifiOS.
 * Changed the default port in Config Flow, from 7443 to 443, as this will be the most used port with the update to CloudKey+
-* Added a Debug option to Config Flow, so that we can capture the actual error message when try to Authenticate.
+* Added a Debug option to Config Flow, so that we can capture the actual error message when trying to Authenticate.
 
 ## Release 0.6.1
 @bdraco strikes again and fixed the following problems:

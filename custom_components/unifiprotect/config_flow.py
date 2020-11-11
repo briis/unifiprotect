@@ -67,10 +67,12 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         try:
             unique_id = await unifiprotect.unique_id()
-        except NotAuthorized:
+        except NotAuthorized as e:
+            _LOGGER.debug(e)
             errors["base"] = "connection_error"
             return await self._show_setup_form(errors)
-        except NvrError:
+        except NvrError as e:
+            _LOGGER.debug(e)
             errors["base"] = "nvr_error"
             return await self._show_setup_form(errors)
 

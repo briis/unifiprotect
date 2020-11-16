@@ -147,7 +147,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
         if self._switch_type == "record_motion":
-            _LOGGER.debug("Turning on Motion Detection")
+            _LOGGER.debug(f"Turning on Motion Detection for {self._name}")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_MOTION)
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")

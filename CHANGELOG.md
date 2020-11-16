@@ -1,5 +1,10 @@
 # // Changelog
 
+## Release 0.6.3 (NOT RELEASED YET)
+
+* When running UnifiOS on the Ubiquiti Device, events are now fully constructed from Websockets. Giving instant feedback, and Motion Events are now triggered regardless of the Recording Mode. **BREAKING** If your Automations assume that Recording is enabled on a camera then you now need to make a check for that in the Condition Section of your automation.
+* Bumped pyunifiprotect to 0.24.0
+
 ## Release 0.6.2
 
 * Changed text for Config Flow, to differ between UnifiOS and NON UNifiOS devices, instead of CloudKey and UDMP. This makes more sense, now that CloudKey+ also can run UnifiOS.

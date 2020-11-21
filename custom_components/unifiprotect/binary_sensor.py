@@ -93,7 +93,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
         if self._sensor_type == DEVICE_TYPE_DOORBELL:
             _LOGGER.debug(f"RING {self._camera_data['event_ring_on']}: {self._name}")
             return self._camera_data["event_ring_on"]
-        _LOGGER.debug(f"MOTION {self._camera_data['event_on']}: {self._name}")
+        # _LOGGER.debug(f"MOTION {self._camera_data['event_on']}: {self._name}")
         return self._camera_data["event_on"]
 
     @property

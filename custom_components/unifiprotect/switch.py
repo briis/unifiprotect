@@ -160,9 +160,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
             await self.upv.set_camera_hdr_mode(self._camera_id, True)
         elif self._switch_type == "high_fps":
             _LOGGER.debug("Turning on High FPS mode")
-            await self.upv.set_camera_video_mode_highfps(
-                self._camera_id, TYPE_HIGH_FPS_ON
-            )
+            await self.upv.set_camera_video_mode_highfps(self._camera_id, True)
         else:
             _LOGGER.debug("Changing Status Light to On")
             await self.upv.set_camera_status_light(self._camera_id, True)
@@ -181,9 +179,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
             await self.upv.set_camera_hdr_mode(self._camera_id, False)
         elif self._switch_type == "high_fps":
             _LOGGER.debug("Turning off High FPS mode")
-            await self.upv.set_camera_video_mode_highfps(
-                self._camera_id, TYPE_HIGH_FPS_OFF
-            )
+            await self.upv.set_camera_video_mode_highfps(self._camera_id, False)
         else:
             _LOGGER.debug("Turning off Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)

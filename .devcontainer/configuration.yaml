@@ -9,3 +9,5 @@ logger:
   default: error
   logs:
     custom_components.unifiprotect: debug
+
+automation: !include automations.yaml

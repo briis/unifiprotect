@@ -1,9 +1,11 @@
 # // Changelog
 
-## Release 0.6.3 (NOT RELEASED YET)
+## Release 0.6.3
 
-* When running UnifiOS on the Ubiquiti Device, events are now fully constructed from Websockets. Giving instant feedback, and Motion Events are now triggered regardless of the Recording Mode. **BREAKING** If your Automations assume that Recording is enabled on a camera then you now need to make a check for that in the Condition Section of your automation.
-* Bumped pyunifiprotect to 0.24.0
+* When running UnifiOS on the Ubiquiti Device, events are now fully constructed from Websockets. Giving instant feedback, and Motion Events are now triggered regardless of the Recording Mode, meaning you can use your cameras as Motion Detectors.
+
+  **BREAKING** If your Automations trigger on Motion Detection from a Camera, and you assume that Recording is enabled on a camera then you now need to make a check for that in the Condition Section of your automation.
+* Bumped pyunifiprotect to 0.24.3
 
 ## Release 0.6.2
 

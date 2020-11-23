@@ -2,7 +2,9 @@
 
 ## Release 0.6.3
 
-* When running UnifiOS on the Ubiquiti Device, events are now fully constructed from Websockets, giving instant feedback.
+@bdraco made some serious changes to the underlying IO module, that gives the following new features:
+
+* When running UnifiOS on the Ubiquiti Device, events are now fully constructed from Websockets.
 * Motion Events are now triggered regardless of the Recording Mode, meaning you can use your cameras as Motion Detectors. **Object detection** still requires that the Cameras recording mode is enabled (Motion or Always) as this information is only passed back when either of these are on.
 
   **BREAKING** If your Automations trigger on Motion Detection from a Camera, and you assume that Recording is enabled on a camera then you now need to make a check for that in the Condition Section of your automation.

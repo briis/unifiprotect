@@ -1,5 +1,7 @@
 # // Changelog
 
+## Release 0.6.4
+* **Hotfix** for those who experience that motion sensors no longer work after upgrading to 0.6.3. Typically this will be users on a CloudKey+ with FW V1.13.x
 ## Release 0.6.3
 
 @bdraco made some serious changes to the underlying IO module, that gives the following new features:

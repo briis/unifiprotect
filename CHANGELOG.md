@@ -1,6 +1,11 @@
 # // Changelog
 
 ## Release 0.6.4
+
+This release is tested on:
+* Ubiquiti CloudKey+ G2: FW Version 1.1.13 and Unifi Protect V1.13.37
+* UDMP: FW Version 1.18.3-4 and Unfi Protect V1.16.7
+
 * **Hotfix** for those who experience that motion sensors no longer work after upgrading to 0.6.3. Typically this will be users on a CloudKey+ with FW V1.13.x
 ## Release 0.6.3
 

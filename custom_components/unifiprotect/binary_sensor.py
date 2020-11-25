@@ -117,7 +117,10 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
                 ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
                 ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"],
             }
-        if len(self._camera_data["event_object"]) > 0:
+        if (
+            self._camera_data["event_object"] is not None
+            and len(self._camera_data["event_object"]) > 0
+        ):
             detected_object = self._camera_data["event_object"][0]
             _LOGGER.debug(
                 f"OBJECTS: {self._camera_data['event_object']} on {self._name}"

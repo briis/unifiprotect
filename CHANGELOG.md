@@ -2,12 +2,13 @@
 
 ## Release 0.6.4
 
-This release is tested on:
-* CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
-* UDMP: FW Version 1.18.3-4 and Unfi Protect V1.16.7
-* UDMP FW Version 1.18.0 and Unfi Protect V1.14.11
+* **Hotfix** for those who experience that motion sensors no longer work after upgrading to 0.6.3. Users affected will be those who are running a version of Unifi Protect that does not support SmartDetection.
 
-* **Hotfix** for those who experience that motion sensors no longer work after upgrading to 0.6.3.
+*This release is tested on*:
+* CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
+* UDMP: FW Version 1.18.3-4 with Unifi Protect V1.16.7
+* UDMP FW Version 1.18.0 with Unifi Protect V1.14.11
+
 ## Release 0.6.3
 
 @bdraco made some serious changes to the underlying IO module, that gives the following new features:

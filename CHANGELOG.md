@@ -1,4 +1,11 @@
 # // Changelog
+## Release 0.6.5
+
+* **Hotfix** The recording of motion score and motion length got out of sync with the motion detections on/off state. With this fix, motion score and length are now updated together with the off state of the binary motion sensors. This was only an issue for Non UnifiOS devices - so CloudKey+ users with the latest original firmware version.
+
+*This release is tested on*:
+* CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
+* UDMP: FW Version 1.18.3-5 with Unifi Protect V1.16.8
 
 ## Release 0.6.4
 

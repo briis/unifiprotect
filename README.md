@@ -41,6 +41,8 @@ Before you install this Integration you need to ensure that the following two se
       * Account Type: *Local Access Only*
       * CONTROLLER PERMISSIONS - Under Unifi Protect, select Administrators.
     * Click *Add* in at the bottom Right.
+    
+  **HINT**: A few users have reported that they had to restart their UDMP device after creating the local user for it to work. So if you get some kind of *Error 500* when setting up the Integration, try restart the UDMP.
 
 ![ADMIN_UNIFIOS](https://github.com/briis/unifiprotect/blob/master/images/screenshots/unifi_os_admin.png)
 

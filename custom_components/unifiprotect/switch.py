@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 SWITCH_TYPES = {
     "record_motion": ["Record Motion", "video-outline", "record_motion"],
     "record_always": ["Record Always", "video", "record_always"],
-    "record_smart": ["Record Always", "video", "record_smart"],
+    "record_smart": ["Record Smart", "video", "record_smart"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode"],
     "status_light": ["Status Light On", "led-on", "status_light"],
     "hdr_mode": ["HDR Mode", "brightness-7", "hdr_mode"],

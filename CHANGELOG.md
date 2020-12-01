@@ -1,4 +1,17 @@
 # // Changelog
+## Release 0.6.6
+
+With the release of Unifi Protect V1.7.0-Beta 1, there is now the option of detecting Vehicles on top of the Person detection that is allready there. This is what Ubiquiti calls *Smart Detection*. Also you can now set recording mode to only look for Smart Detection events, meaning that motion is only activated if a person or a vehicle is detected on the cameras. Smart Detection requires a G4-Series camera and a UnifiOS device.
+
+**NOTE**: If you are not running Unifi Protect V1.17.x then this update will not make any difference.
+
+* **New** For all G4 Cameras, a new Switch will be created called *Record Smart*, where you can activate or de-active Smart Recording on the camera
+* **New** The service `unifiprotect.set_recording_mode` now has a new option for `recording_mode` called *smart*. This will turn on Smart Recording for the selected Camera. Please not this will only work on G4-Series cameras.
+
+*This release is tested on*:
+* CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
+* UDMP: FW Version 1.18.3-5 with Unifi Protect V1.17.0-beta.1
+
 ## Release 0.6.5
 
 * **Hotfix** The recording of motion score and motion length got out of sync with the motion detections on/off state. With this fix, motion score and length are now updated together with the off state of the binary motion sensors. This was only an issue for Non UnifiOS devices (*CloudKey+ users with the latest original firmware version or below*).

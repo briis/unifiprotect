@@ -18,11 +18,11 @@ from .const import (
     CONF_IR_ON,
     DEFAULT_ATTRIBUTION,
     DOMAIN,
-    TYPE_HIGH_FPS_OFF,
     TYPE_HIGH_FPS_ON,
     TYPE_RECORD_ALLWAYS,
     TYPE_RECORD_MOTION,
     TYPE_RECORD_NEVER,
+    TYPE_RECORD_SMARTDETECT,
 )
 from .entity import UnifiProtectEntity
 
@@ -31,6 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 SWITCH_TYPES = {
     "record_motion": ["Record Motion", "video-outline", "record_motion"],
     "record_always": ["Record Always", "video", "record_always"],
+    "record_smart": ["Record Always", "video", "record_smart"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode"],
     "status_light": ["Status Light On", "led-on", "status_light"],
     "hdr_mode": ["HDR Mode", "brightness-7", "hdr_mode"],
@@ -69,6 +70,11 @@ async def async_setup_entry(
                 # High FPS is only supported on certain cameras
                 continue
             if switch == "hdr_mode" and not protect_data.data[camera].get("has_hdr"):
+                continue
+            # SmartDetect capable cameras only
+            if switch == "record_smart" and not protect_data.data[camera].get(
+                "has_smartdetect"
+            ):
                 continue
 
             switches.append(
@@ -119,6 +125,12 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
                 if self._camera_data["recording_mode"] == TYPE_RECORD_ALLWAYS
                 else False
             )
+        elif self._switch_type == "record_smart":
+            enabled = (
+                True
+                if self._camera_data["recording_mode"] == TYPE_RECORD_SMARTDETECT
+                else False
+            )
         elif self._switch_type == "ir_mode":
             enabled = True if self._camera_data["ir_mode"] == self._ir_on_cmd else False
         elif self._switch_type == "hdr_mode":
@@ -152,6 +164,11 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_ALLWAYS)
+        elif self._switch_type == "record_smart":
+            _LOGGER.debug("Turning on SmartDetect Recording")
+            await self.upv.set_camera_recording(
+                self._camera_id, TYPE_RECORD_SMARTDETECT
+            )
         elif self._switch_type == "ir_mode":
             _LOGGER.debug("Turning on IR")
             await self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)

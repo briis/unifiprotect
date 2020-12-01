@@ -17,7 +17,7 @@ set_recording_mode:
       description: "string (required) camera to enable recording on"
       example: "camera.outdoor"
     recording_mode:
-      description: "(Optional) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording. Default value is: motion"
+      description: "(Optional) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording, smart = Smart Detect. Default value is: motion"
       example: motion
 set_ir_mode:
   description: "Set Infrared Settings for the camera"

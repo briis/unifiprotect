@@ -3,7 +3,7 @@
 
 With the release of Unifi Protect V1.7.0-Beta 1, there is now the option of detecting Vehicles on top of the Person detection that is allready there. This is what Ubiquiti calls *Smart Detection*. Also you can now set recording mode to only look for Smart Detection events, meaning that motion is only activated if a person or a vehicle is detected on the cameras. Smart Detection requires a G4-Series camera and a UnifiOS device.
 
-**NOTE**: If you are not running Unifi Protect V1.17.x then this update will not make any difference.
+**NOTE**: If you are not running Unifi Protect V1.17.x then the new features introduced here will not apply to your system. It has been tested on older versions of Unifi Protect, and should not break any existing installations.
 
 * **New** For all G4 Cameras, a new Switch will be created called *Record Smart*, where you can activate or de-active Smart Recording on the camera
 * **New** The service `unifiprotect.set_recording_mode` now has a new option for `recording_mode` called *smart*. This will turn on Smart Recording for the selected Camera. Please note this will only work on G4-Series cameras.

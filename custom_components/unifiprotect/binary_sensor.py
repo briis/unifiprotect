@@ -91,7 +91,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
     def is_on(self):
         """Return true if the binary sensor is on."""
         if self._sensor_type == DEVICE_TYPE_DOORBELL:
-            _LOGGER.debug(f"RING {self._camera_data['event_ring_on']}: {self._name}")
+            _LOGGER.debug(
+                f"RING {self._camera_data['event_ring_on']} - TYPE: {self._camera_data['event_type']}"
+            )
             return self._camera_data["event_ring_on"]
         # _LOGGER.debug(f"MOTION {self._camera_data['event_on']}: {self._name}")
         return self._camera_data["event_on"]

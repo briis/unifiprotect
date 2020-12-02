@@ -6,11 +6,16 @@ With the release of Unifi Protect V1.7.0-Beta 1, there is now the option of dete
 **NOTE**: If you are not running Unifi Protect V1.17.x then this update will not make any difference.
 
 * **New** For all G4 Cameras, a new Switch will be created called *Record Smart*, where you can activate or de-active Smart Recording on the camera
-* **New** The service `unifiprotect.set_recording_mode` now has a new option for `recording_mode` called *smart*. This will turn on Smart Recording for the selected Camera. Please not this will only work on G4-Series cameras.
+* **New** The service `unifiprotect.set_recording_mode` now has a new option for `recording_mode` called *smart*. This will turn on Smart Recording for the selected Camera. Please note this will only work on G4-Series cameras.
+* **Fix** When the G4 Doorbell disconnected or restarted, the Ring Sensor was triggered. This fix now ensures that this does not happen.
 
-*This release is tested on*:
+### This release is tested on:
+
+*Tested* means that either new features work on the below versions or they don't introduce breaking changes.
+
 * CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
 * UDMP: FW Version 1.18.3-5 with Unifi Protect V1.17.0-beta.1
+* UNVR: FW Version 1.3.15 with Unifi Protect V1.15.0
 
 ## Release 0.6.5
 

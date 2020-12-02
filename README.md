@@ -7,9 +7,13 @@ The Unifi Protect Integration adds support for retrieving Camera feeds and Senso
 
 There is support for the following device types within Home Assistant:
 * Camera
+  * A camera entity for each camera found on the NVR device will be created
 * Sensor
+  * A sensor for each camera found will be created. This sensor will hold the current recording mode.
 * Binary Sensor
+  * One to two binary sensors will be created per camera found. There will always be a binary sensor recording if motion is detected per camera. If the camera is a doorbell, there will also be a binary sensor created that records if the doorbell is pressed.
 * Switch
+  * Several switches will be created per camera found. What switches is depended on the capbability of the specific camera. But typically these switches are used to control recording mode, Infrared and Video mode settings.
 
 It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 
@@ -41,7 +45,7 @@ Before you install this Integration you need to ensure that the following two se
       * Account Type: *Local Access Only*
       * CONTROLLER PERMISSIONS - Under Unifi Protect, select Administrators.
     * Click *Add* in at the bottom Right.
-    
+
   **HINT**: A few users have reported that they had to restart their UDMP device after creating the local user for it to work. So if you get some kind of *Error 500* when setting up the Integration, try restart the UDMP.
 
 ![ADMIN_UNIFIOS](https://github.com/briis/unifiprotect/blob/master/images/screenshots/unifi_os_admin.png)

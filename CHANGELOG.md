@@ -1,4 +1,10 @@
 # // Changelog
+
+## Unreleased
+
+Released: TBD
+
+`ADDED`: New attribute on each camera called `is_dark`. This attribute is true if the camera sees the surroundings as dark. If infrared mode is set to *auto*, then infrared mode would be turned on when this changes to true.
 ## Release 0.6.6
 
 With the release of Unifi Protect V1.7.0-Beta 1, there is now the option of detecting Vehicles on top of the Person detection that is allready there. This is what Ubiquiti calls *Smart Detection*. Also you can now set recording mode to only look for Smart Detection events, meaning that motion is only activated if a person or a vehicle is detected on the cameras. Smart Detection requires a G4-Series camera and a UnifiOS device.

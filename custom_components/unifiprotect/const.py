@@ -15,6 +15,7 @@ ATTR_ONLINE = "online"
 ATTR_EVENT_SCORE = "event_score"
 ATTR_EVENT_LENGTH = "event_length"
 ATTR_EVENT_OBJECT = "event_object"
+ATTR_IS_DARK = "is_dark"
 
 CONF_THUMB_WIDTH = "image_width"
 CONF_RECORDING_MODE = "recording_mode"

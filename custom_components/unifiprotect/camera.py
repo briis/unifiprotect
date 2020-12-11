@@ -9,6 +9,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 
 from .const import (
     ATTR_CAMERA_ID,
+    ATTR_IS_DARK,
     ATTR_ONLINE,
     ATTR_UP_SINCE,
     DEFAULT_ATTRIBUTION,
@@ -153,6 +154,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_ONLINE: self._camera_data["online"],
             ATTR_CAMERA_ID: self._camera_id,
             ATTR_LAST_TRIP_TIME: last_trip_time,
+            ATTR_IS_DARK: self._camera_data["is_dark"],
         }
 
     async def async_set_recording_mode(self, recording_mode):

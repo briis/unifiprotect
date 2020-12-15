@@ -9,7 +9,7 @@ Released: TBD
 `ADDED`: New Service `unifiprotect.set_mic_volume` to set the Sensitivity of the built-in Microphone on each Camera. Requires two parameters: *Camera Entity* and *level*, where level is a number between 0 and 100. If level is set to 0, the Camera will not react on Audio Events.
 On each camera there is also now a new attribute called `mic_sensitivity` which displayes the current value.
 
-See README.md for instructions on how to setup an Input Slider in Lovelace to adjust the value.
+See [README.md](https://github.com/briis/unifiprotect/blob/master/README.md) for instructions on how to setup an Input Slider in Lovelace to adjust the value.
 
 ## Release 0.6.6
 

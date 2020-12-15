@@ -144,6 +144,7 @@ Service | Parameters | Description
 `unifiprotect.set_doorbell_lcd_message` | `entity_id` - Name of doorbell to display message on.<br>`message` - The message to display. (Will be truncated to 30 Characters)<br>`duration` - The time in minutes the message should display. Leave blank to display always. | Display a Custom message on the LCD display on a G4 Doorbell
 `unifiprotect.set_highfps_video_mode` | `entity_id` - Name of entity to toggle High FPS for.<br>`high_fps_on`  - true or false | Toggle High FPS on supported Cameras.
 `unifiprotect.set_hdr_mode` | `entity_id` - Name of entity to toggle HDR for.<br>`hdr_on`  - true or false | Toggle HDR mode on supported Cameras.
+`unifiprotect.set_mic_volume` | `entity_id` - Name of entity to adjust microphone volume for.<br>`level`  - a value between 0 and 100| Set Microphone sensitivity on Cameras.
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 
@@ -211,6 +212,33 @@ Here is an example of how you can use this to send a notification to your phone 
       message: A person has been detected on the Camera
   mode: single
 ```
+
+### CREATE INPUT SLIDER FOR MICROPHONE SENSITIVITY
+
+To set the Microphone sensitivity you can use the Service `unifiprotect.set_mic_volume` but if you want to be able to do this from Lovelace, you can add a Input Slider for each camera and then do it from there. This shows you how you can do that.
+
+* Go to *Configuration* and select *Helpers*.
+* Click `+ ADD HELPER` and select *Number*.
+* Name your Slider, and then you can leave the rest of the values as default. (Min 0, Max 100, Display mode Slider) and then click CREATE.
+
+Now create a new Automation, that reacts to a value change of the above slider. In this case I named the slider `input_number.volume_test_cam` and the Camera is called `camera.test_cam`.
+
+```yaml
+alias: Adjust Mic Sensitivity on Test CAM
+description: ''
+trigger:
+  - platform: state
+    entity_id: input_number.volume_test_cam
+condition: []
+action:
+  - service: unifiprotect.set_mic_volume
+    data:
+      entity_id: camera.test_cam
+      level: '{{ states(''input_number.volume_test_cam'') | int }}'
+    entity_id: ' camera.test_cam'
+mode: single
+```
+
 
 ### CONTRIBUTE TO THE PROJECT AND DEVELOPING WITH A DEVCONTAINER
 

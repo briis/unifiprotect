@@ -11,6 +11,7 @@ On each camera there is also now a new attribute called `mic_sensitivity` which 
 
 See [README.md](https://github.com/briis/unifiprotect#create-input-slider-for-microphone-sensitivity) for instructions on how to setup an Input Slider in Lovelace to adjust the value.
 
+`CHANGED`: Updated the README.md documentation and added more information and a TOC.
 ## Release 0.6.6
 
 With the release of Unifi Protect V1.7.0-Beta 1, there is now the option of detecting Vehicles on top of the Person detection that is allready there. This is what Ubiquiti calls *Smart Detection*. Also you can now set recording mode to only look for Smart Detection events, meaning that motion is only activated if a person or a vehicle is detected on the cameras. Smart Detection requires a G4-Series camera and a UnifiOS device.

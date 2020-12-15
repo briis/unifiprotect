@@ -67,3 +67,12 @@ set_doorbell_lcd_message:
     duration:
       description: "(Optional) Number of minutes to display message, before returning to default. Leave blank to display always"
       example: "15"
+set_mic_volume:
+  description: "Sets the microphone sensitivity volume"
+  fields:
+    entity_id:
+      description: "string (required) camera to change volume level for"
+      example: "camera.outdoor"
+    level:
+      description: "Number between 0 and 100 (0 equals off)"
+      example: "75"

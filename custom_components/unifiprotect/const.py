@@ -16,6 +16,7 @@ ATTR_EVENT_SCORE = "event_score"
 ATTR_EVENT_LENGTH = "event_length"
 ATTR_EVENT_OBJECT = "event_object"
 ATTR_IS_DARK = "is_dark"
+ATTR_MIC_SENSITIVITY = "mic_sensitivity"
 
 CONF_THUMB_WIDTH = "image_width"
 CONF_RECORDING_MODE = "recording_mode"
@@ -28,6 +29,7 @@ CONF_HDR_ON = "hdr_on"
 CONF_HIGH_FPS_ON = "high_fps_on"
 CONF_MESSAGE = "message"
 CONF_DURATION = "duration"
+CONF_LEVEL = "level"
 
 DEFAULT_PORT = 443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
@@ -45,6 +47,7 @@ SERVICE_SET_STATUS_LIGHT = "set_status_light"
 SERVICE_SET_HDR_MODE = "set_hdr_mode"
 SERVICE_SET_HIGHFPS_VIDEO_MODE = "set_highfps_video_mode"
 SERVICE_SET_DOORBELL_LCD_MESSAGE = "set_doorbell_lcd_message"
+SERVICE_SET_MIC_VOLUME = "set_mic_volume"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
@@ -134,5 +137,12 @@ SET_DOORBELL_LCD_MESSAGE_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_MESSAGE): cv.string,
         vol.Optional(CONF_DURATION, default="None"): cv.string,
+    }
+)
+
+SET_MIC_VOLUME_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Required(CONF_LEVEL, default=100): int,
     }
 )

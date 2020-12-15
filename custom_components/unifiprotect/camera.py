@@ -10,6 +10,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 from .const import (
     ATTR_CAMERA_ID,
     ATTR_IS_DARK,
+    ATTR_MIC_SENSITIVITY,
     ATTR_ONLINE,
     ATTR_UP_SINCE,
     DEFAULT_ATTRIBUTION,
@@ -22,12 +23,14 @@ from .const import (
     SERVICE_SET_HDR_MODE,
     SERVICE_SET_HIGHFPS_VIDEO_MODE,
     SERVICE_SET_IR_MODE,
+    SERVICE_SET_MIC_VOLUME,
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SET_STATUS_LIGHT,
     SET_DOORBELL_LCD_MESSAGE_SCHEMA,
     SET_HDR_MODE_SCHEMA,
     SET_HIGHFPS_VIDEO_MODE_SCHEMA,
     SET_IR_MODE_SCHEMA,
+    SET_MIC_VOLUME_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
 )
@@ -88,6 +91,10 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SAVE_THUMBNAIL, SAVE_THUMBNAIL_SCHEMA, "async_save_thumbnail"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_MIC_VOLUME, SET_MIC_VOLUME_SCHEMA, "async_set_mic_volume"
     )
 
     return True
@@ -155,6 +162,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_CAMERA_ID: self._camera_id,
             ATTR_LAST_TRIP_TIME: last_trip_time,
             ATTR_IS_DARK: self._camera_data["is_dark"],
+            ATTR_MIC_SENSITIVITY: self._camera_data["mic_volume"],
         }
 
     async def async_set_recording_mode(self, recording_mode):
@@ -203,6 +211,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         await self.upv_object.set_doorbell_custom_text(
             self._camera_id, message, duration
         )
+
+    async def async_set_mic_volume(self, level):
+        """Set camera Microphone Level."""
+        await self.upv_object.set_mic_volume(self._camera_id, level)
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""

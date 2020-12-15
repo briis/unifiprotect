@@ -1,6 +1,6 @@
 # // Changelog
 
-## 0.6.7
+## Release 0.6.7
 
 Released: December 15th, 2020
 

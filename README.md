@@ -17,6 +17,12 @@ There is support for the following device types within Home Assistant:
 
 It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 
+## Table of Contents
+
+1. [Hardware Support](#hardware-support)
+2. [Prerequisites](#prerequisites)
+3. [Installation](#installation)
+4. []()
 ## Hardware Support
 
 This Integration supports all Ubiquiti Hardware that can run Unfi Protect. Currently this includes:
@@ -132,7 +138,7 @@ To use the Anonymous Snapshot, you must ensure that each Camera is configured to
 3. Once you are logged in, you will see an option on the Front page for enabling Anonymous Snapshots. Make sure this is checked, and then press the *Save Changes* button.
 4. Repeat step 3 for each of your Cameras.
 
-### SPECIAL UNIFI PROTECT SERVICES
+## Special UniFi Protect Services
 The Integration adds specific *Unifi Protect* services and supports the standard camera services. Below is a list of the *Unifi Protect* specific services:
 
 Service | Parameters | Description
@@ -148,7 +154,10 @@ Service | Parameters | Description
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 
-### AUTOMATING SERVICES
+## Automating Services
+Below is a couple of examples on how you can automate some of the things you might do with this Integration.
+
+### AUTOMATE SETTING RECORDING OR IR MODE
 If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.
 These Services support more than 2 different modes each, and as such it would be good to have a list to select from when switching the mode of those settings. I have not found a way to create a listbox as Custom Component, but it is fairly simpel to use an *input_select* integration and an *Automation* to achieve a UI friendly way of changing these modes. Below is an example that creates an *input*select* integration for one of the Cameras and then an example of an automation that is triggered whenever the user selects a new value in the dropdown list.
 

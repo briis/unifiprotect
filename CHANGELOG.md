@@ -1,8 +1,8 @@
 # // Changelog
 
-## Unreleased
+## 0.6.7
 
-Released: TBD
+Released: December 15th, 2020
 
 `ADDED`: New attribute on each camera called `is_dark`. This attribute is true if the camera sees the surroundings as dark. If infrared mode is set to *auto*, then infrared mode would be turned on when this changes to true.
 

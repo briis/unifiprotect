@@ -24,9 +24,9 @@ It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, 
 3. [Installation](#installation)
 4. [UniFi Protect Services](#special-unifi-protect-services)
 5. [Automating Services](#automating-services)
-  * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
-  * [Person Detection](#automate-person-detection)
-  * [Input Slider for Microphone Sensitivity](#create-input-slider-for-microphone-sensitivity)
+    * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
+    * [Person Detection](#automate-person-detection)
+    * [Input Slider for Microphone Sensitivity](#create-input-slider-for-microphone-sensitivity)
 6. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
 ## Hardware Support
 

@@ -12,7 +12,8 @@ On each camera there is also now a new attribute called `mic_sensitivity` which 
 See [README.md](https://github.com/briis/unifiprotect#create-input-slider-for-microphone-sensitivity) for instructions on how to setup an Input Slider in Lovelace to adjust the value.
 
 `CHANGED`: Updated the README.md documentation and added more information and a TOC.
-### This release is tested on:
+
+#### This release is tested on:
 
 *Tested* means that either new features work on the below versions or they don't introduce breaking changes.
 

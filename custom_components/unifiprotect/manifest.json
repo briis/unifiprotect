@@ -4,7 +4,7 @@
   "documentation": "https://github.com/briis/unifiprotect",
   "config_flow": true,
   "requirements": [
-    "pyunifiprotect==0.26.1"
+    "pyunifiprotect==0.26.2"
   ],
   "dependencies": [],
   "codeowners": [

@@ -13,6 +13,7 @@ from .const import (
     ATTR_MIC_SENSITIVITY,
     ATTR_ONLINE,
     ATTR_UP_SINCE,
+    CONF_PRIVACY_MODE,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_TYPE_DOORBELL,
@@ -24,6 +25,7 @@ from .const import (
     SERVICE_SET_HIGHFPS_VIDEO_MODE,
     SERVICE_SET_IR_MODE,
     SERVICE_SET_MIC_VOLUME,
+    SERVICE_SET_PRIVACY_MODE,
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SET_STATUS_LIGHT,
     SET_DOORBELL_LCD_MESSAGE_SCHEMA,
@@ -31,6 +33,7 @@ from .const import (
     SET_HIGHFPS_VIDEO_MODE_SCHEMA,
     SET_IR_MODE_SCHEMA,
     SET_MIC_VOLUME_SCHEMA,
+    SET_PRIVACY_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
 )
@@ -95,6 +98,10 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SET_MIC_VOLUME, SET_MIC_VOLUME_SCHEMA, "async_set_mic_volume"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_PRIVACY_MODE, SET_PRIVACY_MODE_SCHEMA, "async_set_privacy_mode"
     )
 
     return True
@@ -215,6 +222,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     async def async_set_mic_volume(self, level):
         """Set camera Microphone Level."""
         await self.upv_object.set_mic_volume(self._camera_id, level)
+
+    async def async_set_privacy_mode(self, privacy_mode):
+        """Set camera Privacy mode."""
+        await self.upv_object.set_privacy_mode(self._camera_id, privacy_mode)
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""

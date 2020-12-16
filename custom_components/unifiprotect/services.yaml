@@ -82,6 +82,6 @@ set_privacy_mode:
     entity_id:
       description: "string (required) camera to set privacy mode for"
       example: "camera.outdoor"
-    privacy_on:
+    privacy_mode:
       description: "(Required) Valid options are: true or false"
       example: true

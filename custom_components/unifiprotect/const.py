@@ -17,6 +17,7 @@ ATTR_EVENT_LENGTH = "event_length"
 ATTR_EVENT_OBJECT = "event_object"
 ATTR_IS_DARK = "is_dark"
 ATTR_MIC_SENSITIVITY = "mic_sensitivity"
+ATTR_PRIVACY_MODE = "privacy_mode"
 
 CONF_THUMB_WIDTH = "image_width"
 CONF_RECORDING_MODE = "recording_mode"

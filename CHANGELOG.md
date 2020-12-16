@@ -1,5 +1,25 @@
 # // Changelog
 
+## UNRELEASED
+
+Released: December xx, 2020
+
+* `ADDED`: New service `unifiprotect.set_privacy_mode` to enable or disable a Privacy Zone, that blacks-out the camera. The effect is that you cannot view anything on screen. If recording is enabled, the camera will still record, but the only thing you will get is a black screen. So I recommend to make a script or similar, where you turn off recording, when you turn on privacy, and vice-versa.
+Use this instead of physically turning the camera off or on recording.
+
+  The services takes two parameters: entity_id of the camera, and privacy_mode, which can be true or false.
+
+  Also a new attribute called `privacy_mode` is added to each camera, that shows if this mode is enabled or not. Issue #159
+
+* `FIXED`: The deprecation warning, around *verify_sll* that is no longer supported. Changed the pyunifiportect module to use `ssl` instead of `verify_sll` Issue #160
+
+#### This release is tested on:
+
+*Tested* means that either new features work on the below versions or they don't introduce breaking changes.
+
+* CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
+* UDMP: FW Version 1.18.3 with Unifi Protect V1.17.0-beta.6
+
 ## Release 0.6.7
 
 Released: December 15th, 2020

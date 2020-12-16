@@ -74,5 +74,14 @@ set_mic_volume:
       description: "string (required) camera to change volume level for"
       example: "camera.outdoor"
     level:
-      description: "Number between 0 and 100 (0 equals off)"
+      description: "(Required) Number between 0 and 100 (0 equals off)"
       example: "75"
+set_privacy_mode:
+  description: "Enables or disables a full cover Privacy Zone for the Camera"
+  fields:
+    entity_id:
+      description: "string (required) camera to set privacy mode for"
+      example: "camera.outdoor"
+    privacy_on:
+      description: "(Required) Valid options are: true or false"
+      example: true

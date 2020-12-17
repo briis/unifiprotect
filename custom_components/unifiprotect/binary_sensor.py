@@ -44,6 +44,7 @@ async def async_setup_entry(
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
     protect_data = entry_data["protect_data"]
+    server_info = entry_data["server_info"]
     if not protect_data.data:
         return
 
@@ -53,7 +54,11 @@ async def async_setup_entry(
         if camera_data["type"] == DEVICE_TYPE_DOORBELL:
             sensors.append(
                 UnifiProtectBinarySensor(
-                    upv_object, protect_data, camera_id, DEVICE_TYPE_DOORBELL
+                    upv_object,
+                    protect_data,
+                    server_info,
+                    camera_id,
+                    DEVICE_TYPE_DOORBELL,
                 )
             )
             _LOGGER.debug(
@@ -63,7 +68,7 @@ async def async_setup_entry(
 
         sensors.append(
             UnifiProtectBinarySensor(
-                upv_object, protect_data, camera_id, DEVICE_TYPE_MOTION
+                upv_object, protect_data, server_info, camera_id, DEVICE_TYPE_MOTION
             )
         )
         _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", camera_data["name"])
@@ -76,9 +81,9 @@ async def async_setup_entry(
 class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, upv_object, protect_data, camera_id, sensor_type):
+    def __init__(self, upv_object, protect_data, server_info, camera_id, sensor_type):
         """Initialize the Binary Sensor."""
-        super().__init__(upv_object, protect_data, camera_id, sensor_type)
+        super().__init__(upv_object, protect_data, server_info, camera_id, sensor_type)
         self._name = f"{sensor_type.capitalize()} {self._camera_data['name']}"
         self._device_class = PROTECT_TO_HASS_DEVICE_CLASS.get(sensor_type)
 
@@ -90,13 +95,12 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        if self._sensor_type == DEVICE_TYPE_DOORBELL:
-            _LOGGER.debug(
-                f"RING {self._camera_data['event_ring_on']} - TYPE: {self._camera_data['event_type']}"
-            )
-            return self._camera_data["event_ring_on"]
-        # _LOGGER.debug(f"MOTION {self._camera_data['event_on']}: {self._name}")
-        return self._camera_data["event_on"]
+        if self._sensor_type != DEVICE_TYPE_DOORBELL:
+            return self._camera_data["event_on"]
+        _LOGGER.debug(
+            f"RING {self._camera_data['event_ring_on']} - TYPE: {self._camera_data['event_type']}"
+        )
+        return self._camera_data["event_ring_on"]
 
     @property
     def device_class(self):

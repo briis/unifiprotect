@@ -31,6 +31,7 @@ CONF_HIGH_FPS_ON = "high_fps_on"
 CONF_MESSAGE = "message"
 CONF_DURATION = "duration"
 CONF_LEVEL = "level"
+CONF_MIC_LEVEL = "mic_level"
 CONF_PRIVACY_MODE = "privacy_mode"
 
 DEFAULT_PORT = 443
@@ -55,6 +56,7 @@ SERVICE_SET_PRIVACY_MODE = "set_privacy_mode"
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALLWAYS = "always"
 TYPE_RECORD_NEVER = "never"
+TYPE_RECORD_NOTSET = "notset"
 TYPE_RECORD_SMART = "smart"
 TYPE_RECORD_SMARTDETECT = "smartDetect"
 TYPE_IR_AUTO = "auto"
@@ -87,6 +89,7 @@ VALID_RECORDING_MODES = [
     TYPE_RECORD_ALLWAYS,
     TYPE_RECORD_NEVER,
     TYPE_RECORD_SMART,
+    TYPE_RECORD_NOTSET,
 ]
 VALID_BOOLEAN_MODES = [True, False]
 
@@ -138,7 +141,11 @@ SET_HIGHFPS_VIDEO_MODE_SCHEMA = vol.Schema(
 SET_PRIVACY_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Optional(CONF_PRIVACY_MODE, default=False): vol.In(VALID_BOOLEAN_MODES),
+        vol.Required(CONF_PRIVACY_MODE, default=False): vol.In(VALID_BOOLEAN_MODES),
+        vol.Required(CONF_MIC_LEVEL, default=-1): int,
+        vol.Optional(CONF_RECORDING_MODE, default=TYPE_RECORD_NOTSET): vol.In(
+            VALID_RECORDING_MODES
+        ),
     }
 )
 

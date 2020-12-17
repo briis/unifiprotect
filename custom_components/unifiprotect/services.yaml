@@ -85,3 +85,9 @@ set_privacy_mode:
     privacy_mode:
       description: "(Required) Valid options are: true or false"
       example: true
+    mic_level:
+      description: "(Optional) Microphone Level, a number between 0 and 100 (0 equals off) Default is no change"
+      example: "75"
+    recording_mode:
+      description: "(Optional) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording, smart = Smart Detect. Default value is: no change"
+      example: motion

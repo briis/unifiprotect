@@ -224,9 +224,11 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Set camera Microphone Level."""
         await self.upv_object.set_mic_volume(self._camera_id, level)
 
-    async def async_set_privacy_mode(self, privacy_mode):
+    async def async_set_privacy_mode(self, privacy_mode, mic_level, recording_mode):
         """Set camera Privacy mode."""
-        await self.upv_object.set_privacy_mode(self._camera_id, privacy_mode)
+        await self.upv_object.set_privacy_mode(
+            self._camera_id, privacy_mode, mic_level, recording_mode
+        )
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""

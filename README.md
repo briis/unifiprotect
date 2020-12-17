@@ -156,7 +156,7 @@ Service | Parameters | Description
 `unifiprotect.set_highfps_video_mode` | `entity_id` - Name of entity to toggle High FPS for.<br>`high_fps_on`  - true or false | Toggle High FPS on supported Cameras.
 `unifiprotect.set_hdr_mode` | `entity_id` - Name of entity to toggle HDR for.<br>`hdr_on`  - true or false | Toggle HDR mode on supported Cameras.
 `unifiprotect.set_mic_volume` | `entity_id` - Name of entity to adjust microphone volume for.<br>`level`  - a value between 0 and 100| Set Microphone sensitivity on Cameras.
-`unifiprotect.set_privacy_mode` | `entity_id` - Name of entity to adjust privacy mode for.<br>`privacy_mode`  - true to enable, false to disable| Set Privacy mode for a camera, where the screen goes black when enabled.
+`unifiprotect.set_privacy_mode` | `entity_id` - Name of entity to adjust privacy mode for.<br>`privacy_mode`  - true to enable, false to disable<br>`mic_level` - 0 to 100, where 0 is off<br>`recording_mode` - never, motion or always| Set Privacy mode for a camera, where the screen goes black when enabled.
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 

@@ -49,13 +49,16 @@ async def async_setup_entry(
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
     protect_data = entry_data["protect_data"]
+    server_info = entry_data["server_info"]
     snapshot_direct = entry_data["snapshot_direct"]
     if not protect_data.data:
         return
 
     async_add_entities(
         [
-            UnifiProtectCamera(upv_object, protect_data, camera_id, snapshot_direct)
+            UnifiProtectCamera(
+                upv_object, protect_data, server_info, camera_id, snapshot_direct
+            )
             for camera_id in protect_data.data
         ]
     )
@@ -110,9 +113,11 @@ async def async_setup_entry(
 class UnifiProtectCamera(UnifiProtectEntity, Camera):
     """A Ubiquiti Unifi Protect Camera."""
 
-    def __init__(self, upv_object, protect_data, camera_id, snapshot_direct):
+    def __init__(
+        self, upv_object, protect_data, server_info, camera_id, snapshot_direct
+    ):
         """Initialize an Unifi camera."""
-        super().__init__(upv_object, protect_data, camera_id, None)
+        super().__init__(upv_object, protect_data, server_info, camera_id, None)
         self._snapshot_direct = snapshot_direct
         self._name = self._camera_data["name"]
         self._stream_source = self._camera_data["rtsp"]
@@ -147,11 +152,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @property
     def is_recording(self):
         """Return true if the device is recording."""
-        return (
-            True
-            if self._camera_data["recording_mode"] != "never"
+        return bool(
+            self._camera_data["recording_mode"] != "never"
             and self._camera_data["online"]
-            else False
         )
 
     @property

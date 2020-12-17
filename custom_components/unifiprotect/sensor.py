@@ -12,8 +12,19 @@ from .entity import UnifiProtectEntity
 _LOGGER = logging.getLogger(__name__)
 
 SENSOR_TYPES = {
-    "motion_recording": ["Motion Recording", None, "video-outline,video-off-outline"]
+    "motion_recording": [
+        "Motion Recording",
+        None,
+        ["video-outline", "video-off-outline"],
+    ]
 }
+
+_SENSOR_NAME = 0
+_SENSOR_UNITS = 1
+_SENSOR_ICONS = 2
+
+_ICON_ON = 0
+_ICON_OFF = 1
 
 
 async def async_setup_entry(
@@ -23,13 +34,19 @@ async def async_setup_entry(
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
     protect_data = entry_data["protect_data"]
+    server_info = entry_data["server_info"]
+
     if not protect_data.data:
         return
 
     sensors = []
     for sensor in SENSOR_TYPES:
-        for camera in protect_data.data:
-            sensors.append(UnifiProtectSensor(upv_object, protect_data, camera, sensor))
+        for camera_id in protect_data.data:
+            sensors.append(
+                UnifiProtectSensor(
+                    upv_object, protect_data, server_info, camera_id, sensor
+                )
+            )
             _LOGGER.debug("UNIFIPROTECT SENSOR CREATED: %s", sensor)
 
     async_add_entities(sensors)
@@ -40,12 +57,13 @@ async def async_setup_entry(
 class UnifiProtectSensor(UnifiProtectEntity, Entity):
     """A Ubiquiti Unifi Protect Sensor."""
 
-    def __init__(self, upv_object, protect_data, camera_id, sensor):
+    def __init__(self, upv_object, protect_data, server_info, camera_id, sensor):
         """Initialize an Unifi Protect sensor."""
-        super().__init__(upv_object, protect_data, camera_id, sensor)
-        self._name = f"{SENSOR_TYPES[sensor][0]} {self._camera_data['name']}"
-        self._units = SENSOR_TYPES[sensor][1]
-        self._icons = SENSOR_TYPES[sensor][2]
+        super().__init__(upv_object, protect_data, server_info, camera_id, sensor)
+        sensor_type = SENSOR_TYPES[sensor]
+        self._name = f"{sensor_type[_SENSOR_NAME]} {self._camera_data['name']}"
+        self._units = sensor_type[_SENSOR_UNITS]
+        self._icons = sensor_type[_SENSOR_ICONS]
         self._camera_type = self._camera_data["model"]
 
     @property
@@ -61,10 +79,8 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
     @property
     def icon(self):
         """Icon to use in the frontend, if any."""
-        icons = self._icons.split(",")
-        return (
-            f"mdi:{icons[0]}" if self.state != TYPE_RECORD_NEVER else f"mdi:{icons[1]}"
-        )
+        icon_id = _ICON_ON if self.state != TYPE_RECORD_NEVER else _ICON_OFF
+        return f"mdi:{self._icons[icon_id]}"
 
     @property
     def unit_of_measurement(self):

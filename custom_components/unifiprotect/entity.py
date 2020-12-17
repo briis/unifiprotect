@@ -8,7 +8,7 @@ from .const import DEFAULT_BRAND, DOMAIN
 class UnifiProtectEntity(Entity):
     """Base class for unifi protect entities."""
 
-    def __init__(self, upv_object, protect_data, camera_id, sensor_type):
+    def __init__(self, upv_object, protect_data, server_info, camera_id, sensor_type):
         """Initialize the entity."""
         super().__init__()
         self.upv_object = upv_object
@@ -20,7 +20,7 @@ class UnifiProtectEntity(Entity):
         self._camera_name = self._camera_data["name"]
         self._mac = self._camera_data["mac"]
         self._firmware_version = self._camera_data["firmware_version"]
-        self._server_id = self._camera_data["server_id"]
+        self._server_id = server_info["server_id"]
         self._device_type = self._camera_data["type"]
         self._model = self._camera_data["model"]
         if self._sensor_type is None:

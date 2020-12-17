@@ -11,7 +11,7 @@ Use this instead of physically turning the camera off or on recording.
 
   Also a new attribute called `privacy_mode` is added to each camera, that shows if this mode is enabled or not. Issue #159
 
-* `FIXED`: The deprecation warning, around *verify_sll* that is no longer supported. Changed the pyunifiportect module to use `ssl` instead of `verify_sll` Issue #160
+* `CHANGED`: Some users are getting a warning that *verify_sll* is deprecated and should be replaced with *ssl*. We changed the pyunifiportect module to use `ssl` instead of `verify_sll` Issue #160
 
 #### This release is tested on:
 

@@ -4,10 +4,11 @@
 
 Released: December xx, 2020
 
-* `ADDED`: New service `unifiprotect.set_privacy_mode` to enable or disable a Privacy Zone, that blacks-out the camera. The effect is that you cannot view anything on screen. If recording is enabled, the camera will still record, but the only thing you will get is a black screen. So I recommend to make a script or similar, where you turn off recording, when you turn on privacy, and vice-versa.
+* `ADDED`: New service `unifiprotect.set_privacy_mode` to enable or disable a Privacy Zone, that blacks-out the camera. The effect is that you cannot view anything on screen. If recording is enabled, the camera will still record, but the only thing you will get is a black screen. You can enable/disable the microphone and set recording mode from this service, by specifying the values you see below.
+If the camera already has one or more Privacy Zones set up, they will not be overwritten, and will still be there when you turn of this.
 Use this instead of physically turning the camera off or on recording.
 
-  The services takes two parameters: entity_id of the camera, and privacy_mode, which can be true or false.
+  The services takes four parameters: entity_id of the camera, privacy_mode, which can be true or false, mic_level which can be between 0 and 100 and recording_mode which can be never, motion, always.
 
   Also a new attribute called `privacy_mode` is added to each camera, that shows if this mode is enabled or not. Issue #159
 

@@ -14,6 +14,8 @@ Use this instead of physically turning the camera off or on recording.
 
 * `CHANGED`: Some users are getting a warning that *verify_sll* is deprecated and should be replaced with *ssl*. We changed the pyunifiportect module to use `ssl` instead of `verify_sll` Issue #160
 
+* `ADDED`: Dutch translation to Config Flow is now added. Thank you to @copperek for doing it.
+
 #### This release is tested on:
 
 *Tested* means that either new features work on the below versions or they don't introduce breaking changes.

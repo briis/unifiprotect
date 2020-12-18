@@ -1,20 +1,22 @@
 # // Changelog
 
-## UNRELEASED
+## Release 0.6.8
 
-Released: December xx, 2020
+Released: December 18th, 2020
 
 * `ADDED`: New service `unifiprotect.set_privacy_mode` to enable or disable a Privacy Zone, that blacks-out the camera. The effect is that you cannot view anything on screen. If recording is enabled, the camera will still record, but the only thing you will get is a black screen. You can enable/disable the microphone and set recording mode from this service, by specifying the values you see below.
 If the camera already has one or more Privacy Zones set up, they will not be overwritten, and will still be there when you turn of this.
-Use this instead of physically turning the camera off or on recording.
+Use this instead of physically turning the camera off or on.
 
-  The services takes four parameters: entity_id of the camera, privacy_mode, which can be true or false, mic_level which can be between 0 and 100 and recording_mode which can be never, motion, always.
+  The services takes four parameters: **entity_id** of the camera, **privacy_mode** which can be true or false, **mic_level** which can be between 0 and 100 and **recording_mode** which can be never, motion, always or smart.
 
-  Also a new attribute called `privacy_mode` is added to each camera, that shows if this mode is enabled or not. Issue #159
+  Also a new attribute called `privacy_mode` is added to each camera, that shows if this mode is enabled or not. (Issue #159)
 
-* `CHANGED`: Some users are getting a warning that *verify_sll* is deprecated and should be replaced with *ssl*. We changed the pyunifiportect module to use `ssl` instead of `verify_sll` Issue #160
+* `CHANGED`: Some users are getting a warning that *verify_sll* is deprecated and should be replaced with *ssl*. We changed the pyunifiportect module to use `ssl` instead of `verify_sll` (Issue #160)
 
 * `ADDED`: Dutch translation to Config Flow is now added. Thank you to @copperek for doing it.
+
+* `FIXED`: KeyError: 'server_id' during startup of Unifi Protect. This error poped up occasionally during startup of Home Assistant. Thank you to @bdraco for fixing this. (Issue #147)
 
 #### This release is tested on:
 

@@ -1,8 +1,8 @@
 # // Changelog
 
-## Release 0.7.0
+## UNRELEASED
 
-Released: December 18th, 2020
+Released: December xx, 2020
 
 * `ADDED`: New service `unifiprotect.set_privacy_mode` to enable or disable a Privacy Zone, that blacks-out the camera. The effect is that you cannot view anything on screen. If recording is enabled, the camera will still record, but the only thing you will get is a black screen. You can enable/disable the microphone and set recording mode from this service, by specifying the values you see below.
 If the camera already has one or more Privacy Zones set up, they will not be overwritten, and will still be there when you turn of this.

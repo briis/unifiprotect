@@ -18,6 +18,8 @@ Use this instead of physically turning the camera off or on.
 
 * `FIXED`: KeyError: 'server_id' during startup of Unifi Protect. This error poped up occasionally during startup of Home Assistant. Thank you to @bdraco for fixing this. (Issue #147)
 
+* `FIXED`: From V1.17.x of UniFi Protect, Non Adopted Cameras would be created as camera.none and creating all kinds of errors. Now these cameras will be ignored, until they are properly adopted by the NVR. Thank you to @bdraco for helping fixing this.
+
 #### This release is tested on:
 
 *Tested* means that either new features work on the below versions or they don't introduce breaking changes.

@@ -25,7 +25,7 @@ Use this instead of physically turning the camera off or on.
 *Tested* means that either new features work on the below versions or they don't introduce breaking changes.
 
 * CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
-* UDMP: FW Version 1.18.3 with Unifi Protect V1.17.0-beta.6
+* UDMP: FW Version 1.18.4-3 with Unifi Protect V1.17.0-beta.6
 
 ## Release 0.6.7
 

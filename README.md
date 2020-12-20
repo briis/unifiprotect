@@ -38,6 +38,8 @@ This Integration supports all Ubiquiti Hardware that can run Unfi Protect. Curre
 
 The first two devices run Unifi's own operating system called UnifiOS, and the CKGP with Firmware V2.0.18 or greater also runs UnifiOS. This is important to note, as you will need to know this during installation if your NVR Device runs UnifiOS or not.
 
+Ubiquity released V2.0.24 as an official firmware release for the CloudKey+, and it is recommended that people upgrade to this UnifiOS based firmware for their CloudKey+, as this gives a much better realtime experience.
+
 CKGP with Firmware V1.x **do NOT run UnifiOS**
 
 In the following we are refering to Devices that do run UnifiOS as *UnifiOS Devices* and devices that do NOT run UnifiOS as *NON UnifiOS Devices*
@@ -98,7 +100,7 @@ This Integration is part of the default HACS store. Search for *unifi protect* u
 If you are not familiar with HACS, or havn't installed it, I would recommend to [look through the HACS documentation](https://hacs.xyz/), before continuing. Even though you can install the Integration manually, I would recommend using HACS, as you would always be reminded when a new release is published.
 
 ## Configuration
-To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add a CloudKey+ or UDMP by providing the Host IP, Port Number, Username and Password.
+To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
 
 **Note**: If you can't find the *Unifi Protect* integration, hard refresh your browser, when you are on the Integrations page.
 

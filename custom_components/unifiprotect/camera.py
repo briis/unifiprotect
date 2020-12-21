@@ -28,6 +28,7 @@ from .const import (
     SERVICE_SET_PRIVACY_MODE,
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SET_STATUS_LIGHT,
+    SERVICE_SET_ZOOM_POSITION,
     SET_DOORBELL_LCD_MESSAGE_SCHEMA,
     SET_HDR_MODE_SCHEMA,
     SET_HIGHFPS_VIDEO_MODE_SCHEMA,
@@ -36,6 +37,7 @@ from .const import (
     SET_PRIVACY_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
+    SET_ZOOM_POSITION_SCHEMA,
 )
 from .entity import UnifiProtectEntity
 
@@ -105,6 +107,10 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SET_PRIVACY_MODE, SET_PRIVACY_MODE_SCHEMA, "async_set_privacy_mode"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_ZOOM_POSITION, SET_ZOOM_POSITION_SCHEMA, "async_set_zoom_position"
     )
 
     return True
@@ -232,6 +238,14 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         await self.upv_object.set_privacy_mode(
             self._camera_id, privacy_mode, mic_level, recording_mode
         )
+
+    async def async_set_zoom_position(self, position):
+        """Set camera Zoom Position."""
+        if not self._camera_data["has_opticalzoom"]:
+            # Only run if camera supports it.
+            _LOGGER.info("This Camera does not support optical zoom")
+            return
+        await self.upv_object.set_camera_zoom_position(self._camera_id, position)
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""

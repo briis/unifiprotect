@@ -33,6 +33,7 @@ CONF_DURATION = "duration"
 CONF_LEVEL = "level"
 CONF_MIC_LEVEL = "mic_level"
 CONF_PRIVACY_MODE = "privacy_mode"
+CONF_POSITION = "position"
 
 DEFAULT_PORT = 443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
@@ -52,6 +53,7 @@ SERVICE_SET_HIGHFPS_VIDEO_MODE = "set_highfps_video_mode"
 SERVICE_SET_DOORBELL_LCD_MESSAGE = "set_doorbell_lcd_message"
 SERVICE_SET_MIC_VOLUME = "set_mic_volume"
 SERVICE_SET_PRIVACY_MODE = "set_privacy_mode"
+SERVICE_SET_ZOOM_POSITION = "set_zoom_position"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALWAYS = "always"
@@ -161,5 +163,12 @@ SET_MIC_VOLUME_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_LEVEL, default=100): int,
+    }
+)
+
+SET_ZOOM_POSITION_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Required(CONF_POSITION, default=0): int,
     }
 )

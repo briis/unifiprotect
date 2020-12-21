@@ -92,11 +92,11 @@ set_privacy_mode:
       description: "(Optional) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording, smart = Smart Detect. Default value is: no change"
       example: motion
 set_zoom_position:
-  description: "Sets the cameras optical Zoom Level"
+  description: "Sets the cameras optical Zoom Position"
   fields:
     entity_id:
-      description: "string (required) camera to change zoom level for"
+      description: "string (required) camera to change zoom position for"
       example: "camera.outdoor"
-    zoom_level:
+    position:
       description: "(Required) Number between 0 and 100 (0 equals no zoom)"
       example: "25"

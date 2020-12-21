@@ -1,5 +1,20 @@
 # // Changelog
 
+
+## UNRELEASED
+
+Released:
+
+* `ADDED`: New service `unifiprotect.set_camera_zoom_position` to set the optical zoom level of a Camera. This only works on Cameras that support optical zoom.
+
+  The services takes two parameters: **entity_id** of the camera, **zoom_level** which can be between 0 and 100 where 0 is no zoom and 100 is maximum zoom.
+
+#### This release is tested on:
+
+*Tested* means that either new features work on the below versions or they don't introduce breaking changes.
+
+* CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
+* UDMP: FW Version 1.18.4-3 with Unifi Protect V1.17.0-beta.6
 ## Release 0.7.0
 
 Released: December 20th, 2020

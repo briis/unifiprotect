@@ -5,9 +5,11 @@
 
 Released:
 
-* `ADDED`: New service `unifiprotect.set_zoom_level` to set the optical zoom level of a Camera. This only works on Cameras that support optical zoom.
+* `ADDED`: New service `unifiprotect.set_zoom_position` to set the optical zoom level of a Camera. This only works on Cameras that support optical zoom.
 
-  The services takes two parameters: **entity_id** of the camera, **zoom_level** which can be between 0 and 100 where 0 is no zoom and 100 is maximum zoom.
+  The services takes two parameters: **entity_id** of the camera, **position** which can be between 0 and 100 where 0 is no zoom and 100 is maximum zoom.
+
+  A new attribue called `zoom_position` is added to each camera, showing the current zoom position. For cameras that does not support setting optical zoom, this will always be 0.
 
 #### This release is tested on:
 

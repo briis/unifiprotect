@@ -14,6 +14,7 @@ from .const import (
     ATTR_ONLINE,
     ATTR_PRIVACY_MODE,
     ATTR_UP_SINCE,
+    ATTR_ZOOM_POSITION,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_TYPE_DOORBELL,
@@ -180,6 +181,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_IS_DARK: self._camera_data["is_dark"],
             ATTR_MIC_SENSITIVITY: self._camera_data["mic_volume"],
             ATTR_PRIVACY_MODE: self._camera_data["privacy_on"],
+            ATTR_ZOOM_POSITION: self._camera_data["zoom_position"],
         }
 
     async def async_set_recording_mode(self, recording_mode):

@@ -1,10 +1,13 @@
 {
-    "name": "Unifi Protect Integration",
+    "name": "UniFi Protect Integration",
     "domains": [
         "binary_sensor",
         "sensor",
         "camera",
         "switch"
     ],
-    "iot_class": ["Local Polling", "Local Push"]
+    "iot_class": [
+        "Local Polling",
+        "Local Push"
+    ]
 }

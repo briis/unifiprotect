@@ -14,10 +14,10 @@
                     "port": "Portnummer (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Username",
                     "password": "Password",
-                    "scan_interval": "Scan-Intervall für Events auf NON UnifiOS Server (Höher setzen für mehrere Kameras)",
                     "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)",
                     "ir_on": "Schaltet das Infrarotlicht ein",
-                    "ir_off": "Schaltet das Infrarotlicht aus"
+                    "ir_off": "Schaltet das Infrarotlicht aus",
+                    "scan_interval": "Scan-Intervall für Events auf NON UnifiOS Server (Höher setzen für mehrere Kameras)"
                 },
                 "description": "Set up Unifi Protect to monitor cameras and sensors.",
                 "title": "Unifi Protect"

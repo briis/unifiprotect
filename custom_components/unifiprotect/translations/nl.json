@@ -14,10 +14,10 @@
                     "port": "Poort Nummer (7443 voor niet UnifiOS, 443 voor UnifiOS)",
                     "username": "Gebruikersnaam",
                     "password": "Wachtwoord",
-                    "scan_interval": "Scaninterval voor gebeurtenissen op niet UnifiOS Servers (Hoger instellen als er veel camera's zijn)",
                     "snapshot_direct": "Gebruik anonieme snapshots (moet op alle camera's worden ingeschakeld)",
                     "ir_on": "Instelling om infrarood licht AAN te zetten",
-                    "ir_off": "Instelling om infrarood licht UIT te zetten"
+                    "ir_off": "Instelling om infrarood licht UIT te zetten",
+                    "scan_interval": "Scaninterval voor gebeurtenissen op niet UnifiOS Servers (Hoger instellen als er veel camera's zijn)"
                 },
                 "description": "Stel Unifi Protect in om cameras and sensoren te gebruiken.",
                 "title": "Unifi Protect"

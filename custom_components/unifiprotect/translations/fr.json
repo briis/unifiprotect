@@ -14,10 +14,10 @@
                     "port": "Numéro de port (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Identifiant",
                     "password": "Mot de passe",
-                    "scan_interval": "Intervalles de scan des événements sur NON UnifiOS (Régler plus haut si plusieurs caméras)",
                     "snapshot_direct": "Utiliser des clichés anonymes (doit être activé sur toutes les caméras)",
                     "ir_on": "Réglage à utiliser pour la lumière infrarouge ON",
-                    "ir_off": "Réglage à utiliser pour la lumière infrarouge OFF"
+                    "ir_off": "Réglage à utiliser pour la lumière infrarouge OFF",
+                    "scan_interval": "Intervalles de scan des événements sur NON UnifiOS (Régler plus haut si plusieurs caméras)"
                 },
                 "description": "Mettre en place Unifi Protect pour surveiller les caméras et les capteurs.",
                 "title": "Unifi Protect"

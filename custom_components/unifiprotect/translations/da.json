@@ -14,10 +14,10 @@
                     "port": "Port nummer (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Brugernavn",
                     "password": "Kodeord",
-                    "scan_interval": "Opdaterings frekvens for hændelser på NON UnifiOS Servere (Øg frekvens hvis mange kameraer)",
                     "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)",
                     "ir_on": "Instilling til Infrarødt Lys TÆNDT",
-                    "ir_off": "Instilling til Infrarødt Lys SLUKKET"
+                    "ir_off": "Instilling til Infrarødt Lys SLUKKET",
+                    "scan_interval": "Opdaterings frekvens for hændelser på NON UnifiOS Servere (Øg frekvens hvis mange kameraer)"
                 },
                 "description": "Konfigurer Unifi Protect for at monitorere kameraer og sensorer.",
                 "title": "Unifi Protect"

@@ -9,10 +9,10 @@
                     "port": "Port Number: (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Username",
                     "password": "Password",
-                    "scan_interval": "Scan interval for Events on NON UnifiOS Servers (Set higher if many Cameras)",
                     "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)",
                     "ir_on": "Setting to use for Infrared Light ON",
-                    "ir_off": "Setting to use for Infrared Light OFF"
+                    "ir_off": "Setting to use for Infrared Light OFF",
+                    "scan_interval": "Scan interval for Events on NON UnifiOS Servers (Set higher if many Cameras)"
                 }
             }
         },

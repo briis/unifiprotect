@@ -99,6 +99,8 @@ This Integration is part of the default HACS store. Search for *unifi protect* u
 
 If you are not familiar with HACS, or havn't installed it, I would recommend to [look through the HACS documentation](https://hacs.xyz/), before continuing. Even though you can install the Integration manually, I would recommend using HACS, as you would always be reminded when a new release is published.
 
+**Please note**: All HACS does, is copying the needed files to Home Assistant, and placing them in the right directory. To get the Integration to work, you now need to go through the steps in the *Configuration* section.
+
 ## Configuration
 To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
 

@@ -5,6 +5,14 @@
 
 Released:
 
+This release adds support for the new Ubiquiti Floodlight device. It will add a new entity type `light`, that will expose the Floodlight as a light entity and add support for turning on and off, plus adjustment of brightness.
+
+There will also be support for the PIR motion sensor built-in to the Floodlight, and you will be able to adjust PIR sensitivity and when to detect motion.
+
+## Release 0.7.1
+
+Released: January 3rd, 2021
+
 * `ADDED`: New service `unifiprotect.set_zoom_position` to set the optical zoom level of a Camera. This only works on Cameras that support optical zoom.
 
   The services takes two parameters: **entity_id** of the camera, **position** which can be between 0 and 100 where 0 is no zoom and 100 is maximum zoom.
@@ -15,8 +23,8 @@ Released:
 
 *Tested* means that either new features work on the below versions or they don't introduce breaking changes.
 
-* CloudKey+ G2: FW Version 1.1.13 with Unifi Protect V1.13.37
-* UDMP: FW Version 1.18.4-3 with Unifi Protect V1.17.0-beta.6
+* CloudKey+ G2: FW Version 2.0.24 with Unifi Protect V1.16.9
+* UDMP: FW Version 1.18.5 with Unifi Protect V1.17.0-beta.10
 ## Release 0.7.0
 
 Released: December 20th, 2020

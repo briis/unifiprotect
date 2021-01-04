@@ -9,6 +9,11 @@ This release adds support for the new Ubiquiti Floodlight device. It will add a 
 
 There will also be support for the PIR motion sensor built-in to the Floodlight, and you will be able to adjust PIR sensitivity and when to detect motion.
 
+* `ADDED`: New `light` entity
+* `ADDED`: New service `unifiprotect.light_settings`
+* `ADDED`: New service `unifiprotect.light_motion_settings`
+* `CHANGED`: Bumped `pyunifiprotect` to 0.28.0
+
 ## Release 0.7.1
 
 Released: January 3rd, 2021

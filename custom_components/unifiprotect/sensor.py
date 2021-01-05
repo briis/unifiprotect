@@ -6,7 +6,16 @@ from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.typing import HomeAssistantType
 
-from .const import ATTR_CAMERA_TYPE, DEFAULT_ATTRIBUTION, DOMAIN, TYPE_RECORD_NEVER
+from .const import (
+    ATTR_DEVICE_MODEL,
+    ATTR_ENABLED_AT,
+    DEFAULT_ATTRIBUTION,
+    DEVICE_CAMERA,
+    DEVICE_LIGHT,
+    DOMAIN,
+    TYPE_RECORD_NEVER,
+    TYPE_RECORD_OFF,
+)
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -16,12 +25,20 @@ SENSOR_TYPES = {
         "Motion Recording",
         None,
         ["video-outline", "video-off-outline"],
-    ]
+        DEVICE_CAMERA,
+    ],
+    "light_turn_on": [
+        "Light Turn On",
+        None,
+        ["leak", "leak-off"],
+        DEVICE_LIGHT,
+    ],
 }
 
 _SENSOR_NAME = 0
 _SENSOR_UNITS = 1
 _SENSOR_ICONS = 2
+_SENSOR_MODEL = 3
 
 _ICON_ON = 0
 _ICON_OFF = 1
@@ -40,14 +57,15 @@ async def async_setup_entry(
         return
 
     sensors = []
-    for sensor in SENSOR_TYPES:
+    for sensor, sensor_type in SENSOR_TYPES.items():
         for camera_id in protect_data.data:
-            sensors.append(
-                UnifiProtectSensor(
-                    upv_object, protect_data, server_info, camera_id, sensor
+            if protect_data.data[camera_id].get("type") == sensor_type[_SENSOR_MODEL]:
+                sensors.append(
+                    UnifiProtectSensor(
+                        upv_object, protect_data, server_info, camera_id, sensor
+                    )
                 )
-            )
-            _LOGGER.debug("UNIFIPROTECT SENSOR CREATED: %s", sensor)
+                _LOGGER.debug("UNIFIPROTECT SENSOR CREATED: %s", sensor)
 
     async_add_entities(sensors)
 
@@ -64,7 +82,6 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         self._name = f"{sensor_type[_SENSOR_NAME]} {self._camera_data['name']}"
         self._units = sensor_type[_SENSOR_UNITS]
         self._icons = sensor_type[_SENSOR_ICONS]
-        self._camera_type = self._camera_data["model"]
 
     @property
     def name(self):
@@ -74,13 +91,20 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._camera_data["recording_mode"]
+        if self._device_type == DEVICE_LIGHT:
+            return self._camera_data["motion_mode"]
+        else:
+            return self._camera_data["recording_mode"]
 
     @property
     def icon(self):
         """Icon to use in the frontend, if any."""
-        icon_id = _ICON_ON if self.state != TYPE_RECORD_NEVER else _ICON_OFF
-        return f"mdi:{self._icons[icon_id]}"
+        if self._device_type == DEVICE_LIGHT:
+            icon_id = _ICON_ON if self.state != TYPE_RECORD_OFF else _ICON_OFF
+            return f"mdi:{self._icons[icon_id]}"
+        else:
+            icon_id = _ICON_ON if self.state != TYPE_RECORD_NEVER else _ICON_OFF
+            return f"mdi:{self._icons[icon_id]}"
 
     @property
     def unit_of_measurement(self):
@@ -95,7 +119,10 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
     @property
     def device_state_attributes(self):
         """Return the device state attributes."""
-        return {
+        attr = {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_CAMERA_TYPE: self._camera_type,
+            ATTR_DEVICE_MODEL: self._model,
         }
+        if self._device_type == DEVICE_LIGHT:
+            attr[ATTR_ENABLED_AT] = self._camera_data["motion_mode_enabled_at"]
+        return attr

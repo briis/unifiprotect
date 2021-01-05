@@ -19,6 +19,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 
 
 from .const import (
+    ATTR_DEVICE_MODEL,
     ATTR_EVENT_LENGTH,
     ATTR_EVENT_OBJECT,
     ATTR_EVENT_SCORE,
@@ -132,6 +133,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
             detected_object = "None Identified"
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            ATTR_DEVICE_MODEL: self._model,
             ATTR_LAST_TRIP_TIME: self._camera_data["last_motion"],
             ATTR_EVENT_SCORE: self._camera_data["event_score"],
             ATTR_EVENT_LENGTH: self._camera_data["event_length"],

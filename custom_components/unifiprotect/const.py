@@ -9,7 +9,8 @@ DOMAIN = "unifiprotect"
 UNIQUE_ID = "unique_id"
 
 ATTR_CAMERA_ID = "camera_id"
-ATTR_CAMERA_TYPE = "camera_type"
+ATTR_DEVICE_MODEL = "device_model"
+ATTR_ENABLED_AT = "enabled_at"
 ATTR_EVENT_SCORE = "event_score"
 ATTR_EVENT_LENGTH = "event_length"
 ATTR_EVENT_OBJECT = "event_object"
@@ -42,6 +43,9 @@ DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_THUMB_WIDTH = 640
 DEFAULT_SCAN_INTERVAL = 2
 
+DEVICE_CAMERA = "camera"
+DEVICE_LIGHT = "light"
+
 DEVICE_TYPE_DOORBELL = "doorbell"
 DEVICE_TYPE_MOTION = "motion"
 
@@ -60,6 +64,7 @@ TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALWAYS = "always"
 TYPE_RECORD_NEVER = "never"
 TYPE_RECORD_NOTSET = "notset"
+TYPE_RECORD_OFF = "off"
 TYPE_RECORD_SMART = "smart"
 TYPE_RECORD_SMARTDETECT = "smartDetect"
 TYPE_IR_AUTO = "auto"

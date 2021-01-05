@@ -10,6 +10,7 @@ This release adds support for the new Ubiquiti Floodlight device. It will add a 
 There will also be support for the PIR motion sensor built-in to the Floodlight, and you will be able to adjust PIR sensitivity and when to detect motion.
 
 * `ADDED`: New `light` entity
+* `ADDED`: A Motion Sensor is created for each Floodlight attached. It will trigger motion despite the state of the Light. It will however not re-trigger until the time set in the *Auto Shutoff Timer* has passed.
 * `ADDED`: New service `unifiprotect.light_settings`
 * `ADDED`: New service `unifiprotect.light_motion_settings`
 * `CHANGED`: Bumped `pyunifiprotect` to 0.28.0

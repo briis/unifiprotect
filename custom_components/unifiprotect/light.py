@@ -9,6 +9,7 @@ from homeassistant.components.light import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.typing import HomeAssistantType
 
 from .const import (
@@ -18,6 +19,8 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DEVICE_LIGHT,
     DOMAIN,
+    LIGHT_SETTINGS_SCHEMA,
+    SERVICE_LIGHT_SETTINGS,
 )
 
 from .entity import UnifiProtectEntity
@@ -50,10 +53,16 @@ async def async_setup_entry(
                     light_id,
                 )
             )
+    if lights:
+        async_add_entities(lights)
+    else:
+        # Exit if no Light Entities were found
+        return
 
-    async_add_entities(lights)
-
-    # TODO: Add Light Services
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_LIGHT_SETTINGS, LIGHT_SETTINGS_SCHEMA, "async_light_settings"
+    )
 
     return True
 
@@ -74,7 +83,6 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
     def __init__(self, upv_object, protect_data, server_info, light_id):
         """Initialize an Unifi light."""
         super().__init__(upv_object, protect_data, server_info, light_id, None)
-        self.upv = upv_object
         self._name = self._camera_data["name"]
 
     @property
@@ -110,12 +118,12 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
             brightness = hass_to_unifi_brightness(self.brightness)
 
         _LOGGER.debug("Turning on light with brightness %s", brightness)
-        await self.upv.set_light_on_off(self._camera_id, True, brightness)
+        await self.upv_object.set_light_on_off(self._camera_id, True, brightness)
 
     async def async_turn_off(self, **kwargs):
         """Turn the light off."""
         _LOGGER.debug("Turning off light")
-        await self.upv.set_light_on_off(self._camera_id, False)
+        await self.upv_object.set_light_on_off(self._camera_id, False)
 
     @property
     def device_state_attributes(self):
@@ -127,4 +135,18 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
             ATTR_UP_SINCE: self._camera_data["up_since"],
         }
 
-    # TODO: Add Light Services
+    async def async_light_settings(self, mode, **kwargs):
+        """Adjust Light Settings."""
+        k_enable_at = kwargs.get("enable_at")
+        k_duration = kwargs.get("duration")
+        if k_duration is not None:
+            k_duration = k_duration * 1000
+        k_sensitivity = kwargs.get("sensitivity")
+
+        await self.upv_object.light_settings(
+            self._camera_id,
+            mode,
+            enable_at=k_enable_at,
+            duration=k_duration,
+            sensitivity=k_sensitivity,
+        )

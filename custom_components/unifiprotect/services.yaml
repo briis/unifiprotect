@@ -100,3 +100,22 @@ set_zoom_position:
     position:
       description: "(Required) Number between 0 and 100 (0 equals no zoom)"
       example: "25"
+light_settings:
+  description: "Adjust settings on a UniFi attached Floodlight"
+  fields:
+    entity_id:
+      description: "string (required) light to adjust settings for"
+      example: "light.floodlight"
+    mode:
+      description: "string (required) When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside."
+      example: "motion"
+    enable_at:
+      description: "string (optional) When motion is selected as mode, one can adjust if light turns on on motion detection. Where fulltime is always, and dark is only when dark."
+      example: "fulltime"
+    duration:
+      description: "int (optional) Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900."
+      example: "60"
+    sensitivity:
+      description: "int (optional) Motion sensitivity of the PIR. Must be a number between 1 and 100."
+      example: "80"
+

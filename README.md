@@ -14,6 +14,8 @@ There is support for the following device types within Home Assistant:
   * One to two binary sensors will be created per camera found. There will always be a binary sensor recording if motion is detected per camera. If the camera is a doorbell, there will also be a binary sensor created that records if the doorbell is pressed.
 * Switch
   * Several switches will be created per camera found. What switches is depended on the capbability of the specific camera. But typically these switches are used to control recording mode, Infrared and Video mode settings.
+* Light
+  * A light entity will be created for each UniFi Floodlight found. This works as a normal light entity, and has a brightness scale also.
 
 It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 
@@ -43,6 +45,8 @@ Ubiquity released V2.0.24 as an official firmware release for the CloudKey+, and
 CKGP with Firmware V1.x **do NOT run UnifiOS**
 
 In the following we are refering to Devices that do run UnifiOS as *UnifiOS Devices* and devices that do NOT run UnifiOS as *NON UnifiOS Devices*
+
+**NOTE**: Ubiquiti has now officially launched the V2.0.24 FW for the ClodKey Gen2+ which is a UnifiOS FW. So as of V0.8.0 of this Integration, no more testing and development is done on NON UnifiOS Devices. What is already working will still be there, but there is no guarantee that new features will work on these devices.
 
 ## Prerequisites
 
@@ -161,6 +165,7 @@ Service | Parameters | Description
 `unifiprotect.set_hdr_mode` | `entity_id` - Name of entity to toggle HDR for.<br>`hdr_on`  - true or false | Toggle HDR mode on supported Cameras.
 `unifiprotect.set_mic_volume` | `entity_id` - Name of entity to adjust microphone volume for.<br>`level`  - a value between 0 and 100| Set Microphone sensitivity on Cameras.
 `unifiprotect.set_privacy_mode` | `entity_id` - Name of entity to adjust privacy mode for.<br>`privacy_mode`  - true to enable, false to disable<br>`mic_level` - 0 to 100, where 0 is off<br>`recording_mode` - never, motion, always or smart| Set Privacy mode for a camera, where the screen goes black when enabled.
+`unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100.
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
 

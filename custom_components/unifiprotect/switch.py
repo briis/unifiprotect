@@ -2,12 +2,7 @@
 
 import logging
 
-try:
-    from homeassistant.components.switch import SwitchEntity as SwitchDevice
-except ImportError:
-    # Prior to HA v0.110
-    from homeassistant.components.switch import SwitchDevice
-
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.helpers.typing import HomeAssistantType
@@ -104,7 +99,7 @@ async def async_setup_entry(
     async_add_entities(switches)
 
 
-class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
+class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     """A Unifi Protect Switch."""
 
     def __init__(

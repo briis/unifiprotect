@@ -1,14 +1,7 @@
 """This component provides binary sensors for Unifi Protect."""
 import logging
 
-try:
-    from homeassistant.components.binary_sensor import (
-        BinarySensorEntity as BinarySensorDevice,
-    )
-except ImportError:
-    # Prior to HA v0.110
-    from homeassistant.components.binary_sensor import BinarySensorDevice
-
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_MOTION,
     DEVICE_CLASS_OCCUPANCY,
@@ -79,7 +72,7 @@ async def async_setup_entry(
     return True
 
 
-class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorDevice):
+class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     """A Unifi Protect Binary Sensor."""
 
     def __init__(self, upv_object, protect_data, server_info, camera_id, sensor_type):

@@ -120,7 +120,7 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         _LOGGER.debug("Turning on light with brightness %s", brightness)
         await self.upv_object.set_light_on_off(self._camera_id, True, brightness)
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self):
         """Turn the light off."""
         _LOGGER.debug("Turning off light")
         await self.upv_object.set_light_on_off(self._camera_id, False)

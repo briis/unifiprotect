@@ -89,10 +89,10 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_PORT: user_input[CONF_PORT],
                 CONF_USERNAME: user_input.get(CONF_USERNAME),
                 CONF_PASSWORD: user_input.get(CONF_PASSWORD),
-                CONF_SCAN_INTERVAL: user_input.get(CONF_SCAN_INTERVAL),
                 CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
                 CONF_IR_ON: user_input.get(CONF_IR_ON),
                 CONF_IR_OFF: user_input.get(CONF_IR_OFF),
+                CONF_SCAN_INTERVAL: user_input.get(CONF_SCAN_INTERVAL),
             },
         )
 
@@ -106,14 +106,14 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
                     vol.Required(CONF_USERNAME): str,
                     vol.Required(CONF_PASSWORD): str,
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
-                    ): vol.All(vol.Coerce(int), vol.Range(min=2, max=20)),
                     vol.Optional(CONF_SNAPSHOT_DIRECT, default=False): bool,
                     vol.Optional(CONF_IR_ON, default=TYPE_IR_AUTO): vol.In(TYPES_IR_ON),
                     vol.Optional(CONF_IR_OFF, default=TYPE_IR_OFF): vol.In(
                         TYPES_IR_OFF
                     ),
+                    vol.Optional(
+                        CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
+                    ): vol.All(vol.Coerce(int), vol.Range(min=2, max=20)),
                 }
             ),
             errors=errors or {},

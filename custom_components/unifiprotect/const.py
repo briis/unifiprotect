@@ -89,6 +89,7 @@ UNIFI_PROTECT_PLATFORMS = [
     "binary_sensor",
     "sensor",
     "switch",
+    "light",
 ]
 
 VALID_IR_MODES = [TYPE_IR_ON, TYPE_IR_AUTO, TYPE_IR_OFF, TYPE_IR_LED_OFF]

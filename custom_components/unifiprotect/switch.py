@@ -17,7 +17,6 @@ from .const import (
     CONF_IR_OFF,
     CONF_IR_ON,
     DEFAULT_ATTRIBUTION,
-    DEVICE_LIGHT,
     DOMAIN,
     TYPE_HIGH_FPS_ON,
     TYPE_RECORD_ALWAYS,

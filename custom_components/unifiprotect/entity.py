@@ -45,7 +45,7 @@ class UnifiProtectEntity(Entity):
             "connections": {(dr.CONNECTION_NETWORK_MAC, self._mac)},
             "name": self._device_name,
             "manufacturer": DEFAULT_BRAND,
-            "model": self._device_type,
+            "model": self._model,
             "sw_version": self._firmware_version,
             "via_device": (DOMAIN, self._server_id),
         }

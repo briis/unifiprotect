@@ -53,7 +53,7 @@ SWITCH_TYPES = {
         "light_motion",
         "motion_mode",
     ],
-    "light_always": ["Light when Dark", "motion-sensor", "light_always", "motion_mode"],
+    "light_dark": ["Light when Dark", "motion-sensor", "light_dark", "motion_mode"],
 }
 
 
@@ -142,7 +142,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
             return self._camera_data["video_mode"] == TYPE_HIGH_FPS_ON
         elif self._switch_type == "light_motion":
             return self._camera_data["motion_mode"] == TYPE_RECORD_MOTION
-        elif self._switch_type == "light_always":
+        elif self._switch_type == "light_dark":
             return self._camera_data["motion_mode"] == TYPE_RECORD_ALWAYS
         else:
             return self._camera_data["status_light"] is True
@@ -184,10 +184,14 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
             await self.upv.set_camera_video_mode_highfps(self._camera_id, True)
         elif self._switch_type == "light_motion":
             _LOGGER.debug("Turning on Light Motion detection")
-            await self.upv.light_motion_settings(self._camera_id, TYPE_RECORD_MOTION)
-        elif self._switch_type == "light_always":
+            await self.upv.light_settings(
+                self._camera_id, TYPE_RECORD_MOTION, enable_at="fulltime"
+            )
+        elif self._switch_type == "light_dark":
             _LOGGER.debug("Turning on Light Motion when Dark")
-            await self.upv.light_motion_settings(self._camera_id, TYPE_RECORD_ALWAYS)
+            await self.upv.light_settings(
+                self._camera_id, TYPE_RECORD_ALWAYS, enable_at="dark"
+            )
         else:
             _LOGGER.debug("Changing Status Light to On")
             await self.upv.set_device_status_light(
@@ -213,10 +217,10 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchDevice):
             await self.upv.set_camera_video_mode_highfps(self._camera_id, False)
         elif self._switch_type == "light_motion":
             _LOGGER.debug("Turning off Light Motion detection")
-            await self.upv.light_motion_settings(self._camera_id, TYPE_RECORD_OFF)
-        elif self._switch_type == "light_always":
+            await self.upv.light_settings(self._camera_id, TYPE_RECORD_OFF)
+        elif self._switch_type == "light_dark":
             _LOGGER.debug("Turning off Light Motion when Dark")
-            await self.upv.light_motion_settings(self._camera_id, TYPE_RECORD_OFF)
+            await self.upv.light_settings(self._camera_id, TYPE_RECORD_OFF)
         else:
             _LOGGER.debug("Turning off Recording")
             await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)

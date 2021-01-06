@@ -83,7 +83,7 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
     def __init__(self, upv_object, protect_data, server_info, light_id):
         """Initialize an Unifi light."""
         super().__init__(upv_object, protect_data, server_info, light_id, None)
-        self._name = self._camera_data["name"]
+        self._name = self._device_data["name"]
 
     @property
     def name(self):
@@ -93,7 +93,7 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
     @property
     def is_on(self):
         """If the light is currently on or off."""
-        return self._camera_data["is_on"] == ON_STATE
+        return self._device_data["is_on"] == ON_STATE
 
     @property
     def icon(self):
@@ -103,7 +103,7 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
     @property
     def brightness(self):
         """Return the brightness of this light between 0..255."""
-        return unifi_brightness_to_hass(self._camera_data["brightness"])
+        return unifi_brightness_to_hass(self._device_data["brightness"])
 
     @property
     def supported_features(self):
@@ -118,12 +118,12 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
             brightness = hass_to_unifi_brightness(self.brightness)
 
         _LOGGER.debug("Turning on light with brightness %s", brightness)
-        await self.upv_object.set_light_on_off(self._camera_id, True, brightness)
+        await self.upv_object.set_light_on_off(self._device_id, True, brightness)
 
     async def async_turn_off(self):
         """Turn the light off."""
         _LOGGER.debug("Turning off light")
-        await self.upv_object.set_light_on_off(self._camera_id, False)
+        await self.upv_object.set_light_on_off(self._device_id, False)
 
     @property
     def device_state_attributes(self):
@@ -131,8 +131,8 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_DEVICE_MODEL: self._model,
-            ATTR_ONLINE: self._camera_data["online"],
-            ATTR_UP_SINCE: self._camera_data["up_since"],
+            ATTR_ONLINE: self._device_data["online"],
+            ATTR_UP_SINCE: self._device_data["up_since"],
         }
 
     async def async_light_settings(self, mode, **kwargs):
@@ -144,7 +144,7 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         k_sensitivity = kwargs.get("sensitivity")
 
         await self.upv_object.light_settings(
-            self._camera_id,
+            self._device_id,
             mode,
             enable_at=k_enable_at,
             duration=k_duration,

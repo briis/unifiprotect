@@ -43,29 +43,29 @@ async def async_setup_entry(
         return
 
     sensors = []
-    for camera_id in protect_data.data:
-        camera_data = protect_data.data[camera_id]
-        if camera_data["type"] == DEVICE_TYPE_DOORBELL:
+    for device_id in protect_data.data:
+        device_data = protect_data.data[device_id]
+        if device_data["type"] == DEVICE_TYPE_DOORBELL:
             sensors.append(
                 UnifiProtectBinarySensor(
                     upv_object,
                     protect_data,
                     server_info,
-                    camera_id,
+                    device_id,
                     DEVICE_TYPE_DOORBELL,
                 )
             )
             _LOGGER.debug(
                 "UNIFIPROTECT DOORBELL SENSOR CREATED: %s",
-                camera_data["name"],
+                device_data["name"],
             )
 
         sensors.append(
             UnifiProtectBinarySensor(
-                upv_object, protect_data, server_info, camera_id, DEVICE_TYPE_MOTION
+                upv_object, protect_data, server_info, device_id, DEVICE_TYPE_MOTION
             )
         )
-        _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", camera_data["name"])
+        _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
 
     async_add_entities(sensors)
 
@@ -75,10 +75,10 @@ async def async_setup_entry(
 class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, upv_object, protect_data, server_info, camera_id, sensor_type):
+    def __init__(self, upv_object, protect_data, server_info, device_id, sensor_type):
         """Initialize the Binary Sensor."""
-        super().__init__(upv_object, protect_data, server_info, camera_id, sensor_type)
-        self._name = f"{sensor_type.capitalize()} {self._camera_data['name']}"
+        super().__init__(upv_object, protect_data, server_info, device_id, sensor_type)
+        self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
         self._device_class = PROTECT_TO_HASS_DEVICE_CLASS.get(sensor_type)
 
     @property
@@ -90,8 +90,8 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def is_on(self):
         """Return true if the binary sensor is on."""
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
-            return self._camera_data["event_on"]
-        return self._camera_data["event_ring_on"]
+            return self._device_data["event_on"]
+        return self._device_data["event_ring_on"]
 
     @property
     def device_class(self):
@@ -102,7 +102,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def icon(self):
         """Select icon to display in Frontend."""
         if self._sensor_type == DEVICE_TYPE_DOORBELL:
-            if self._camera_data["event_ring_on"]:
+            if self._device_data["event_ring_on"]:
                 return "mdi:bell-ring-outline"
             return "mdi:doorbell-video"
 
@@ -112,23 +112,23 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         if self._sensor_type == DEVICE_TYPE_DOORBELL:
             return {
                 ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-                ATTR_LAST_TRIP_TIME: self._camera_data["last_ring"],
+                ATTR_LAST_TRIP_TIME: self._device_data["last_ring"],
             }
         if (
-            self._camera_data["event_object"] is not None
-            and len(self._camera_data["event_object"]) > 0
+            self._device_data["event_object"] is not None
+            and len(self._device_data["event_object"]) > 0
         ):
-            detected_object = self._camera_data["event_object"][0]
+            detected_object = self._device_data["event_object"][0]
             _LOGGER.debug(
-                f"OBJECTS: {self._camera_data['event_object']} on {self._name}"
+                f"OBJECTS: {self._device_data['event_object']} on {self._name}"
             )
         else:
             detected_object = "None Identified"
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_DEVICE_MODEL: self._model,
-            ATTR_LAST_TRIP_TIME: self._camera_data["last_motion"],
-            ATTR_EVENT_SCORE: self._camera_data["event_score"],
-            ATTR_EVENT_LENGTH: self._camera_data["event_length"],
+            ATTR_LAST_TRIP_TIME: self._device_data["last_motion"],
+            ATTR_EVENT_SCORE: self._device_data["event_score"],
+            ATTR_EVENT_LENGTH: self._device_data["event_length"],
             ATTR_EVENT_OBJECT: detected_object,
         }

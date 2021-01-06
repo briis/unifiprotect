@@ -78,9 +78,9 @@ async def async_setup_entry(
     for switch, switch_type in SWITCH_TYPES.items():
         required_field = switch_type[_SWITCH_REQUIRES]
 
-        for camera_id in protect_data.data:
-            # Only Add Switches if Camera supports it.
-            if required_field and not protect_data.data[camera_id].get(required_field):
+        for device_id in protect_data.data:
+            # Only Add Switches if Device supports it.
+            if required_field and not protect_data.data[device_id].get(required_field):
                 continue
 
             switches.append(
@@ -88,7 +88,7 @@ async def async_setup_entry(
                     upv_object,
                     protect_data,
                     server_info,
-                    camera_id,
+                    device_id,
                     switch,
                     ir_on,
                     ir_off,
@@ -103,13 +103,13 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     """A Unifi Protect Switch."""
 
     def __init__(
-        self, upv_object, protect_data, server_info, camera_id, switch, ir_on, ir_off
+        self, upv_object, protect_data, server_info, device_id, switch, ir_on, ir_off
     ):
         """Initialize an Unifi Protect Switch."""
-        super().__init__(upv_object, protect_data, server_info, camera_id, switch)
+        super().__init__(upv_object, protect_data, server_info, device_id, switch)
         self.upv = upv_object
         switch_type = SWITCH_TYPES[switch]
-        self._name = f"{switch_type[_SWITCH_NAME]} {self._camera_data['name']}"
+        self._name = f"{switch_type[_SWITCH_NAME]} {self._device_data['name']}"
         self._icon = f"mdi:{switch_type[_SWITCH_ICON]}"
         self._ir_on_cmd = ir_on
         self._ir_off_cmd = ir_off
@@ -124,23 +124,23 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     def is_on(self):
         """Return true if device is on."""
         if self._switch_type == "record_motion":
-            return self._camera_data["recording_mode"] == TYPE_RECORD_MOTION
+            return self._device_data["recording_mode"] == TYPE_RECORD_MOTION
         elif self._switch_type == "record_always":
-            return self._camera_data["recording_mode"] == TYPE_RECORD_ALWAYS
+            return self._device_data["recording_mode"] == TYPE_RECORD_ALWAYS
         elif self._switch_type == "record_smart":
-            return self._camera_data["recording_mode"] == TYPE_RECORD_SMARTDETECT
+            return self._device_data["recording_mode"] == TYPE_RECORD_SMARTDETECT
         elif self._switch_type == "ir_mode":
-            return self._camera_data["ir_mode"] == self._ir_on_cmd
+            return self._device_data["ir_mode"] == self._ir_on_cmd
         elif self._switch_type == "hdr_mode":
-            return self._camera_data["hdr_mode"] is True
+            return self._device_data["hdr_mode"] is True
         elif self._switch_type == "high_fps":
-            return self._camera_data["video_mode"] == TYPE_HIGH_FPS_ON
+            return self._device_data["video_mode"] == TYPE_HIGH_FPS_ON
         elif self._switch_type == "light_motion":
-            return self._camera_data["motion_mode"] == TYPE_RECORD_MOTION
+            return self._device_data["motion_mode"] == TYPE_RECORD_MOTION
         elif self._switch_type == "light_dark":
-            return self._camera_data["motion_mode"] == TYPE_RECORD_ALWAYS
+            return self._device_data["motion_mode"] == TYPE_RECORD_ALWAYS
         else:
-            return self._camera_data["status_light"] is True
+            return self._device_data["status_light"] is True
 
     @property
     def icon(self):
@@ -159,38 +159,38 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         """Turn the device on."""
         if self._switch_type == "record_motion":
             _LOGGER.debug(f"Turning on Motion Detection for {self._name}")
-            await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_MOTION)
+            await self.upv.set_camera_recording(self._device_id, TYPE_RECORD_MOTION)
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")
-            await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_ALWAYS)
+            await self.upv.set_camera_recording(self._device_id, TYPE_RECORD_ALWAYS)
         elif self._switch_type == "record_smart":
             _LOGGER.debug("Turning on SmartDetect Recording")
             await self.upv.set_camera_recording(
-                self._camera_id, TYPE_RECORD_SMARTDETECT
+                self._device_id, TYPE_RECORD_SMARTDETECT
             )
         elif self._switch_type == "ir_mode":
             _LOGGER.debug("Turning on IR")
-            await self.upv.set_camera_ir(self._camera_id, self._ir_on_cmd)
+            await self.upv.set_camera_ir(self._device_id, self._ir_on_cmd)
         elif self._switch_type == "hdr_mode":
             _LOGGER.debug("Turning on HDR mode")
-            await self.upv.set_camera_hdr_mode(self._camera_id, True)
+            await self.upv.set_camera_hdr_mode(self._device_id, True)
         elif self._switch_type == "high_fps":
             _LOGGER.debug("Turning on High FPS mode")
-            await self.upv.set_camera_video_mode_highfps(self._camera_id, True)
+            await self.upv.set_camera_video_mode_highfps(self._device_id, True)
         elif self._switch_type == "light_motion":
             _LOGGER.debug("Turning on Light Motion detection")
             await self.upv.light_settings(
-                self._camera_id, TYPE_RECORD_MOTION, enable_at="fulltime"
+                self._device_id, TYPE_RECORD_MOTION, enable_at="fulltime"
             )
         elif self._switch_type == "light_dark":
             _LOGGER.debug("Turning on Light Motion when Dark")
             await self.upv.light_settings(
-                self._camera_id, TYPE_RECORD_ALWAYS, enable_at="dark"
+                self._device_id, TYPE_RECORD_ALWAYS, enable_at="dark"
             )
         else:
             _LOGGER.debug("Changing Status Light to On")
             await self.upv.set_device_status_light(
-                self._camera_id, True, self._device_type
+                self._device_id, True, self._device_type
             )
         await self.protect_data.async_refresh(force_camera_update=True)
 
@@ -198,25 +198,25 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         """Turn the device off."""
         if self._switch_type == "ir_mode":
             _LOGGER.debug("Turning off IR")
-            await self.upv.set_camera_ir(self._camera_id, self._ir_off_cmd)
+            await self.upv.set_camera_ir(self._device_id, self._ir_off_cmd)
         elif self._switch_type == "status_light":
             _LOGGER.debug("Changing Status Light to Off")
             await self.upv.set_device_status_light(
-                self._camera_id, False, self._device_type
+                self._device_id, False, self._device_type
             )
         elif self._switch_type == "hdr_mode":
             _LOGGER.debug("Turning off HDR mode")
-            await self.upv.set_camera_hdr_mode(self._camera_id, False)
+            await self.upv.set_camera_hdr_mode(self._device_id, False)
         elif self._switch_type == "high_fps":
             _LOGGER.debug("Turning off High FPS mode")
-            await self.upv.set_camera_video_mode_highfps(self._camera_id, False)
+            await self.upv.set_camera_video_mode_highfps(self._device_id, False)
         elif self._switch_type == "light_motion":
             _LOGGER.debug("Turning off Light Motion detection")
-            await self.upv.light_settings(self._camera_id, TYPE_RECORD_OFF)
+            await self.upv.light_settings(self._device_id, TYPE_RECORD_OFF)
         elif self._switch_type == "light_dark":
             _LOGGER.debug("Turning off Light Motion when Dark")
-            await self.upv.light_settings(self._camera_id, TYPE_RECORD_OFF)
+            await self.upv.light_settings(self._device_id, TYPE_RECORD_OFF)
         else:
             _LOGGER.debug("Turning off Recording")
-            await self.upv.set_camera_recording(self._camera_id, TYPE_RECORD_NEVER)
+            await self.upv.set_camera_recording(self._device_id, TYPE_RECORD_NEVER)
         await self.protect_data.async_refresh(force_camera_update=True)

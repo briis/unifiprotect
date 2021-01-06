@@ -58,11 +58,11 @@ async def async_setup_entry(
 
     sensors = []
     for sensor, sensor_type in SENSOR_TYPES.items():
-        for camera_id in protect_data.data:
-            if protect_data.data[camera_id].get("type") == sensor_type[_SENSOR_MODEL]:
+        for device_id in protect_data.data:
+            if protect_data.data[device_id].get("type") == sensor_type[_SENSOR_MODEL]:
                 sensors.append(
                     UnifiProtectSensor(
-                        upv_object, protect_data, server_info, camera_id, sensor
+                        upv_object, protect_data, server_info, device_id, sensor
                     )
                 )
                 _LOGGER.debug("UNIFIPROTECT SENSOR CREATED: %s", sensor)
@@ -75,11 +75,11 @@ async def async_setup_entry(
 class UnifiProtectSensor(UnifiProtectEntity, Entity):
     """A Ubiquiti Unifi Protect Sensor."""
 
-    def __init__(self, upv_object, protect_data, server_info, camera_id, sensor):
+    def __init__(self, upv_object, protect_data, server_info, device_id, sensor):
         """Initialize an Unifi Protect sensor."""
-        super().__init__(upv_object, protect_data, server_info, camera_id, sensor)
+        super().__init__(upv_object, protect_data, server_info, device_id, sensor)
         sensor_type = SENSOR_TYPES[sensor]
-        self._name = f"{sensor_type[_SENSOR_NAME]} {self._camera_data['name']}"
+        self._name = f"{sensor_type[_SENSOR_NAME]} {self._device_data['name']}"
         self._units = sensor_type[_SENSOR_UNITS]
         self._icons = sensor_type[_SENSOR_ICONS]
 
@@ -92,9 +92,9 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
     def state(self):
         """Return the state of the sensor."""
         if self._device_type == DEVICE_LIGHT:
-            return self._camera_data["motion_mode"]
+            return self._device_data["motion_mode"]
         else:
-            return self._camera_data["recording_mode"]
+            return self._device_data["recording_mode"]
 
     @property
     def icon(self):
@@ -124,5 +124,5 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
             ATTR_DEVICE_MODEL: self._model,
         }
         if self._device_type == DEVICE_LIGHT:
-            attr[ATTR_ENABLED_AT] = self._camera_data["motion_mode_enabled_at"]
+            attr[ATTR_ENABLED_AT] = self._device_data["motion_mode_enabled_at"]
         return attr

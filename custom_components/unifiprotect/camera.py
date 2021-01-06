@@ -128,8 +128,8 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Initialize an Unifi camera."""
         super().__init__(upv_object, protect_data, server_info, camera_id, None)
         self._snapshot_direct = snapshot_direct
-        self._name = self._camera_data["name"]
-        self._stream_source = self._camera_data["rtsp"]
+        self._name = self._device_data["name"]
+        self._stream_source = self._device_data["rtsp"]
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
 
@@ -146,7 +146,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @property
     def motion_detection_enabled(self):
         """Camera Motion Detection Status."""
-        return self._camera_data["recording_mode"]
+        return self._device_data["recording_mode"]
 
     @property
     def brand(self):
@@ -162,33 +162,33 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     def is_recording(self):
         """Return true if the device is recording."""
         return bool(
-            self._camera_data["recording_mode"] != "never"
-            and self._camera_data["online"]
+            self._device_data["recording_mode"] != "never"
+            and self._device_data["online"]
         )
 
     @property
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
         if self._device_type == DEVICE_TYPE_DOORBELL:
-            last_trip_time = self._camera_data["last_ring"]
+            last_trip_time = self._device_data["last_ring"]
         else:
-            last_trip_time = self._camera_data["last_motion"]
+            last_trip_time = self._device_data["last_motion"]
 
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_UP_SINCE: self._camera_data["up_since"],
-            ATTR_ONLINE: self._camera_data["online"],
-            ATTR_CAMERA_ID: self._camera_id,
+            ATTR_UP_SINCE: self._device_data["up_since"],
+            ATTR_ONLINE: self._device_data["online"],
+            ATTR_CAMERA_ID: self._device_id,
             ATTR_LAST_TRIP_TIME: last_trip_time,
-            ATTR_IS_DARK: self._camera_data["is_dark"],
-            ATTR_MIC_SENSITIVITY: self._camera_data["mic_volume"],
-            ATTR_PRIVACY_MODE: self._camera_data["privacy_on"],
-            ATTR_ZOOM_POSITION: self._camera_data["zoom_position"],
+            ATTR_IS_DARK: self._device_data["is_dark"],
+            ATTR_MIC_SENSITIVITY: self._device_data["mic_volume"],
+            ATTR_PRIVACY_MODE: self._device_data["privacy_on"],
+            ATTR_ZOOM_POSITION: self._device_data["zoom_position"],
         }
 
     async def async_set_recording_mode(self, recording_mode):
         """Set Camera Recording Mode."""
-        await self.upv_object.set_camera_recording(self._camera_id, recording_mode)
+        await self.upv_object.set_camera_recording(self._device_id, recording_mode)
 
     async def async_save_thumbnail(self, filename, image_width):
         """Save Thumbnail Image."""
@@ -197,7 +197,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             _LOGGER.error("Can't write %s, no access to path!", filename)
             return
 
-        image = await self.upv_object.get_thumbnail(self._camera_id, image_width)
+        image = await self.upv_object.get_thumbnail(self._device_id, image_width)
         if image is None:
             _LOGGER.error("Last recording not found for Camera %s", self.name)
             return
@@ -209,20 +209,20 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     async def async_set_ir_mode(self, ir_mode):
         """Set camera ir mode."""
-        await self.upv_object.set_camera_ir(self._camera_id, ir_mode)
+        await self.upv_object.set_camera_ir(self._device_id, ir_mode)
 
     async def async_set_status_light(self, light_on):
         """Set camera Status Light."""
-        await self.upv_object.set_camera_status_light(self._camera_id, light_on)
+        await self.upv_object.set_camera_status_light(self._device_id, light_on)
 
     async def async_set_hdr_mode(self, hdr_on):
         """Set camera HDR mode."""
-        await self.upv_object.set_camera_hdr_mode(self._camera_id, hdr_on)
+        await self.upv_object.set_camera_hdr_mode(self._device_id, hdr_on)
 
     async def async_set_highfps_video_mode(self, high_fps_on):
         """Set camera High FPS video mode."""
         await self.upv_object.set_camera_video_mode_highfps(
-            self._camera_id, high_fps_on
+            self._device_id, high_fps_on
         )
 
     async def async_set_doorbell_lcd_message(self, message, duration):
@@ -230,36 +230,36 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         if not duration.isnumeric():
             duration = None
         await self.upv_object.set_doorbell_custom_text(
-            self._camera_id, message, duration
+            self._device_id, message, duration
         )
 
     async def async_set_mic_volume(self, level):
         """Set camera Microphone Level."""
-        await self.upv_object.set_mic_volume(self._camera_id, level)
+        await self.upv_object.set_mic_volume(self._device_id, level)
 
     async def async_set_privacy_mode(self, privacy_mode, mic_level, recording_mode):
         """Set camera Privacy mode."""
         await self.upv_object.set_privacy_mode(
-            self._camera_id, privacy_mode, mic_level, recording_mode
+            self._device_id, privacy_mode, mic_level, recording_mode
         )
 
     async def async_set_zoom_position(self, position):
         """Set camera Zoom Position."""
-        if not self._camera_data["has_opticalzoom"]:
+        if not self._device_data["has_opticalzoom"]:
             # Only run if camera supports it.
             _LOGGER.info("This Camera does not support optical zoom")
             return
-        await self.upv_object.set_camera_zoom_position(self._camera_id, position)
+        await self.upv_object.set_camera_zoom_position(self._device_id, position)
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""
-        if not await self.upv_object.set_camera_recording(self._camera_id, "motion"):
+        if not await self.upv_object.set_camera_recording(self._device_id, "motion"):
             return
         _LOGGER.debug("Motion Detection Enabled for Camera: %s", self._name)
 
     async def async_disable_motion_detection(self):
         """Disable motion detection in camera."""
-        if not await self.upv_object.set_camera_recording(self._camera_id, "never"):
+        if not await self.upv_object.set_camera_recording(self._device_id, "never"):
             return
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self._name)
 
@@ -267,10 +267,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Return the Camera Image."""
         if self._snapshot_direct:
             last_image = await self.upv_object.get_snapshot_image_direct(
-                self._camera_id
+                self._device_id
             )
         else:
-            last_image = await self.upv_object.get_snapshot_image(self._camera_id)
+            last_image = await self.upv_object.get_snapshot_image(self._device_id)
         self._last_image = last_image
         return self._last_image
 

@@ -1,19 +1,18 @@
 # // Changelog
 
 
-## UNRELEASED
+## 0.8.0 (UNRELEASED)
 
 Released:
 
 This release adds support for the new Ubiquiti Floodlight device. It will add a new entity type `light`, that will expose the Floodlight as a light entity and add support for turning on and off, plus adjustment of brightness.
 
-There will also be support for the PIR motion sensor built-in to the Floodlight, and you will be able to adjust PIR sensitivity and when to detect motion.
+There will also be support for the PIR motion sensor built-in to the Floodlight, and you will be able to adjust PIR settings and when to detect motion.
 
-* `ADDED`: New `light` entity
+* `ADDED`: New `light` entity for each Floodlight found. You can use the normal *light* services to turn on and off. Be aware that *brightness* in the Protect App only accepts a number from 1-6, so when you adjust brightness from Lovelace or the Service, the number here will be converted to a number between 1 and 6.
 * `ADDED`: A Motion Sensor is created for each Floodlight attached. It will trigger motion despite the state of the Light. It will however not re-trigger until the time set in the *Auto Shutoff Timer* has passed.
-* `ADDED`: New service `unifiprotect.light_settings`
-* `ADDED`: New service `unifiprotect.light_motion_settings`
-* `CHANGED`: Bumped `pyunifiprotect` to 0.28.0
+* `ADDED`: New service `unifiprotect.light_settings`. Please see the README file for details on this Service.
+* `CHANGED`: Bumped `pyunifiprotect` to 0.28.8
 
 ## Release 0.7.1
 

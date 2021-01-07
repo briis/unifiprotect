@@ -10,8 +10,8 @@ from .const import (
     ATTR_DEVICE_MODEL,
     ATTR_ENABLED_AT,
     DEFAULT_ATTRIBUTION,
-    DEVICE_CAMERA,
-    DEVICE_LIGHT,
+    DEVICE_TYPE_LIGHT,
+    DEVICES_WITH_CAMERA,
     DOMAIN,
     TYPE_RECORD_NEVER,
     TYPE_RECORD_OFF,
@@ -25,13 +25,13 @@ SENSOR_TYPES = {
         "Motion Recording",
         None,
         ["video-outline", "video-off-outline"],
-        DEVICE_CAMERA,
+        DEVICES_WITH_CAMERA,
     ],
     "light_turn_on": [
         "Light Turn On",
         None,
         ["leak", "leak-off"],
-        DEVICE_LIGHT,
+        (DEVICE_TYPE_LIGHT,),
     ],
 }
 
@@ -59,7 +59,7 @@ async def async_setup_entry(
     sensors = []
     for sensor, sensor_type in SENSOR_TYPES.items():
         for device_id in protect_data.data:
-            if protect_data.data[device_id].get("type") == sensor_type[_SENSOR_MODEL]:
+            if protect_data.data[device_id].get("type") in sensor_type[_SENSOR_MODEL]:
                 sensors.append(
                     UnifiProtectSensor(
                         upv_object, protect_data, server_info, device_id, sensor
@@ -91,20 +91,18 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self._device_type == DEVICE_LIGHT:
+        if self._device_type == DEVICE_TYPE_LIGHT:
             return self._device_data["motion_mode"]
-        else:
-            return self._device_data["recording_mode"]
+        return self._device_data["recording_mode"]
 
     @property
     def icon(self):
         """Icon to use in the frontend, if any."""
-        if self._device_type == DEVICE_LIGHT:
+        if self._device_type == DEVICE_TYPE_LIGHT:
             icon_id = _ICON_ON if self.state != TYPE_RECORD_OFF else _ICON_OFF
             return f"mdi:{self._icons[icon_id]}"
-        else:
-            icon_id = _ICON_ON if self.state != TYPE_RECORD_NEVER else _ICON_OFF
-            return f"mdi:{self._icons[icon_id]}"
+        icon_id = _ICON_ON if self.state != TYPE_RECORD_NEVER else _ICON_OFF
+        return f"mdi:{self._icons[icon_id]}"
 
     @property
     def unit_of_measurement(self):
@@ -123,6 +121,6 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_DEVICE_MODEL: self._model,
         }
-        if self._device_type == DEVICE_LIGHT:
+        if self._device_type == DEVICE_TYPE_LIGHT:
             attr[ATTR_ENABLED_AT] = self._device_data["motion_mode_enabled_at"]
         return attr

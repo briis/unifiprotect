@@ -1,6 +1,7 @@
 """Utility class for UniFi Protect."""
 
 import datetime as dt
+
 from homeassistant.util import dt as hassdt
 
 

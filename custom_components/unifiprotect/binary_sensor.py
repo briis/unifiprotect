@@ -1,15 +1,14 @@
 """This component provides binary sensors for Unifi Protect."""
 import logging
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_MOTION,
     DEVICE_CLASS_OCCUPANCY,
+    BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
 from homeassistant.helpers.typing import HomeAssistantType
-
 
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -17,8 +16,8 @@ from .const import (
     ATTR_EVENT_OBJECT,
     ATTR_EVENT_SCORE,
     DEFAULT_ATTRIBUTION,
-    DEVICE_TYPE_MOTION,
     DEVICE_TYPE_DOORBELL,
+    DEVICE_TYPE_MOTION,
     DOMAIN,
 )
 from .entity import UnifiProtectEntity
@@ -101,10 +100,11 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     @property
     def icon(self):
         """Select icon to display in Frontend."""
-        if self._sensor_type == DEVICE_TYPE_DOORBELL:
-            if self._device_data["event_ring_on"]:
-                return "mdi:bell-ring-outline"
-            return "mdi:doorbell-video"
+        if self._sensor_type != DEVICE_TYPE_DOORBELL:
+            return None
+        if self._device_data["event_ring_on"]:
+            return "mdi:bell-ring-outline"
+        return "mdi:doorbell-video"
 
     @property
     def device_state_attributes(self):
@@ -120,7 +120,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         ):
             detected_object = self._device_data["event_object"][0]
             _LOGGER.debug(
-                f"OBJECTS: {self._device_data['event_object']} on {self._name}"
+                "OBJECTS: %s on %s", self._device_data["event_object"], self._name
             )
         else:
             detected_object = "None Identified"

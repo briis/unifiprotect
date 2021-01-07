@@ -1,9 +1,8 @@
 """Constant definitions for Unifi Protect Integration."""
 
-import voluptuous as vol
-
 from homeassistant.const import ATTR_ENTITY_ID, CONF_FILENAME
 from homeassistant.helpers import config_validation as cv
+import voluptuous as vol
 
 DOMAIN = "unifiprotect"
 UNIQUE_ID = "unique_id"
@@ -46,11 +45,13 @@ DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_THUMB_WIDTH = 640
 DEFAULT_SCAN_INTERVAL = 2
 
-DEVICE_CAMERA = "camera"
-DEVICE_LIGHT = "light"
+DEVICE_TYPE_CAMERA = "camera"
+DEVICE_TYPE_LIGHT = "light"
 
 DEVICE_TYPE_DOORBELL = "doorbell"
 DEVICE_TYPE_MOTION = "motion"
+
+DEVICES_WITH_CAMERA = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL)
 
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"

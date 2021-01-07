@@ -125,22 +125,21 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         """Return true if device is on."""
         if self._switch_type == "record_motion":
             return self._device_data["recording_mode"] == TYPE_RECORD_MOTION
-        elif self._switch_type == "record_always":
+        if self._switch_type == "record_always":
             return self._device_data["recording_mode"] == TYPE_RECORD_ALWAYS
-        elif self._switch_type == "record_smart":
+        if self._switch_type == "record_smart":
             return self._device_data["recording_mode"] == TYPE_RECORD_SMARTDETECT
-        elif self._switch_type == "ir_mode":
+        if self._switch_type == "ir_mode":
             return self._device_data["ir_mode"] == self._ir_on_cmd
-        elif self._switch_type == "hdr_mode":
+        if self._switch_type == "hdr_mode":
             return self._device_data["hdr_mode"] is True
-        elif self._switch_type == "high_fps":
+        if self._switch_type == "high_fps":
             return self._device_data["video_mode"] == TYPE_HIGH_FPS_ON
-        elif self._switch_type == "light_motion":
+        if self._switch_type == "light_motion":
             return self._device_data["motion_mode"] == TYPE_RECORD_MOTION
-        elif self._switch_type == "light_dark":
+        if self._switch_type == "light_dark":
             return self._device_data["motion_mode"] == TYPE_RECORD_ALWAYS
-        else:
-            return self._device_data["status_light"] is True
+        return self._device_data["status_light"] is True
 
     @property
     def icon(self):
@@ -158,7 +157,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
         if self._switch_type == "record_motion":
-            _LOGGER.debug(f"Turning on Motion Detection for {self._name}")
+            _LOGGER.debug("Turning on Motion Detection for %s", self._name)
             await self.upv.set_camera_recording(self._device_id, TYPE_RECORD_MOTION)
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")

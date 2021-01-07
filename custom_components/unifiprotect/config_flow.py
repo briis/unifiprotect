@@ -2,8 +2,6 @@
 import logging
 
 from aiohttp import CookieJar
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
-import voluptuous as vol
 
 # from homeassistant.config_entries import ConfigFlow
 from homeassistant import config_entries
@@ -17,6 +15,8 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from pyunifiprotect import NotAuthorized, NvrError, UpvServer
+import voluptuous as vol
 
 from .const import (
     CONF_IR_OFF,
@@ -24,12 +24,12 @@ from .const import (
     CONF_SNAPSHOT_DIRECT,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
-    DOMAIN,
     TYPE_IR_AUTO,
     TYPE_IR_OFF,
     TYPES_IR_OFF,
     TYPES_IR_ON,
 )
+from .const import DOMAIN  # pylint: disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,12 +67,12 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         try:
             unique_id = await unifiprotect.unique_id()
-        except NotAuthorized as e:
-            _LOGGER.debug(e)
+        except NotAuthorized as ex:
+            _LOGGER.debug(ex)
             errors["base"] = "connection_error"
             return await self._show_setup_form(errors)
-        except NvrError as e:
-            _LOGGER.debug(e)
+        except NvrError as ex:
+            _LOGGER.debug(ex)
             errors["base"] = "nvr_error"
             return await self._show_setup_form(errors)
 

@@ -3,9 +3,9 @@
 import logging
 
 from homeassistant.components.light import (
-    LightEntity,
     ATTR_BRIGHTNESS,
     SUPPORT_BRIGHTNESS,
+    LightEntity,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
@@ -17,12 +17,11 @@ from .const import (
     ATTR_ONLINE,
     ATTR_UP_SINCE,
     DEFAULT_ATTRIBUTION,
-    DEVICE_LIGHT,
+    DEVICE_TYPE_LIGHT,
     DOMAIN,
     LIGHT_SETTINGS_SCHEMA,
     SERVICE_LIGHT_SETTINGS,
 )
-
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ async def async_setup_entry(
 
     lights = []
     for light_id in protect_data.data:
-        if protect_data.data[light_id].get("type") == DEVICE_LIGHT:
+        if protect_data.data[light_id].get("type") == DEVICE_TYPE_LIGHT:
             lights.append(
                 UnifiProtectLight(
                     upv_object,
@@ -53,10 +52,9 @@ async def async_setup_entry(
                     light_id,
                 )
             )
-    if lights:
-        async_add_entities(lights)
-    else:
-        # Exit if no Light Entities were found
+
+    if not lights:
+        # No lights found
         return
 
     platform = entity_platform.current_platform.get()
@@ -64,7 +62,7 @@ async def async_setup_entry(
         SERVICE_LIGHT_SETTINGS, LIGHT_SETTINGS_SCHEMA, "async_light_settings"
     )
 
-    return True
+    async_add_entities(lights)
 
 
 def unifi_brightness_to_hass(value):
@@ -112,15 +110,13 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the light on."""
-        if ATTR_BRIGHTNESS in kwargs:
-            brightness = hass_to_unifi_brightness(kwargs[ATTR_BRIGHTNESS])
-        else:
-            brightness = hass_to_unifi_brightness(self.brightness)
+        hass_brightness = kwargs.get(ATTR_BRIGHTNESS, self.brightness)
+        unifi_brightness = hass_to_unifi_brightness(hass_brightness)
 
-        _LOGGER.debug("Turning on light with brightness %s", brightness)
-        await self.upv_object.set_light_on_off(self._device_id, True, brightness)
+        _LOGGER.debug("Turning on light with brightness %s", unifi_brightness)
+        await self.upv_object.set_light_on_off(self._device_id, True, unifi_brightness)
 
-    async def async_turn_off(self):
+    async def async_turn_off(self, **kwargs):
         """Turn the light off."""
         _LOGGER.debug("Turning off light")
         await self.upv_object.set_light_on_off(self._device_id, False)

@@ -10,8 +10,8 @@ from .const import (
     ATTR_DEVICE_MODEL,
     ATTR_ENABLED_AT,
     DEFAULT_ATTRIBUTION,
-    DEVICE_CAMERA,
     DEVICE_LIGHT,
+    DEVICES_WITH_CAMERA,
     DOMAIN,
     TYPE_RECORD_NEVER,
     TYPE_RECORD_OFF,
@@ -25,14 +25,9 @@ SENSOR_TYPES = {
         "Motion Recording",
         None,
         ["video-outline", "video-off-outline"],
-        DEVICE_CAMERA,
+        DEVICES_WITH_CAMERA,
     ],
-    "light_turn_on": [
-        "Light Turn On",
-        None,
-        ["leak", "leak-off"],
-        DEVICE_LIGHT,
-    ],
+    "light_turn_on": ["Light Turn On", None, ["leak", "leak-off"], (DEVICE_LIGHT,)],
 }
 
 _SENSOR_NAME = 0
@@ -59,7 +54,7 @@ async def async_setup_entry(
     sensors = []
     for sensor, sensor_type in SENSOR_TYPES.items():
         for device_id in protect_data.data:
-            if protect_data.data[device_id].get("type") == sensor_type[_SENSOR_MODEL]:
+            if protect_data.data[device_id].get("type") in sensor_type[_SENSOR_MODEL]:
                 sensors.append(
                     UnifiProtectSensor(
                         upv_object, protect_data, server_info, device_id, sensor

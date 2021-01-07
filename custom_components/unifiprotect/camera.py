@@ -17,8 +17,8 @@ from .const import (
     ATTR_ZOOM_POSITION,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
-    DEVICE_CAMERA,
     DEVICE_TYPE_DOORBELL,
+    DEVICES_WITH_CAMERA,
     DOMAIN,
     SAVE_THUMBNAIL_SCHEMA,
     SERVICE_SAVE_THUMBNAIL,
@@ -60,7 +60,7 @@ async def async_setup_entry(
 
     cameras = []
     for camera_id in protect_data.data:
-        if protect_data.data[camera_id].get("type") == DEVICE_CAMERA:
+        if protect_data.data[camera_id].get("type") in DEVICES_WITH_CAMERA:
             cameras.append(
                 UnifiProtectCamera(
                     upv_object, protect_data, server_info, camera_id, snapshot_direct

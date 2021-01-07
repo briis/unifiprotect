@@ -93,8 +93,7 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         """Return the state of the sensor."""
         if self._device_type == DEVICE_LIGHT:
             return self._device_data["motion_mode"]
-        else:
-            return self._device_data["recording_mode"]
+        return self._device_data["recording_mode"]
 
     @property
     def icon(self):
@@ -102,9 +101,8 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         if self._device_type == DEVICE_LIGHT:
             icon_id = _ICON_ON if self.state != TYPE_RECORD_OFF else _ICON_OFF
             return f"mdi:{self._icons[icon_id]}"
-        else:
-            icon_id = _ICON_ON if self.state != TYPE_RECORD_NEVER else _ICON_OFF
-            return f"mdi:{self._icons[icon_id]}"
+        icon_id = _ICON_ON if self.state != TYPE_RECORD_NEVER else _ICON_OFF
+        return f"mdi:{self._icons[icon_id]}"
 
     @property
     def unit_of_measurement(self):

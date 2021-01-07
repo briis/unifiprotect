@@ -1,9 +1,8 @@
 """Constant definitions for Unifi Protect Integration."""
 
-import voluptuous as vol
-
 from homeassistant.const import ATTR_ENTITY_ID, CONF_FILENAME
 from homeassistant.helpers import config_validation as cv
+import voluptuous as vol
 
 DOMAIN = "unifiprotect"
 UNIQUE_ID = "unique_id"

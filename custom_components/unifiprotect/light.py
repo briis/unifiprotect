@@ -17,7 +17,7 @@ from .const import (
     ATTR_ONLINE,
     ATTR_UP_SINCE,
     DEFAULT_ATTRIBUTION,
-    DEVICE_LIGHT,
+    DEVICE_TYPE_LIGHT,
     DOMAIN,
     LIGHT_SETTINGS_SCHEMA,
     SERVICE_LIGHT_SETTINGS,
@@ -43,7 +43,7 @@ async def async_setup_entry(
 
     lights = []
     for light_id in protect_data.data:
-        if protect_data.data[light_id].get("type") == DEVICE_LIGHT:
+        if protect_data.data[light_id].get("type") == DEVICE_TYPE_LIGHT:
             lights.append(
                 UnifiProtectLight(
                     upv_object,

@@ -56,7 +56,7 @@ set_highfps_video_mode:
       description: "(Optional) Valid options are: true or false"
       example: true
 set_doorbell_lcd_message:
-  description: Display a message on the LCD Screen on the G4 Doorbell"
+  description: "Display a message on the LCD Screen on the G4 Doorbell"
   fields:
     entity_id:
       description: "(Required) Doorbell to display message on"

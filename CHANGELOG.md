@@ -1,15 +1,16 @@
 # // Changelog
 
 
-## 0.8.0 (UNRELEASED)
+## 0.8.0
 
-Released:
+Released: January 8th, 2021
 
-This release adds support for the new Ubiquiti Floodlight device. It will add a new entity type `light`, that will expose the Floodlight as a light entity and add support for turning on and off, plus adjustment of brightness.
+This release adds support for the new Ubiquiti Floodlight device. If found on your Protect Server, it will add a new entity type `light`, that will expose the Floodlight as a light entity and add support for turning on and off, plus adjustment of brightness.
 
 There will also be support for the PIR motion sensor built-in to the Floodlight, and you will be able to adjust PIR settings and when to detect motion.
 
-You must have UniFi Protect V1.17.0-beta.10 installed for Floodlight Support. Below that version, you cannot add the Floodlight as a device.
+You must have UniFi Protect V1.17.0-beta.10+ installed for Floodlight Support. Below that version, you cannot add the Floodlight as a device to UniFi Protect.
+
 
 * `ADDED`: New `light` entity for each Floodlight found. You can use the normal *light* services to turn on and off. Be aware that *brightness* in the Protect App only accepts a number from 1-6, so when you adjust brightness from Lovelace or the Service, the number here will be converted to a number between 1 and 6.
 * `ADDED`: A Motion Sensor is created for each Floodlight attached. It will trigger motion despite the state of the Light. It will however not re-trigger until the time set in the *Auto Shutoff Timer* has passed.
@@ -17,12 +18,14 @@ You must have UniFi Protect V1.17.0-beta.10 installed for Floodlight Support. Be
 * `FIXED`: Missing " in the Services description, prevented message to be displayed to the user. Thank you to @MarcJenningsUK for spotting and fixing this.
 * `CHANGED`: Bumped `pyunifiprotect` to 0.28.8
 
+**IMPORTANT**: With the official FW 2.0.24 for the CloudKey+ all UniFi Protect Servers are now migrated to UniFiOS. So as of this release, there will be no more development on the Non UniFiOS features. What is there will still be working, but new features will only be tested on UniFiOS. We only have access to very limited HW to test on, so it is not possible to maintain HW for backwards compatability testing.
+
 #### This release is tested on:
 
 *Tested* means that either new features work on the below versions or they don't introduce breaking changes.
 
-* CloudKey+ G2: FW Version 2.0.24 with Unifi Protect V1.17.0-beta.10
-* UDMP: FW Version 1.18.5 with Unifi Protect V1.17.0-beta.10
+* CloudKey+ G2: FW Version 2.0.24 with Unifi Protect V1.17.0-beta.13
+* UDMP: FW Version 1.18.5 with Unifi Protect V1.17.0-beta.13
 
 ## Release 0.7.1
 

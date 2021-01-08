@@ -11,6 +11,8 @@ There will also be support for the PIR motion sensor built-in to the Floodlight,
 
 You must have UniFi Protect V1.17.0-beta.10+ installed for Floodlight Support. Below that version, you cannot add the Floodlight as a device to UniFi Protect.
 
+THANK YOU again to @bdraco for helping with some of the code and for extensive code review. Without you, a lot of this would not have been possible.
+
 
 * `ADDED`: New `light` entity for each Floodlight found. You can use the normal *light* services to turn on and off. Be aware that *brightness* in the Protect App only accepts a number from 1-6, so when you adjust brightness from Lovelace or the Service, the number here will be converted to a number between 1 and 6.
 * `ADDED`: A Motion Sensor is created for each Floodlight attached. It will trigger motion despite the state of the Light. It will however not re-trigger until the time set in the *Auto Shutoff Timer* has passed.

@@ -24,12 +24,12 @@ from .const import (
     CONF_SNAPSHOT_DIRECT,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
     TYPE_IR_AUTO,
     TYPE_IR_OFF,
     TYPES_IR_OFF,
     TYPES_IR_ON,
 )
-from .const import DOMAIN  # pylint: disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
 

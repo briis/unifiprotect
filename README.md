@@ -114,6 +114,11 @@ If the Unifi Protect Server is found on the network it will be added to your ins
 
 **You can only add Unifi Protect through the Integration page, Yaml configuration is no longer supported.**
 
+### MIGRATING FROM CLOUDKEY+ V1.x
+When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS as core operating system. That also means that where you previously used port 7443 you now need to use port 443. There are two ways to fix this:
+* Delete the Unifi Protect Integration and re-add it, using port 443.
+* Edit the file `.storage/core.config_entries` in your Home Assistant instance. Search for Unifi Protect and change port 7443 to 443. Restart Home Assistant. (Make a backup firts)
+
 ### CONFIGURATION VARIABLES
 **host**:<br>
   *(string)(Required)*<br>

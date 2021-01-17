@@ -105,6 +105,8 @@ If you are not familiar with HACS, or havn't installed it, I would recommend to 
 
 **Please note**: All HACS does, is copying the needed files to Home Assistant, and placing them in the right directory. To get the Integration to work, you now need to go through the steps in the *Configuration* section.
 
+Before you restart Home Assistant, make sure that the stream component is enabled. Open `configuration.yaml` and look for *stream:*. If not found add `stream:` somewhere in the file and save it.
+
 ## Configuration
 To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
 

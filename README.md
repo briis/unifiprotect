@@ -105,6 +105,8 @@ If you are not familiar with HACS, or havn't installed it, I would recommend to 
 
 **Please note**: All HACS does, is copying the needed files to Home Assistant, and placing them in the right directory. To get the Integration to work, you now need to go through the steps in the *Configuration* section.
 
+Before you restart Home Assistant, make sure that the stream component is enabled. Open `configuration.yaml` and look for *stream:*. If not found add `stream:` somewhere in the file and save it.
+
 ## Configuration
 To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
 
@@ -113,6 +115,11 @@ To add *Unifi Protect* to your Home Assistant installation, go to the Integratio
 If the Unifi Protect Server is found on the network it will be added to your installation. After that, you can add more Unifi Protect Servers, should have more than one installed.
 
 **You can only add Unifi Protect through the Integration page, Yaml configuration is no longer supported.**
+
+### MIGRATING FROM CLOUDKEY+ V1.x
+When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS as core operating system. That also means that where you previously used port 7443 you now need to use port 443. There are two ways to fix this:
+* Delete the Unifi Protect Integration and re-add it, using port 443.
+* Edit the file `.storage/core.config_entries` in your Home Assistant instance. Search for Unifi Protect and change port 7443 to 443. Restart Home Assistant. (Make a backup firts)
 
 ### CONFIGURATION VARIABLES
 **host**:<br>

@@ -213,7 +213,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     async def async_set_status_light(self, light_on):
         """Set camera Status Light."""
-        await self.upv_object.set_camera_status_light(self._device_id, light_on)
+        await self.upv_object.set_device_status_light(self._device_id, light_on)
 
     async def async_set_hdr_mode(self, hdr_on):
         """Set camera HDR mode."""

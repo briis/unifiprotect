@@ -1,5 +1,11 @@
 # // Changelog
 
+## 0.8.1 (NOT RELEASED YET)
+
+Released: xxx yy, 2021
+
+* `FIXED`: The service `unifiprotect.set_status_light` did not function, as it was renamed in the IO module. This has now been fixed so that both the service and the Switch work again.
+
 ## 0.8.0
 
 Released: January 8th, 2021

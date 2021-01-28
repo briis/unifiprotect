@@ -86,6 +86,8 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         raise ConfigEntryNotReady from notreadyerror
 
     await protect_data.async_setup()
+    if not protect_data.last_update_success:
+        raise ConfigEntryNotReady
 
     update_listener = entry.add_update_listener(_async_options_updated)
 

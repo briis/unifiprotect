@@ -20,6 +20,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType
 from pyunifiprotect import NotAuthorized, NvrError, UpvServer
+from pyunifiprotect.const import SERVER_ID
 
 from .const import (
     CONF_SNAPSHOT_DIRECT,
@@ -84,6 +85,9 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
         return
     except (NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
+
+    if entry.unique_id is None:
+        hass.config_entries.async_update_entry(entry, unique_id=nvr_info[SERVER_ID])
 
     await protect_data.async_setup()
     if not protect_data.last_update_success:

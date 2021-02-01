@@ -16,6 +16,7 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from pyunifiprotect import NotAuthorized, NvrError, UpvServer
+from pyunifiprotect.const import SERVER_ID, SERVER_NAME
 import voluptuous as vol
 
 from .const import (
@@ -66,7 +67,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         try:
-            unique_id = await unifiprotect.unique_id()
+            server_info = await unifiprotect.server_information()
         except NotAuthorized as ex:
             _LOGGER.debug(ex)
             errors["base"] = "connection_error"
@@ -76,15 +77,16 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = "nvr_error"
             return await self._show_setup_form(errors)
 
-        entries = self._async_current_entries()
-        for entry in entries:
-            if entry.data[CONF_ID] == unique_id:
-                return self.async_abort(reason="server_exists")
+        unique_id = server_info[SERVER_ID]
+        server_name = server_info[SERVER_NAME]
+
+        await self.async_set_unique_id(unique_id)
+        self._abort_if_unique_id_configured()
 
         return self.async_create_entry(
-            title=unique_id,
+            title=server_name,
             data={
-                CONF_ID: unique_id,
+                CONF_ID: server_name,
                 CONF_HOST: user_input[CONF_HOST],
                 CONF_PORT: user_input[CONF_PORT],
                 CONF_USERNAME: user_input.get(CONF_USERNAME),

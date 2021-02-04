@@ -99,7 +99,7 @@ Before you install this Integration you need to ensure that the following two se
 ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
 ## Installation
-This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there.
+This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there. After the installation of the files you must restart Home Assistant, or else you will not be able to add UniFi Protect from the Integration Page.
 
 If you are not familiar with HACS, or havn't installed it, I would recommend to [look through the HACS documentation](https://hacs.xyz/), before continuing. Even though you can install the Integration manually, I would recommend using HACS, as you would always be reminded when a new release is published.
 
@@ -112,7 +112,7 @@ To add *Unifi Protect* to your Home Assistant installation, go to the Integratio
 
 **Note**: If you can't find the *Unifi Protect* integration, hard refresh your browser, when you are on the Integrations page.
 
-If the Unifi Protect Server is found on the network it will be added to your installation. After that, you can add more Unifi Protect Servers, should have more than one installed.
+If the Unifi Protect Server is found on the network it will be added to your installation. After that, you can add more Unifi Protect Servers, should you have more than one installed.
 
 **You can only add Unifi Protect through the Integration page, Yaml configuration is no longer supported.**
 

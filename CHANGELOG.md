@@ -6,7 +6,7 @@ Released: February 4th, 2021
 
 * `FIXED`: Use the UniFi Servers MAc address as unique ID to ensure that it never changes. Previously we used the name, and that can be changed by the user. This will help with stability and prevent integrations from suddenly stop working if the name of the UDMP, UNVR4 or CKP was changed.
 * `FIXED`: Further enhance the fix applied in 0.8.1 to ensure the Integration loads even if the first update fails. Thanks to @bdraco for implementing this.
-* `FIXED`: Sometimes we would be missing event_on or event_ring_on if the websocket connected before the integration setup the binary sensor. We now always return the full processed data, eliminating this error.
+* `FIXED`: Sometimes we would be missing event_on or event_ring_on if the websocket connected before the integration setup the binary sensor. We now always return the full processed data, eliminating this error. Another fix by @bdraco
 
 ## 0.8.1
 

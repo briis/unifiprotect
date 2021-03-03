@@ -1,5 +1,11 @@
 # // Changelog
 
+
+## 0.8.3
+
+Released: March 3rd, 2021
+
+* `ADDED`: New service `unifiprotect.set_wdr_value` which can set the Wide Dynamic Range of a camera to an integer between 0 and 4. Where 0 is disabled and 4 is full.
 ## 0.8.2
 
 Released: February 4th, 2021

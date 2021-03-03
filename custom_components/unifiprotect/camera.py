@@ -14,6 +14,7 @@ from .const import (
     ATTR_ONLINE,
     ATTR_PRIVACY_MODE,
     ATTR_UP_SINCE,
+    ATTR_WDR_VALUE,
     ATTR_ZOOM_POSITION,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
@@ -31,6 +32,7 @@ from .const import (
     SERVICE_SET_PRIVACY_MODE,
     SERVICE_SET_RECORDING_MODE,
     SERVICE_SET_STATUS_LIGHT,
+    SERVICE_SET_WDR_VALUE,
     SERVICE_SET_ZOOM_POSITION,
     SET_DOORBELL_LCD_MESSAGE_SCHEMA,
     SET_HDR_MODE_SCHEMA,
@@ -40,6 +42,7 @@ from .const import (
     SET_PRIVACY_MODE_SCHEMA,
     SET_RECORDING_MODE_SCHEMA,
     SET_STATUS_LIGHT_SCHEMA,
+    SET_WDR_VALUE_SCHEMA,
     SET_ZOOM_POSITION_SCHEMA,
 )
 from .entity import UnifiProtectEntity
@@ -117,6 +120,10 @@ async def async_setup_entry(
         SERVICE_SET_ZOOM_POSITION, SET_ZOOM_POSITION_SCHEMA, "async_set_zoom_position"
     )
 
+    platform.async_register_entity_service(
+        SERVICE_SET_WDR_VALUE, SET_WDR_VALUE_SCHEMA, "async_set_wdr_value"
+    )
+
     return True
 
 
@@ -184,6 +191,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_IS_DARK: self._device_data["is_dark"],
             ATTR_MIC_SENSITIVITY: self._device_data["mic_volume"],
             ATTR_PRIVACY_MODE: self._device_data["privacy_on"],
+            ATTR_WDR_VALUE: self._device_data["wdr"],
             ATTR_ZOOM_POSITION: self._device_data["zoom_position"],
         }
 
@@ -245,6 +253,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         await self.upv_object.set_privacy_mode(
             self._device_id, privacy_mode, mic_level, recording_mode
         )
+
+    async def async_set_wdr_value(self, value):
+        """Set camera wdr value."""
+        await self.upv_object.set_camera_wdr(self._device_id, value)
 
     async def async_set_zoom_position(self, position):
         """Set camera Zoom Position."""

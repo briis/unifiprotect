@@ -18,6 +18,7 @@ ATTR_MIC_SENSITIVITY = "mic_sensitivity"
 ATTR_ONLINE = "online"
 ATTR_PRIVACY_MODE = "privacy_mode"
 ATTR_UP_SINCE = "up_since"
+ATTR_WDR_VALUE = "wdr_value"
 ATTR_ZOOM_POSITION = "zoom_position"
 
 CONF_THUMB_WIDTH = "image_width"
@@ -38,6 +39,7 @@ CONF_MIC_LEVEL = "mic_level"
 CONF_PRIVACY_MODE = "privacy_mode"
 CONF_POSITION = "position"
 CONF_SENSITIVITY = "sensitivity"
+CONF_VALUE = "value"
 
 DEFAULT_PORT = 443
 DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
@@ -64,6 +66,7 @@ SERVICE_SET_DOORBELL_LCD_MESSAGE = "set_doorbell_lcd_message"
 SERVICE_SET_MIC_VOLUME = "set_mic_volume"
 SERVICE_SET_PRIVACY_MODE = "set_privacy_mode"
 SERVICE_SET_ZOOM_POSITION = "set_zoom_position"
+SERVICE_SET_WDR_VALUE = "set_wdr_value"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALWAYS = "always"
@@ -193,5 +196,12 @@ SET_ZOOM_POSITION_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_POSITION, default=0): int,
+    }
+)
+
+SET_WDR_VALUE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Required(CONF_VALUE, default=1): int,
     }
 )

@@ -100,6 +100,15 @@ set_zoom_position:
     position:
       description: "(Required) Number between 0 and 100 (0 equals no zoom)"
       example: "25"
+set_wdr_value:
+  description: "Sets the cameras Wide Dynamic Range value"
+  fields:
+    entity_id:
+      description: "string (required) camera to change wdr for"
+      example: "camera.outdoor"
+    value:
+      description: "(Required) Number between 0 and 3 (0 equals disabled)"
+      example: "2"
 light_settings:
   description: "Adjust settings on a UniFi attached Floodlight"
   fields:

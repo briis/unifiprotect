@@ -107,7 +107,7 @@ set_wdr_value:
       description: "string (required) camera to change wdr for"
       example: "camera.outdoor"
     value:
-      description: "(Required) Number between 0 and 3 (0 equals disabled)"
+      description: "(Required) Number between 0 and 3 (0 equals disabled). Default value is 1."
       example: "2"
 light_settings:
   description: "Adjust settings on a UniFi attached Floodlight"

@@ -116,8 +116,8 @@ LIGHT_SETTINGS_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_MODE): cv.string,
         vol.Optional(CONF_ENABLE_AT): cv.string,
-        vol.Optional(CONF_DURATION): int,
-        vol.Optional(CONF_SENSITIVITY): int,
+        vol.Optional(CONF_DURATION): vol.Coerce(int),
+        vol.Optional(CONF_SENSITIVITY): vol.Coerce(int),
     }
 )
 
@@ -170,7 +170,7 @@ SET_PRIVACY_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_PRIVACY_MODE, default=False): vol.In(VALID_BOOLEAN_MODES),
-        vol.Required(CONF_MIC_LEVEL, default=-1): int,
+        vol.Required(CONF_MIC_LEVEL, default=-1): vol.Coerce(int),
         vol.Optional(CONF_RECORDING_MODE, default=TYPE_RECORD_NOTSET): vol.In(
             VALID_RECORDING_MODES
         ),
@@ -188,20 +188,20 @@ SET_DOORBELL_LCD_MESSAGE_SCHEMA = vol.Schema(
 SET_MIC_VOLUME_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Required(CONF_LEVEL, default=100): int,
+        vol.Required(CONF_LEVEL, default=100): vol.Coerce(int),
     }
 )
 
 SET_ZOOM_POSITION_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Required(CONF_POSITION, default=0): int,
+        vol.Required(CONF_POSITION, default=0): vol.Coerce(int),
     }
 )
 
 SET_WDR_VALUE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Required(CONF_VALUE, default=1): int,
+        vol.Required(CONF_VALUE, default=1): vol.Coerce(int),
     }
 )

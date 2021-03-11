@@ -1,5 +1,11 @@
 # // Changelog
 
+## 0.8.4
+
+Released: NOT RELEASED YET
+
+* `FIXED`: Issues when activating Services that required an Integer as value, and using a Template to supply that value. Services Schemas have now been converted to use `vol.Coerce(int)` instead of just `int`.
+* `CHANGED`: All Services definitions have now been rewritten to use the new format introduced with the March 2021 Home Assistant release.
 
 ## 0.8.3
 

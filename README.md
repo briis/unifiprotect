@@ -142,7 +142,7 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS
 
 **scan_interval**:<br>
   *(int)(Optional)*<br>
-  How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey. UDMP and UNVR users get the data pushed, so polling not needed.<br>
+  How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey with V1.x FW. CloudKey V2.x, UDMP and UNVR users get the data pushed, so polling not needed.<br>
   *Default value*: `2` seconds
 
 **anonymous_snapshots**:<br>

@@ -47,6 +47,7 @@ set_recording_mode:
           options:
             - "always"
             - "motion"
+            - "smart"
             - "never"
 set_ir_mode:
   name: Set Infrared mode
@@ -220,6 +221,7 @@ set_privacy_mode:
           options:
             - "always"
             - "motion"
+            - "smart"
             - "never"
 set_zoom_position:
   name: Set Zoom Position

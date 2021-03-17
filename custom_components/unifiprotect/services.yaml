@@ -307,11 +307,11 @@ light_settings:
       selector:
         select:
           options:
-          - 15
-          - 30
-          - 60
-          - 300
-          - 900
+            - 15
+            - 30
+            - 60
+            - 300
+            - 900
     sensitivity:
       name: Sensitivity
       description: "int (optional) Motion sensitivity of the PIR. Must be a number between 1 and 100."

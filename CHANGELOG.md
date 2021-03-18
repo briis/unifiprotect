@@ -5,7 +5,7 @@
 Released: NOT RELEASED YET
 
 * `FIXED`: Issues when activating Services that required an Integer as value, and using a Template to supply that value. Services Schemas have now been converted to use `vol.Coerce(int)` instead of just `int`.
-* `CHANGED`: All Services definitions have now been rewritten to use the new format introduced with the March 2021 Home Assistant release.
+* `CHANGED`: All Services definitions have now been rewritten to use the new format introduced with the March 2021 Home Assistant release. **NOTE**: You might need to do a Hard Refresh of your browser to see the new Services UI.
 * `FIXED`: When using the switches or service to change recording mode for a camera, the recording settings where reset to default values. This is now fixed, so the settings you do in the App are not modfied by activating the Service or Recording mode switches.
 
 ## 0.8.3

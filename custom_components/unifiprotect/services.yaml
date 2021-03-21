@@ -346,5 +346,5 @@ set_doorbell_chime_duration:
         number:
           min: 0
           max: 10000
-          step: 10
+          step: 100
           mode: slider

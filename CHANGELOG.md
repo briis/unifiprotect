@@ -1,5 +1,11 @@
 # // Changelog
 
+## 0.8.5
+
+Released: NOT RELEASED YET
+
+* `ADDED`: New service to enable/disable the attached Doorbel Chime. The service is called `unifiprotect.set_doorbell_chime` and takes two parameters: Entity ID of the Doorbell, True or False to enable or disable the Chime.
+
 ## 0.8.4
 
 Released: March 18th, 2021

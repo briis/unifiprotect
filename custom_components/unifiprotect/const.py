@@ -71,7 +71,7 @@ SERVICE_SET_MIC_VOLUME = "set_mic_volume"
 SERVICE_SET_PRIVACY_MODE = "set_privacy_mode"
 SERVICE_SET_ZOOM_POSITION = "set_zoom_position"
 SERVICE_SET_WDR_VALUE = "set_wdr_value"
-SERVICE_SET_DOORBELL_CHIME = "set_doorbell_chime"
+SERVICE_SET_DOORBELL_CHIME_DURAION = "set_doorbell_chime_duration"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALWAYS = "always"

@@ -26,7 +26,7 @@ from .const import (
     DOMAIN,
     SAVE_THUMBNAIL_SCHEMA,
     SERVICE_SAVE_THUMBNAIL,
-    SERVICE_SET_DOORBELL_CHIME,
+    SERVICE_SET_DOORBELL_CHIME_DURAION,
     SERVICE_SET_DOORBELL_LCD_MESSAGE,
     SERVICE_SET_HDR_MODE,
     SERVICE_SET_HIGHFPS_VIDEO_MODE,
@@ -129,9 +129,9 @@ async def async_setup_entry(
     )
 
     platform.async_register_entity_service(
-        SERVICE_SET_DOORBELL_CHIME,
+        SERVICE_SET_DOORBELL_CHIME_DURAION,
         SET_DOORBELL_CHIME_DURATION_SCHEMA,
-        "async_set_doorbell_chime_duration",
+        "async_set_doorbell_chime",
     )
 
     return True
@@ -245,9 +245,11 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Set camera HDR mode."""
         await self.upv_object.set_camera_hdr_mode(self._device_id, hdr_on)
 
-    async def async_set_doorbell_chime_duration(self, duration):
+    async def async_set_doorbell_chime_duration(self, chime_duration):
         """Set Doorbell Chime duration"""
-        await self.upv_object.set_doorbell_chime_duration(self._device_id, duration)
+        await self.upv_object.set_doorbell_chime_duration(
+            self._device_id, chime_duration
+        )
 
     async def async_set_highfps_video_mode(self, high_fps_on):
         """Set camera High FPS video mode."""

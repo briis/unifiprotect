@@ -339,12 +339,12 @@ set_doorbell_chime_duration:
           domain: camera
     chime_duration:
       name: Chime duration
-      description: "(required) Valid options are: 0 to 10000"
+      description: "(required) Valid options are: 0 to 10000 (0 is No Chime)"
       required: true
       example: 300
       selector:
         number:
           min: 0
           max: 10000
-          step: 1
+          step: 10
           mode: slider

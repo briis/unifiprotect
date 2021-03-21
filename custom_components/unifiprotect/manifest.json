@@ -5,10 +5,10 @@
   "issue_tracker": "https://github.com/briis/unifiprotect/issues",
   "config_flow": true,
   "requirements": [
-    "pyunifiprotect==0.30.2"
+    "pyunifiprotect==0.30.4"
   ],
   "dependencies": [],
-  "version": "0.8.4",
+  "version": "0.8.5",
   "codeowners": [
     "@briis"
   ]

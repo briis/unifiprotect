@@ -8,6 +8,7 @@ DOMAIN = "unifiprotect"
 UNIQUE_ID = "unique_id"
 
 ATTR_CAMERA_ID = "camera_id"
+ATTR_CHIME_ENABLED = "chime_enabled"
 ATTR_DEVICE_MODEL = "device_model"
 ATTR_ENABLED_AT = "enabled_at"
 ATTR_EVENT_SCORE = "event_score"

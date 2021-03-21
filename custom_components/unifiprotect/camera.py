@@ -9,6 +9,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 
 from .const import (
     ATTR_CAMERA_ID,
+    ATTR_CHIME_ENABLED,
     ATTR_IS_DARK,
     ATTR_MIC_SENSITIVITY,
     ATTR_ONLINE,
@@ -16,7 +17,6 @@ from .const import (
     ATTR_UP_SINCE,
     ATTR_WDR_VALUE,
     ATTR_ZOOM_POSITION,
-    CONF_CHIME_ON,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_TYPE_CAMERA,
@@ -186,8 +186,11 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @property
     def device_state_attributes(self):
         """Add additional Attributes to Camera."""
+        chime_enabled = "No Chime Attached"
         if self._device_type == DEVICE_TYPE_DOORBELL:
             last_trip_time = self._device_data["last_ring"]
+            if self._device_data["has_chime"]:
+                chime_enabled = self._device_data["chime_mode"]
         else:
             last_trip_time = self._device_data["last_motion"]
 
@@ -196,6 +199,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_UP_SINCE: self._device_data["up_since"],
             ATTR_ONLINE: self._device_data["online"],
             ATTR_CAMERA_ID: self._device_id,
+            ATTR_CHIME_ENABLED: chime_enabled,
             ATTR_LAST_TRIP_TIME: last_trip_time,
             ATTR_IS_DARK: self._device_data["is_dark"],
             ATTR_MIC_SENSITIVITY: self._device_data["mic_volume"],

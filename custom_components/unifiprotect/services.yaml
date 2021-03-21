@@ -341,6 +341,7 @@ set_doorbell_chime:
       name: Chime enabled
       description: "(required) Valid options are: true or false"
       required: true
+      initial: true
       example: true
       selector:
         boolean:

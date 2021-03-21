@@ -4,7 +4,7 @@
 
 Released: NOT RELEASED YET
 
-* `ADDED`: Have you ever wanted to silence your doorbell chime when you go to bed, or you put your child to sleep? - Now this is possible. A new service to enable/disable the attached Doorbel Chime is delivered with this release. The service is called `unifiprotect.set_doorbell_chime` and takes two parameters: Entity ID of the Doorbell, Duration in milliseconds which is a number between 0 and 10000. 0 equals no chime. 300 is the standard for mechanical chimes and 10000 is only used in combination with a digital chime. The function does not really exist in the API, so this is a workaround. Let me know what values are best for on with the different chimes. You might still hear a micro second of a ding, but nothing that should wake anyone up. Fixing issue #211
+* `ADDED`: Have you ever wanted to silence your doorbell chime when you go to bed, or you put your child to sleep? - Now this is possible. A new service to enable/disable the attached Doorbel Chime is delivered with this release. The service is called `unifiprotect.set_doorbell_chime_duration` and takes two parameters: Entity ID of the Doorbell, Duration in milliseconds which is a number between 0 and 10000. 0 equals no chime. 300 is the standard for mechanical chimes and 10000 is only used in combination with a digital chime. The function does not really exist in the API, so this is a workaround. Let me know what values are best for on with the different chimes. You might still hear a micro second of a ding, but nothing that should wake anyone up. Fixing issue #211
 
 ## 0.8.4
 

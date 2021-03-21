@@ -190,7 +190,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         if self._device_type == DEVICE_TYPE_DOORBELL:
             last_trip_time = self._device_data["last_ring"]
             if self._device_data["has_chime"]:
-                chime_enabled = self._device_data["chime_mode"]
+                chime_enabled = self._device_data["chime_enabled"]
         else:
             last_trip_time = self._device_data["last_motion"]
 

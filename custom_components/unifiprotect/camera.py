@@ -131,7 +131,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_SET_DOORBELL_CHIME_DURAION,
         SET_DOORBELL_CHIME_DURATION_SCHEMA,
-        "async_set_doorbell_chime",
+        "async_set_doorbell_chime_duration",
     )
 
     return True

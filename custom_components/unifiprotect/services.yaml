@@ -324,4 +324,23 @@ light_settings:
           max: 100
           step: 1
           mode: slider
-
+set_doorbell_chime:
+  name: Enables or disables the Chime attached to a Doorbell
+  description: "Turn doorbell chime on or off"
+  fields:
+    entity_id:
+      name: Entity ID
+      description: string (required) doorbell with chime attached
+      example: "camera.doorbell"
+      required: true
+      selector:
+        entity:
+          integration: unifiprotect
+          domain: camera
+    chime_on:
+      name: Chime enabled
+      description: "(required) Valid options are: true or false"
+      required: true
+      example: true
+      selector:
+        boolean:

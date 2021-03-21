@@ -9,6 +9,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 
 from .const import (
     ATTR_CAMERA_ID,
+    ATTR_CHIME_DURATION,
     ATTR_CHIME_ENABLED,
     ATTR_IS_DARK,
     ATTR_MIC_SENSITIVITY,
@@ -128,7 +129,9 @@ async def async_setup_entry(
     )
 
     platform.async_register_entity_service(
-        SERVICE_SET_DOORBELL_CHIME_DURATION, SET_DOORBELL_CHIME_DURATION_SCHEMA, "async_set_doorbell_chime_duration",
+        SERVICE_SET_DOORBELL_CHIME,
+        SET_DOORBELL_CHIME_SCHEMA,
+        "async_set_doorbell_chime_duration",
     )
 
     return True

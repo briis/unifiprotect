@@ -4,7 +4,7 @@
 
 Released: NOT RELEASED YET
 
-* `ADDED`: New service to enable/disable the attached Doorbel Chime. The service is called `unifiprotect.set_doorbell_chime` and takes two parameters: Entity ID of the Doorbell, True or False to enable or disable the Chime.
+* `ADDED`: Have you ever wanted to silence your doorbell chime when you go to bed, or you put your child to sleep? - Now this is possible. A new service to enable/disable the attached Doorbel Chime is delivered with this release. The service is called `unifiprotect.set_doorbell_chime` and takes two parameters: Entity ID of the Doorbell, True or False to enable or disable the Chime. The function does not really exist in the API, but I do a workaround, but setting the duration of the Doorbell Chime to 0 seconds when disabling and then back to the original value when enabling. You might still hear a micro second of a ding, but nothing that should wake anyone up. Fixing issue #211
 
 ## 0.8.4
 

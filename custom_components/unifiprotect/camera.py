@@ -16,6 +16,7 @@ from .const import (
     ATTR_UP_SINCE,
     ATTR_WDR_VALUE,
     ATTR_ZOOM_POSITION,
+    CONF_CHIME_ON,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_TYPE_CAMERA,
@@ -24,6 +25,7 @@ from .const import (
     DOMAIN,
     SAVE_THUMBNAIL_SCHEMA,
     SERVICE_SAVE_THUMBNAIL,
+    SERVICE_SET_DOORBELL_CHIME,
     SERVICE_SET_DOORBELL_LCD_MESSAGE,
     SERVICE_SET_HDR_MODE,
     SERVICE_SET_HIGHFPS_VIDEO_MODE,
@@ -34,6 +36,7 @@ from .const import (
     SERVICE_SET_STATUS_LIGHT,
     SERVICE_SET_WDR_VALUE,
     SERVICE_SET_ZOOM_POSITION,
+    SET_DOORBELL_CHIME_SCHEMA,
     SET_DOORBELL_LCD_MESSAGE_SCHEMA,
     SET_HDR_MODE_SCHEMA,
     SET_HIGHFPS_VIDEO_MODE_SCHEMA,
@@ -122,6 +125,12 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SET_WDR_VALUE, SET_WDR_VALUE_SCHEMA, "async_set_wdr_value"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_DOORBELL_CHIME,
+        SET_DOORBELL_CHIME_SCHEMA,
+        "async_set_doorbell_chime",
     )
 
     return True
@@ -229,6 +238,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     async def async_set_hdr_mode(self, hdr_on):
         """Set camera HDR mode."""
         await self.upv_object.set_camera_hdr_mode(self._device_id, hdr_on)
+
+    async def async_set_doorbell_chime(self, chime_on):
+        """Set Doorbell Chime on or off."""
+        await self.upv_object.set_doorbell_chime(self._device_id, chime_on)
 
     async def async_set_highfps_video_mode(self, high_fps_on):
         """Set camera High FPS video mode."""

@@ -211,9 +211,9 @@ SET_WDR_VALUE_SCHEMA = vol.Schema(
     }
 )
 
-SET_DOORBELL_CHIME_SCHEMA = vol.Schema(
+SET_DOORBELL_CHIME_DURATION_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Required(CONF_CHIME_ON, default=True): vol.In(VALID_BOOLEAN_MODES),
+        vol.Required(CONF_CHIME_DURATION, default=300): vol.Coerce(int),
     }
 )

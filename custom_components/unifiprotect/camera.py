@@ -128,9 +128,7 @@ async def async_setup_entry(
     )
 
     platform.async_register_entity_service(
-        SERVICE_SET_DOORBELL_CHIME,
-        SET_DOORBELL_CHIME_SCHEMA,
-        "async_set_doorbell_chime",
+        SERVICE_SET_DOORBELL_CHIME_DURATION, SET_DOORBELL_CHIME_DURATION_SCHEMA, "async_set_doorbell_chime_duration",
     )
 
     return True
@@ -200,6 +198,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_ONLINE: self._device_data["online"],
             ATTR_CAMERA_ID: self._device_id,
             ATTR_CHIME_ENABLED: chime_enabled,
+            ATTR_CHIME_DURATION: self._device_data["chime_duration"],
             ATTR_LAST_TRIP_TIME: last_trip_time,
             ATTR_IS_DARK: self._device_data["is_dark"],
             ATTR_MIC_SENSITIVITY: self._device_data["mic_volume"],
@@ -243,9 +242,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Set camera HDR mode."""
         await self.upv_object.set_camera_hdr_mode(self._device_id, hdr_on)
 
-    async def async_set_doorbell_chime(self, chime_on):
-        """Set Doorbell Chime on or off."""
-        await self.upv_object.set_doorbell_chime(self._device_id, chime_on)
+    async def async_set_doorbell_chime_duration(self, duration):
+        """Set Doorbell Chime duration"""
+        await self.upv_object.set_doorbell_chime_duration(self._device_id, duration)
 
     async def async_set_highfps_video_mode(self, high_fps_on):
         """Set camera High FPS video mode."""

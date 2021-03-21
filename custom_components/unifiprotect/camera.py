@@ -37,7 +37,7 @@ from .const import (
     SERVICE_SET_STATUS_LIGHT,
     SERVICE_SET_WDR_VALUE,
     SERVICE_SET_ZOOM_POSITION,
-    SET_DOORBELL_CHIME_SCHEMA,
+    SET_DOORBELL_CHIME_DURATION_SCHEMA,
     SET_DOORBELL_LCD_MESSAGE_SCHEMA,
     SET_HDR_MODE_SCHEMA,
     SET_HIGHFPS_VIDEO_MODE_SCHEMA,
@@ -130,7 +130,7 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SET_DOORBELL_CHIME,
-        SET_DOORBELL_CHIME_SCHEMA,
+        SET_DOORBELL_CHIME_DURATION_SCHEMA,
         "async_set_doorbell_chime_duration",
     )
 

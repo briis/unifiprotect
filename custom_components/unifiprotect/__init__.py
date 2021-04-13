@@ -8,6 +8,7 @@ from aiohttp import CookieJar
 from aiohttp.client_exceptions import ServerDisconnectedError
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    EVENT_HOMEASSISTANT_STOP,
     CONF_HOST,
     CONF_ID,
     CONF_PASSWORD,
@@ -95,13 +96,21 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool
 
     update_listener = entry.add_update_listener(_async_options_updated)
 
-    hass.data[DOMAIN][entry.entry_id] = {
+    data = hass.data[DOMAIN][entry.entry_id] = {
         "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
         "server_info": nvr_info,
         "update_listener": update_listener,
     }
+
+    async def _async_stop_protect_data(event):
+        """Stop updates."""
+        await protect_data.async_stop()
+
+    data["stop_event_listener"] = hass.bus.async_listen_once(
+        EVENT_HOMEASSISTANT_STOP, _async_stop_protect_data
+    )
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
@@ -145,9 +154,10 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> boo
     )
 
     if unload_ok:
-        entry_data = hass.data[DOMAIN][entry.entry_id]
-        entry_data["update_listener"]()
-        await entry_data["protect_data"].async_stop()
+        data = hass.data[DOMAIN][entry.entry_id]
+        data["update_listener"]()
+        data["stop_event_listener"]()
+        await data["protect_data"].async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok

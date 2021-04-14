@@ -5,6 +5,7 @@
 Released: NOT RELEASED YET
 
 * `FIXED`: If authentication failed during setup or startup of the Integration it did not return the proper boolean, and did not close the session properly.
+* `CHANGED`: Stop updates on stop event to prevent shutdown delay.
 
 ## 0.8.5
 

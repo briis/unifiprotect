@@ -9,8 +9,8 @@ from homeassistant.components.light import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
-from homeassistant.helpers.typing import HomeAssistantType
 
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -30,7 +30,7 @@ ON_STATE = True
 
 
 async def async_setup_entry(
-    hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Set up lights for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]

@@ -8,7 +8,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
-from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.core import HomeAssistant
 
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -31,7 +31,7 @@ PROTECT_TO_HASS_DEVICE_CLASS = {
 
 
 async def async_setup_entry(
-    hass: HomeAssistantType, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Set up binary sensors for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]

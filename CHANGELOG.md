@@ -6,7 +6,7 @@ Released: April 25th, 2021
 
 * `FIXED`: If authentication failed during setup or startup of the Integration it did not return the proper boolean, and did not close the session properly.
 * `CHANGED`: Stop updates on stop event to prevent shutdown delay.
-* `CHANGED`: Updated several files to ensure compatability with 2021.5+ of Home Assistant.
+* `CHANGED`: Updated several files to ensure compatability with 2021.5+ of Home Assistant. Thanks to @bdraco for the fix.
 
 ## 0.8.5
 

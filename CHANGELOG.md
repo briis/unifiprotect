@@ -2,7 +2,7 @@
 
 ## 0.8.6
 
-Released: NOT RELEASED YET
+Released: April 25th, 2021
 
 * `FIXED`: If authentication failed during setup or startup of the Integration it did not return the proper boolean, and did not close the session properly.
 * `CHANGED`: Stop updates on stop event to prevent shutdown delay.

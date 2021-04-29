@@ -11,5 +11,6 @@
   "version": "0.8.6",
   "codeowners": [
     "@briis"
-  ]
+  ],
+  "iot_class": "local_push"
 }

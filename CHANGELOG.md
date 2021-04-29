@@ -1,5 +1,13 @@
 # // Changelog
 
+
+## 0.8.7
+
+Released: April 25th, 2021
+
+* `CHANGED`: Added **iot_class** to `manifest.json` as per HA requirements
+
+
 ## 0.8.6
 
 Released: April 25th, 2021

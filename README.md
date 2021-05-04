@@ -29,7 +29,8 @@ It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, 
     * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
     * [Person Detection](#automate-person-detection)
     * [Input Slider for Microphone Sensitivity](#create-input-slider-for-microphone-sensitivity)
-6. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
+6. [Enable Debug Logging](#enable-debug-logging)
+7. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
 ## Hardware Support
 
 This Integration supports all Ubiquiti Hardware that can run Unfi Protect. Currently this includes:

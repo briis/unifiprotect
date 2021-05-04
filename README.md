@@ -273,7 +273,7 @@ mode: single
 
 ### Enable Debug Logging
 If logs are needed for debugging or reporting an issue, use the following configuration.yaml:
-```
+```yaml
 logger:
   default: error
   logs:

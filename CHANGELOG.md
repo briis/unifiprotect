@@ -3,10 +3,11 @@
 
 ## 0.8.7
 
-Released: NOT RELEASED YET
+Released: May 4th, 2021
 
 * `CHANGED`: Added **iot_class** to `manifest.json` as per HA requirements
 * `FIXED`: Ensure the event_object is not cleared too soon, when a smart detect event occurs. Issue #225. Thanks to @bdraco for the fix.
+* `CHANGED`: Updated README.md with information on how to turn on Debug logger. Thank you @blaines
 
 
 ## 0.8.6

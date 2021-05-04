@@ -271,6 +271,14 @@ action:
 mode: single
 ```
 
+### Enable Debug Logging
+If logs are needed for debugging or reporting an issue, use the following configuration.yaml:
+```
+logger:
+  default: error
+  logs:
+    custom_components.unifiprotect: debug
+```
 
 ### CONTRIBUTE TO THE PROJECT AND DEVELOPING WITH A DEVCONTAINER
 

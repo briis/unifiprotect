@@ -25,6 +25,7 @@ from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 from pyunifiprotect.const import SERVER_ID
 
 from .const import (
+    CONF_DISABLE_RTSP,
     CONF_SNAPSHOT_DIRECT,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
@@ -56,6 +57,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 ),
                 CONF_SNAPSHOT_DIRECT: entry.data.get(CONF_SNAPSHOT_DIRECT, False),
             },
+        )
+    if not entry.options.get(CONF_DISABLE_RTSP):
+        hass.config_entries.async_update_entry(
+            entry, options={CONF_DISABLE_RTSP: entry.data.get(CONF_DISABLE_RTSP, False)}
         )
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
@@ -103,6 +108,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
         "server_info": nvr_info,
         "update_listener": update_listener,
+        "disable_stream": entry.options[CONF_DISABLE_RTSP],
     }
 
     async def _async_stop_protect_data(event):

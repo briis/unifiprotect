@@ -14,6 +14,7 @@
                     "port": "Poort Nummer (7443 voor niet UnifiOS, 443 voor UnifiOS)",
                     "username": "Gebruikersnaam",
                     "password": "Wachtwoord",
+                    "disable_rtsp": "Schakel de RTSP-stream uit",
                     "snapshot_direct": "Gebruik anonieme snapshots (moet op alle camera's worden ingeschakeld)",
                     "ir_on": "Instelling om infrarood licht AAN te zetten",
                     "ir_off": "Instelling om infrarood licht UIT te zetten",
@@ -28,6 +29,7 @@
         "step": {
             "init": {
                 "data": {
+                    "disable_rtsp": "Schakel de RTSP-stream uit",
                     "snapshot_direct": "Gebruik anonieme snapshots (moet op alle camera's worden ingeschakeld)",
                     "scan_interval": "Scaninterval voor gebeurtenissen op niet UnifiOS Servers (Hoger instellen als er veel camera's zijn)"
                 }

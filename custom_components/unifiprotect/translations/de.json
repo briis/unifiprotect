@@ -14,6 +14,7 @@
                     "port": "Portnummer (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Username",
                     "password": "Password",
+                    "disable_rtsp": "Den RTSP-stream deaktivieren",
                     "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)",
                     "ir_on": "Schaltet das Infrarotlicht ein",
                     "ir_off": "Schaltet das Infrarotlicht aus",
@@ -28,6 +29,7 @@
         "step": {
             "init": {
                 "data": {
+                    "disable_rtsp": "Den RTSP-stream deaktivieren",
                     "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)",
                     "scan_interval": "Scan-Intervall für Events auf NON UnifiOS Server (Höher setzen für mehrere Kameras)"
                 }

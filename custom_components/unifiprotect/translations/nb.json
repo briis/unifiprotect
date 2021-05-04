@@ -14,6 +14,7 @@
                     "port": "Portnummer (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Brukenavn",
                     "password": "Passord",
+                    "disable_rtsp": "Deaktiver RTSP-signalet",
                     "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
                     "ir_on": "Innstilling for bruk for infrarødt lys PÅ",
                     "ir_off": "Innstilling for bruk for infrarødt lys AV",
@@ -28,6 +29,7 @@
         "step": {
             "init": {
                 "data": {
+                    "disable_rtsp": "Deaktiver RTSP-signalet",
                     "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
                     "scan_interval": "Skanneintervall for hendelser på NON UnifiOS Server (sett høyere hvis mange kameraer)"
                 }

@@ -6,6 +6,7 @@
 Released: NOT RELEASED YET
 
 * `CHANGED`: Added **iot_class** to `manifest.json` as per HA requirements
+* `FIXED`: Ensure the event_object is not cleared too soon, when a smart detect event occurs. Issue #225. Thanks to @bdraco for the fix.
 
 
 ## 0.8.6

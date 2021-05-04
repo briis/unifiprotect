@@ -1,5 +1,11 @@
 # // Changelog
 
+## 0.8.8
+
+Released: NOT RELEASED YET
+
+* `NEW`: As stated a few times, there is a delay of 10-20 seconds in the Live Stream from UniFi Protect. There is not much this integration can do about it, but what we can do is, to disable the RTSP Stream, so that JPEG push is used instead. This gives an almost realtime experience, with the cost of NO AUDIO. As of this version you can disable the RTSP Stream from the Config menu.
+
 
 ## 0.8.7
 

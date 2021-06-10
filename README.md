@@ -141,6 +141,10 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS
   *(string)(Required)*<br>
   The local password you setup under the *Prerequisites* section.
 
+**deactivate rtsp stream**<br>
+  *(bool)Optional*<br>
+  If this box is checked, the camera stream will not use the RTSP stream, but instead jpeg push. This gives a realtime stream, but does not include Audio.
+  
 **scan_interval**:<br>
   *(int)(Optional)*<br>
   How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey with V1.x FW. CloudKey V2.x, UDMP and UNVR users get the data pushed, so polling not needed.<br>

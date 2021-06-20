@@ -109,7 +109,7 @@ If you are not familiar with HACS, or havn't installed it, I would recommend to 
 Before you restart Home Assistant, make sure that the stream component is enabled. Open `configuration.yaml` and look for *stream:*. If not found add `stream:` somewhere in the file and save it.
 
 ## Configuration
-To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
+To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel, click on 'ADD INTEGRATION', find *Unifi Protect*, and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
 
 **Note**: If you can't find the *Unifi Protect* integration, hard refresh your browser, when you are on the Integrations page.
 

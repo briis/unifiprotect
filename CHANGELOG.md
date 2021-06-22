@@ -1,5 +1,11 @@
 # // Changelog
 
+## 0.8.9
+
+Released: NOT RELEASED YET
+
+* `FIXED`: During startup of the Integration, it would log `Error Code: 500 - Error Status: Internal Server Error`. (Issue #249) This was caused by some values not being available at startup.
+
 ## 0.8.8
 
 Released: May 22nd, 2021

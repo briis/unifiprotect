@@ -5,6 +5,7 @@
 Released: NOT RELEASED YET
 
 * `FIXED`: During startup of the Integration, it would log `Error Code: 500 - Error Status: Internal Server Error`. (Issue #249) This was caused by some values not being available at startup.
+* `CHANGE`: The service `unifiprotect.save_thumbnail_image` now creates the directories in the filename if they do not exist. Issue #250.
 
 ## 0.8.8
 

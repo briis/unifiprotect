@@ -1,5 +1,6 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
+import os
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.config_entries import ConfigEntry
@@ -236,10 +237,13 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
         image = await self.upv_object.get_thumbnail(self._device_id, image_width)
         if image is None:
-            _LOGGER.error("Last recording not found for Camera %s", self.name)
+            _LOGGER.error("Last thumbnail not found for Camera %s", self.name)
             return
 
         try:
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
+
             await self.hass.async_add_executor_job(_write_image, filename, image)
         except OSError as err:
             _LOGGER.error("Can't write image to file: %s", err)

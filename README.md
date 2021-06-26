@@ -26,6 +26,7 @@ It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, 
 3. [Installation](#installation)
 4. [UniFi Protect Services](#special-unifi-protect-services)
 5. [Automating Services](#automating-services)
+    * [Send a notfication when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
     * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
     * [Person Detection](#automate-person-detection)
     * [Input Slider for Microphone Sensitivity](#create-input-slider-for-microphone-sensitivity)
@@ -144,7 +145,7 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS
 **deactivate rtsp stream**<br>
   *(bool)Optional*<br>
   If this box is checked, the camera stream will not use the RTSP stream, but instead jpeg push. This gives a realtime stream, but does not include Audio.
-  
+
 **scan_interval**:<br>
   *(int)(Optional)*<br>
   How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey with V1.x FW. CloudKey V2.x, UDMP and UNVR users get the data pushed, so polling not needed.<br>
@@ -184,6 +185,24 @@ Service | Parameters | Description
 
 ## Automating Services
 Below is a couple of examples on how you can automate some of the things you might do with this Integration.
+
+### SEND A NOTFICATION WHEN THE DOORBELL IS PRESSED
+Below is a very basic example on how to perform an action when the doorbell is pressed. Modify the action part to what you want to happen.
+
+```yaml
+alias: Detect Doorbell Pressed
+description: Notify User when the doorbell is pressed
+mode: single
+trigger:
+  - platform: event
+    event_type: unifiprotect_doorbell
+condition: []
+action:
+  - service: notify.notify
+    data:
+      message: There is somebody at your door
+      title: The doorbell has been pressed
+```
 
 ### AUTOMATE SETTING RECORDING OR IR MODE
 If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.

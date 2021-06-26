@@ -9,6 +9,7 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
 from homeassistant.core import HomeAssistant
+from homeassistant.util import slugify
 
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -52,6 +53,7 @@ async def async_setup_entry(
                     server_info,
                     device_id,
                     DEVICE_TYPE_DOORBELL,
+                    hass,
                 )
             )
             _LOGGER.debug(
@@ -61,7 +63,12 @@ async def async_setup_entry(
 
         sensors.append(
             UnifiProtectBinarySensor(
-                upv_object, protect_data, server_info, device_id, DEVICE_TYPE_MOTION
+                upv_object,
+                protect_data,
+                server_info,
+                device_id,
+                DEVICE_TYPE_MOTION,
+                hass,
             )
         )
         _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
@@ -74,11 +81,14 @@ async def async_setup_entry(
 class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     """A Unifi Protect Binary Sensor."""
 
-    def __init__(self, upv_object, protect_data, server_info, device_id, sensor_type):
+    def __init__(
+        self, upv_object, protect_data, server_info, device_id, sensor_type, hass
+    ):
         """Initialize the Binary Sensor."""
         super().__init__(upv_object, protect_data, server_info, device_id, sensor_type)
         self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
         self._device_class = PROTECT_TO_HASS_DEVICE_CLASS.get(sensor_type)
+        self._hass = hass
 
     @property
     def name(self):
@@ -90,6 +100,15 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         """Return true if the binary sensor is on."""
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
             return self._device_data["event_on"]
+
+        if self._device_data["event_ring_on"]:
+            self._hass.bus.fire(
+                f"{DOMAIN}_doorbell",
+                {
+                    "ring": self._device_data["event_ring_on"],
+                    "entity_id": f"binary_sensor.{slugify(self._name)}",
+                },
+            )
         return self._device_data["event_ring_on"]
 
     @property

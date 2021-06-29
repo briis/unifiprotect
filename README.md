@@ -25,13 +25,14 @@ It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, 
 2. [Prerequisites](#prerequisites)
 3. [Installation](#installation)
 4. [UniFi Protect Services](#special-unifi-protect-services)
-5. [Automating Services](#automating-services)
+5. [Unifi Protect Events](#unifi-protect-events)
+6. [Automating Services](#automating-services)
     * [Send a notfication when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
     * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
     * [Person Detection](#automate-person-detection)
     * [Input Slider for Microphone Sensitivity](#create-input-slider-for-microphone-sensitivity)
-6. [Enable Debug Logging](#enable-debug-logging)
-7. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
+7. [Enable Debug Logging](#enable-debug-logging)
+8. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
 ## Hardware Support
 
 This Integration supports all Ubiquiti Hardware that can run Unfi Protect. Currently this includes:
@@ -182,6 +183,14 @@ Service | Parameters | Description
 `unifiprotect.set_doorbell_chime_duration` | `entity_id` - The Doorbell attached to the Chime.<br>`chime_duration`  - 0 to 10000 | Set Doorbell Chime duration.
 
 **Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
+
+## Unifi Protect Events
+
+The following Unifi Protect events are triggered when running this Integration:
+
+Event Type | Description | Data
+:------------ | :------------ | :-------------
+`unifiprotect_doorbell` | Triggers when the doorbell button is pressed | `ring`: true, `entity_id`: The entity that triggers the event
 
 ## Automating Services
 Below is a couple of examples on how you can automate some of the things you might do with this Integration.

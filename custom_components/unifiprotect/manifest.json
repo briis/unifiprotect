@@ -8,7 +8,7 @@
     "pyunifiprotect==0.30.20"
   ],
   "dependencies": [],
-  "version": "0.8.8",
+  "version": "0.8.9",
   "codeowners": [
     "@briis"
   ],

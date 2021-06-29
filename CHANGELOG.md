@@ -4,9 +4,9 @@
 
 Released: June 29th, 2021
 
-* `FIXED`: During startup of the Integration, it would log `Error Code: 500 - Error Status: Internal Server Error`. (Issue #249) This was caused by some values not being available at startup.
+* `FIXED`: During startup of the Integration, it would sometimes log `Error Code: 500 - Error Status: Internal Server Error`. (Issue #249) This was caused by some values not being available at startup.
 * `CHANGE`: The service `unifiprotect.save_thumbnail_image` now creates the directories in the filename if they do not exist. Issue #250.
-* `FIX`: We have started the integration of the new UFP-Sense devices, but these are not available in Europe yet, so the integration is not completed, and will not be, before I can get my hands on one of these devices. Some users with the devices, got a crash when running the latest version, which is now fixed. The integration is not completed, this fix, just removes the errors that were logged. Thans to @michaeladam for finding this.
+* `FIX`: We have started the integration of the new UFP-Sense devices, but these are not available in Europe yet, so the integration is not completed, and will not be, before I can get my hands on one of these devices. Some users with the devices, got a crash when running the latest version, which is now fixed. The integration is not completed, this fix, just removes the errors that were logged. Thanks to @michaeladam for finding this.
 * `NEW`: When the doorbell is pressed, the integration now fires an event with the type `unifiprotect_doorbell`. You can use this in automations instead of monitoring the binary sensor. The event will look like below and only fire when the doorbell is pressed, so there will be no `false`event. If you have multiple doorbells you use the `entity_id` value in the `data` section to check which doorbell was pressed.
 
   ```json

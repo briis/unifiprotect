@@ -348,3 +348,23 @@ set_doorbell_chime_duration:
           max: 10000
           step: 100
           mode: slider
+set_viewport_view:
+  name: Set Viewport View
+  description: "Change the Liveview on the specified Viewport Device"
+  fields:
+    entity_id:
+      name: Viewport ID
+      description: The ID number of the Viewport where the view will be displayed
+      example: "60e2c6a300ed6f038700248f"
+      required: true
+      selector:
+        entity:
+          integration: unifiprotect
+          domain: media_player
+    view_id:
+      name: Liveview ID
+      description: The ID number of the view to be displayed on the Viewport
+      required: true
+      selector:
+        text:
+      example: 602631ab021688038700232b

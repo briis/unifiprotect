@@ -1,5 +1,6 @@
 """Constant definitions for Unifi Protect Integration."""
 
+# from typing_extensions import Required
 from homeassistant.const import ATTR_ENTITY_ID, CONF_FILENAME
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
@@ -20,6 +21,8 @@ ATTR_MIC_SENSITIVITY = "mic_sensitivity"
 ATTR_ONLINE = "online"
 ATTR_PRIVACY_MODE = "privacy_mode"
 ATTR_UP_SINCE = "up_since"
+ATTR_VIEWPORT_ID = "viewport_id"
+ATTR_VIEW_ID = "view_id"
 ATTR_WDR_VALUE = "wdr_value"
 ATTR_ZOOM_POSITION = "zoom_position"
 
@@ -57,6 +60,7 @@ DEVICE_TYPE_LIGHT = "light"
 
 DEVICE_TYPE_DOORBELL = "doorbell"
 DEVICE_TYPE_MOTION = "motion"
+DEVICE_TYPE_VIEWPORT = "viewer"
 
 DEVICES_WITH_CAMERA = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL)
 
@@ -73,6 +77,7 @@ SERVICE_SET_PRIVACY_MODE = "set_privacy_mode"
 SERVICE_SET_ZOOM_POSITION = "set_zoom_position"
 SERVICE_SET_WDR_VALUE = "set_wdr_value"
 SERVICE_SET_DOORBELL_CHIME_DURAION = "set_doorbell_chime_duration"
+SERVICE_SET_VIEWPORT_VIEW = "set_viewport_view"
 
 TYPE_RECORD_MOTION = "motion"
 TYPE_RECORD_ALWAYS = "always"
@@ -104,6 +109,7 @@ UNIFI_PROTECT_PLATFORMS = [
     "sensor",
     "switch",
     "light",
+    "media_player",
 ]
 
 VALID_IR_MODES = [TYPE_IR_ON, TYPE_IR_AUTO, TYPE_IR_OFF, TYPE_IR_LED_OFF]
@@ -216,5 +222,12 @@ SET_DOORBELL_CHIME_DURATION_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_CHIME_DURATION, default=300): vol.Coerce(int),
+    }
+)
+
+SET_VIEW_PORT_VIEW_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.string,
+        vol.Required(ATTR_VIEW_ID): cv.string,
     }
 )

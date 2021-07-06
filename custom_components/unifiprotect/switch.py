@@ -39,7 +39,7 @@ SWITCH_TYPES = {
     "record_always": ["Record Always", "video", "record_always", "recording_mode"],
     "record_smart": ["Record Smart", "video", "record_smart", "has_smartdetect"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode", "ir_mode"],
-    "status_light": ["Status Light On", "led-on", "status_light", None],
+    "status_light": ["Status Light On", "led-on", "status_light", "has_ledstatus"],
     "hdr_mode": ["HDR Mode", "brightness-7", "hdr_mode", "has_hdr"],
     "high_fps": ["High FPS", "video-high-definition", "high_fps", "has_highfps"],
     "light_motion": [

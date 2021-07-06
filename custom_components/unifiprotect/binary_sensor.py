@@ -19,6 +19,7 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_MOTION,
+    DEVICES_WITH_CAMERA,
     DOMAIN,
 )
 from .entity import UnifiProtectEntity
@@ -61,17 +62,18 @@ async def async_setup_entry(
                 device_data["name"],
             )
 
-        sensors.append(
-            UnifiProtectBinarySensor(
-                upv_object,
-                protect_data,
-                server_info,
-                device_id,
-                DEVICE_TYPE_MOTION,
-                hass,
+        if device_data["type"] in DEVICES_WITH_CAMERA:
+            sensors.append(
+                UnifiProtectBinarySensor(
+                    upv_object,
+                    protect_data,
+                    server_info,
+                    device_id,
+                    DEVICE_TYPE_MOTION,
+                    hass,
+                )
             )
-        )
-        _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
+            _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
 
     async_add_entities(sensors)
 

@@ -1,5 +1,12 @@
 # // Changelog
 
+## 0.9.0 Beta 1
+
+Released: July 6th, 2021
+
+* `NEW`: This release adds support for the UFP Viewport device. This is done by adding a the `media_player` platform, from where the views defined in Unifi Protect can be selected as source. When selecting the source, the Viewport will change it's current view to the selected source. The `media_player` platform will only be setup if UFP Viewports are found in Unfi Protect.
+* `NEW`: As part of the support for the UFP Viewport, there also a new service being created, called `unifiprotect.set_viewport_view`. This service requires two parameters: The `entity_id` of the Viewport and the `view_id` of the View you want to set. `view_id` is a long string, but you can find the id number when looking at the Attributes for the media_player.
+
 ## 0.8.9
 
 Released: June 29th, 2021

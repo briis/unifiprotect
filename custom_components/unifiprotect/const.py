@@ -109,7 +109,7 @@ UNIFI_PROTECT_PLATFORMS = [
     "sensor",
     "switch",
     "light",
-    "media_player",
+    "select",
 ]
 
 VALID_IR_MODES = [TYPE_IR_ON, TYPE_IR_AUTO, TYPE_IR_OFF, TYPE_IR_LED_OFF]

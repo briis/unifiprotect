@@ -48,7 +48,7 @@ async def async_setup_entry(
                 )
             )
             _LOGGER.debug(
-                "UNIFIPROTECT VIEWPORT PLAYER CREATED: %s",
+                "UNIFIPROTECT SELECT CREATED: %s",
                 device_data["name"],
             )
 

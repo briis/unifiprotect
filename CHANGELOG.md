@@ -4,9 +4,17 @@
 
 Released: NOT RELEASED YET
 
-* `NEW`: This release adds support for the UFP Viewport device. This is done by adding the `select` platform, from where the views defined in Unifi Protect can be selected. When changing the selection, the Viewport will change it's current view to the selected item. The `select` platform will only be setup if UFP Viewports are found in Unfi Protect. When you create a view in Unifi Protect, you must check the box *Shared with Others* in order to use the view in this integration.
+* `BREAKING`: If you installed Beta 1, then you will have a media_player entity that is no longer used. You can disable it, or reinstall the Integration to get completely rid of it.
+* `NEW`: This release adds support for the UFP Viewport device. This is done by adding the `select` platform, from where the views defined in Unifi Protect can be selected. When changing the selection, the Viewport will change it's current view to the selected item. The `select` platform will only be setup if UFP Viewports are found in Unfi Protect. When you create a view in Unifi Protect, you must check the box *Shared with Others* in order to use the view in this integration.<br>
 **NOTE**: This new entity requires a minimum of Home Assistant 2021.7
 * `NEW`: As part of the support for the UFP Viewport, there also a new service being created, called `unifiprotect.set_viewport_view`. This service requires two parameters: The `entity_id` of the Viewport and the `view_id` of the View you want to set. `view_id` is a long string, but you can find the id number when looking at the Attributes for the `select entity`.
+
+## 0.9.0 Beta 1
+
+Released: July 6th, 2021
+
+* `NEW`: This release adds support for the UFP Viewport device. This is done by adding the `media_player` platform, from where the views defined in Unifi Protect can be selected as source. When selecting the source, the Viewport will change it's current view to the selected source. The `media_player` platform will only be setup if UFP Viewports are found in Unfi Protect.
+* `NEW`: As part of the support for the UFP Viewport, there also a new service being created, called `unifiprotect.set_viewport_view`. This service requires two parameters: The `entity_id` of the Viewport and the `view_id` of the View you want to set. `view_id` is a long string, but you can find the id number when looking at the Attributes for the media_player.
 
 ## 0.8.9
 

@@ -1,9 +1,9 @@
 
-# // Unifi Protect for Home Assistant
+# // UniFi Protect for Home Assistant
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/briis/unifiprotect?style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/custom-components/hacs) [![](https://img.shields.io/badge/COMMUNITY-FORUM-success?style=flat-square)](https://community.home-assistant.io/t/custom-component-unifi-protect/158041)
 
-The Unifi Protect Integration adds support for retrieving Camera feeds and Sensor data from a Unifi Protect installation on either a Ubiquiti CloudKey+ ,Ubiquiti Unifi Dream Machine Pro or UniFi Protect Network Video Recorder.
+The UniFi Protect Integration adds support for retrieving Camera feeds and Sensor data from a UniFi Protect installation on either a Ubiquiti CloudKey+ ,Ubiquiti UniFi Dream Machine Pro or UniFi Protect Network Video Recorder.
 
 There is support for the following device types within Home Assistant:
 * Camera
@@ -17,7 +17,7 @@ There is support for the following device types within Home Assistant:
 * Light
   * A light entity will be created for each UniFi Floodlight found. This works as a normal light entity, and has a brightness scale also.
 
-It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
+It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, 
 2. [Prerequisites](#prerequisites)
 3. [Installation](#installation)
 4. [UniFi Protect Services](#special-unifi-protect-services)
-5. [Unifi Protect Events](#unifi-protect-events)
+5. [UniFi Protect Events](#unifi-protect-events)
 6. [Automating Services](#automating-services)
     * [Send a notfication when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
     * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
@@ -35,35 +35,35 @@ It supports both regular Ubiquiti Cameras and the Unifi Doorbell. Camera feeds, 
 8. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
 ## Hardware Support
 
-This Integration supports all Ubiquiti Hardware that can run Unfi Protect. Currently this includes:
+This Integration supports all Ubiquiti Hardware that can run UniFi Protect. Currently this includes:
 
-* Unifi Protect Network Video Recorder (**UNVR**)
-* Unifi Dream Machine Pro (**UDMP**)
-* Unifi Cloud Key Gen2 Plus (**CKGP**)
+* UniFi Protect Network Video Recorder (**UNVR**)
+* UniFi Dream Machine Pro (**UDMP**)
+* UniFi Cloud Key Gen2 Plus (**CKGP**)
 
-The first two devices run Unifi's own operating system called UnifiOS, and the CKGP with Firmware V2.0.18 or greater also runs UnifiOS. This is important to note, as you will need to know this during installation if your NVR Device runs UnifiOS or not.
+The first two devices run UniFi's own operating system called UniFiOS, and the CKGP with Firmware V2.0.18 or greater also runs UniFiOS. This is important to note, as you will need to know this during installation if your NVR Device runs UniFiOS or not.
 
-Ubiquity released V2.0.24 as an official firmware release for the CloudKey+, and it is recommended that people upgrade to this UnifiOS based firmware for their CloudKey+, as this gives a much better realtime experience.
+Ubiquity released V2.0.24 as an official firmware release for the CloudKey+, and it is recommended that people upgrade to this UniFiOS based firmware for their CloudKey+, as this gives a much better realtime experience.
 
-CKGP with Firmware V1.x **do NOT run UnifiOS**
+CKGP with Firmware V1.x **do NOT run UniFiOS**
 
-In the following we are refering to Devices that do run UnifiOS as *UnifiOS Devices* and devices that do NOT run UnifiOS as *NON UnifiOS Devices*
+In the following we are refering to Devices that do run UniFiOS as *UniFiOS Devices* and devices that do NOT run UniFiOS as *NON UniFiOS Devices*
 
-**NOTE**: Ubiquiti has now officially launched the V2.0.24 FW for the ClodKey Gen2+ which is a UnifiOS FW. So as of V0.8.0 of this Integration, no more testing and development is done on NON UnifiOS Devices. What is already working will still be there, but there is no guarantee that new features will work on these devices.
+**NOTE**: Ubiquiti has now officially launched the V2.0.24 FW for the ClodKey Gen2+ which is a UniFiOS FW. So as of V0.8.0 of this Integration, no more testing and development is done on NON UniFiOS Devices. What is already working will still be there, but there is no guarantee that new features will work on these devices.
 
 ## Prerequisites
 
-Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
+Before you install this Integration you need to ensure that the following two settings are applied in UniFi Protect:
 
-### UnifiOS Devices
+### UniFiOS Devices
 
 1. **Local User**
-    * Login to your *Local Portal* on your UnfiOS device, and click on *Users*
+    * Login to your *Local Portal* on your UniFiOS device, and click on *Users*
     * In the upper right corner, click on *Add User*
     * Click *Add Admin*, and fill out the form. Specific Fields to pay attention to:
       * Role: Must be *Limited Admin*
       * Account Type: *Local Access Only*
-      * CONTROLLER PERMISSIONS - Under Unifi Protect, select Administrators.
+      * CONTROLLER PERMISSIONS - Under UniFi Protect, select Administrators.
     * Click *Add* in at the bottom Right.
 
   **HINT**: A few users have reported that they had to restart their UDMP device after creating the local user for it to work. So if you get some kind of *Error 500* when setting up the Integration, try restart the UDMP.
@@ -73,16 +73,16 @@ Before you install this Integration you need to ensure that the following two se
 
 2. **RTSP Stream**
 
-    The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
-    * open Unifi Protect and click on *Devices*
+    The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of UniFi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
+    * open UniFi Protect and click on *Devices*
     * Select *Manage* in the Menu bar at the top
     * Click on the + Sign next to RTSP
-    * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
+    * Enable minimum 1 stream out of the 3 available. UniFi Protect will select the Stream with the Highest resolution
 
-### NON UnifiOS Devices (CloudKey+ with Firmware 1.x)
+### NON UniFiOS Devices (CloudKey+ with Firmware 1.x)
 
 1. **Local User**
-    * Login to Unifi Protect, and click on *Users*
+    * Login to UniFi Protect, and click on *Users*
     * Either select an existing User or Create a new one.
     * Specific Fields to pay attention to:
       * Roles: Must be part of *Administrators* group.
@@ -93,11 +93,11 @@ Before you install this Integration you need to ensure that the following two se
 
 2. **RTSP Stream**
 
-    The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of Unifi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
-    * open Unifi Protect and click on *Devices*
+    The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of UniFi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
+    * open UniFi Protect and click on *Devices*
     * Select *Manage* in the Menu bar at the top
     * Click on the + Sign next to RTSP
-    * Enable minimum 1 stream out of the 3 available. Unifi Protect will select the Stream with the Highest resolution
+    * Enable minimum 1 stream out of the 3 available. UniFi Protect will select the Stream with the Highest resolution
 
 ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
 
@@ -111,29 +111,29 @@ If you are not familiar with HACS, or havn't installed it, I would recommend to 
 Before you restart Home Assistant, make sure that the stream component is enabled. Open `configuration.yaml` and look for *stream:*. If not found add `stream:` somewhere in the file and save it.
 
 ## Configuration
-To add *Unifi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel, click on 'ADD INTEGRATION', find *Unifi Protect*, and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
+To add *UniFi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel, click on 'ADD INTEGRATION', find *UniFi Protect*, and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
 
-**Note**: If you can't find the *Unifi Protect* integration, hard refresh your browser, when you are on the Integrations page.
+**Note**: If you can't find the *UniFi Protect* integration, hard refresh your browser, when you are on the Integrations page.
 
-If the Unifi Protect Server is found on the network it will be added to your installation. After that, you can add more Unifi Protect Servers, should you have more than one installed.
+If the UniFi Protect Server is found on the network it will be added to your installation. After that, you can add more UniFi Protect Servers, should you have more than one installed.
 
-**You can only add Unifi Protect through the Integration page, Yaml configuration is no longer supported.**
+**You can only add UniFi Protect through the Integration page, Yaml configuration is no longer supported.**
 
 ### MIGRATING FROM CLOUDKEY+ V1.x
-When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS as core operating system. That also means that where you previously used port 7443 you now need to use port 443. There are two ways to fix this:
-* Delete the Unifi Protect Integration and re-add it, using port 443.
-* Edit the file `.storage/core.config_entries` in your Home Assistant instance. Search for Unifi Protect and change port 7443 to 443. Restart Home Assistant. (Make a backup firts)
+When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UniFiOS as core operating system. That also means that where you previously used port 7443 you now need to use port 443. There are two ways to fix this:
+* Delete the UniFi Protect Integration and re-add it, using port 443.
+* Edit the file `.storage/core.config_entries` in your Home Assistant instance. Search for UniFi Protect and change port 7443 to 443. Restart Home Assistant. (Make a backup firts)
 
 ### CONFIGURATION VARIABLES
 **host**:<br>
   *(string)(Required)*<br>
-  Type the IP address of your *Unifi Protect NVR*. Example: `192.168.1.1`<br>
-  **Important** If you run UnifiOS this must be the IP Address. of your UDMP
+  Type the IP address of your *UniFi Protect NVR*. Example: `192.168.1.1`<br>
+  **Important** If you run UniFiOS this must be the IP Address. of your UDMP
 
 **port**:<br>
   *(int)(Optional)*<br>
   The port used to communicate with the NVR. Default is 7443.<br>
-  **Important** If you run UnifiOS the port *must* be specified and it must be 443.
+  **Important** If you run UniFiOS the port *must* be specified and it must be 443.
 
 **username**:<br>
   *(string)(Required)*<br>
@@ -149,7 +149,7 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS
 
 **scan_interval**:<br>
   *(int)(Optional)*<br>
-  How often the Integration polls the Unifi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey with V1.x FW. CloudKey V2.x, UDMP and UNVR users get the data pushed, so polling not needed.<br>
+  How often the Integration polls the UniFi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey with V1.x FW. CloudKey V2.x, UDMP and UNVR users get the data pushed, so polling not needed.<br>
   *Default value*: `2` seconds
 
 **anonymous_snapshots**:<br>
@@ -158,15 +158,15 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UnifiOS
   *Default value*: `False`
 
 #### ANONYMOUS SNAPSHOTS
-To use the Anonymous Snapshot, you must ensure that each Camera is configured to allow this. This cannot be done in Unifi Protect, but has to be done on each individual Camera.
+To use the Anonymous Snapshot, you must ensure that each Camera is configured to allow this. This cannot be done in UniFi Protect, but has to be done on each individual Camera.
 
-1. Login to each of your Cameras by going to http://CAMERA_IP. The Username is *ubnt* and the Camera Password can be found in Unifi Protect under *Settings*.
-2. If you have never logged in to the Camera before, it might take you through a Setup procedure - just make sure to keep it in *Unifi Video* mode, so that it is managed by Unifi Protect.
+1. Login to each of your Cameras by going to http://CAMERA_IP. The Username is *ubnt* and the Camera Password can be found in UniFi Protect under *Settings*.
+2. If you have never logged in to the Camera before, it might take you through a Setup procedure - just make sure to keep it in *UniFi Video* mode, so that it is managed by UniFi Protect.
 3. Once you are logged in, you will see an option on the Front page for enabling Anonymous Snapshots. Make sure this is checked, and then press the *Save Changes* button.
 4. Repeat step 3 for each of your Cameras.
 
 ## Special UniFi Protect Services
-The Integration adds specific *Unifi Protect* services and supports the standard camera services. Below is a list of the *Unifi Protect* specific services:
+The Integration adds specific *UniFi Protect* services and supports the standard camera services. Below is a list of the *UniFi Protect* specific services:
 
 Service | Parameters | Description
 :------------ | :------------ | :-------------
@@ -182,11 +182,11 @@ Service | Parameters | Description
 `unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100. | Adjust settings for the PIR motion sensor in the Floodlight.
 `unifiprotect.set_doorbell_chime_duration` | `entity_id` - The Doorbell attached to the Chime.<br>`chime_duration`  - 0 to 10000 | Set Doorbell Chime duration.
 
-**Note:** When using *camera.enable_motion_detection*, Recording in Unfi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in Unifi Protect App or use the service `unifiprotect.set_recording_mode`.
+**Note:** When using *camera.enable_motion_detection*, Recording in UniFi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in UniFi Protect App or use the service `unifiprotect.set_recording_mode`.
 
-## Unifi Protect Events
+## UniFi Protect Events
 
-The following Unifi Protect events are triggered when running this Integration:
+The following UniFi Protect events are triggered when running this Integration:
 
 Event Type | Description | Data
 :------------ | :------------ | :-------------
@@ -323,4 +323,4 @@ logger:
 
 4. A fresh Home Assistant test instance will install and will eventually be running on port 9123 with this integration running
 
-5. When the container is running, go to http://localhost:9123 and the add Unifi Protect from the Integration Page.
+5. When the container is running, go to http://localhost:9123 and the add UniFi Protect from the Integration Page.

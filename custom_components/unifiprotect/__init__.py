@@ -90,7 +90,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "Could not Authorize against Unifi Protect. Please reinstall the Integration."
         )
         return False
-    except (NvrError, ServerDisconnectedError) as notreadyerror:
+    except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
 
     if entry.unique_id is None:

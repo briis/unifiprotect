@@ -1,5 +1,16 @@
 # // Changelog
 
+## 0.9.0
+
+Released: NOT RELEASED YET
+
+* `NEW`: This release adds support for the UFP Viewport device. This is done by adding the `select` platform, from where the views defined in Unifi Protect can be selected. When changing the selection, the Viewport will change it's current view to the selected item. The `select` platform will only be setup if UFP Viewports are found in Unfi Protect. When you create a view in Unifi Protect, you must check the box *Shared with Others* in order to use the view in this integration.<br>
+**NOTE**: This new entity requires a minimum of Home Assistant 2021.7
+* `NEW`: As part of the support for the UFP Viewport, there also a new service being created, called `unifiprotect.set_viewport_view`. This service requires two parameters: The `entity_id` of the Viewport and the `view_id` of the View you want to set. `view_id` is a long string, but you can find the id number when looking at the Attributes for the `select` entity.
+* `FIX`: Issue #264, missing image_width variable is fixed in this release.
+* `CHANGE`: PR #276, Ensure setup is retried later when device is rebooting. Thanks to @bdraco
+* `CHANGE`: PR #271. Updated README, to ensure proper capitalization. Thanks to @jonbloom
+
 ## 0.9.0 Beta 2
 
 Released: July 17th, 2021

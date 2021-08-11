@@ -1,6 +1,7 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
 import os
+from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.config_entries import ConfigEntry
@@ -316,14 +317,18 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             return
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self._name)
 
-    async def async_camera_image(self):
+    async def async_camera_image(
+        self, width: Optional[int] = None, height: Optional[int] = None
+    ):
         """Return the Camera Image."""
         if self._snapshot_direct:
             last_image = await self.upv_object.get_snapshot_image_direct(
                 self._device_id
             )
         else:
-            last_image = await self.upv_object.get_snapshot_image(self._device_id)
+            last_image = await self.upv_object.get_snapshot_image(
+                self._device_id, width, height
+            )
         self._last_image = last_image
         return self._last_image
 

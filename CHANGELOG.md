@@ -10,6 +10,7 @@ Released: NOT RELEASED YET
 * `FIX`: Issue #264, missing image_width variable is fixed in this release.
 * `CHANGE`: PR #276, Ensure setup is retried later when device is rebooting. Thanks to @bdraco
 * `CHANGE`: PR #271. Updated README, to ensure proper capitalization. Thanks to @jonbloom
+* `CHANGE`: PR #278. Allow requesting a custom snapshot width and height, to support 2021.9 release. Thank to @bdraco
 
 ## 0.9.0 Beta 2
 

@@ -2,7 +2,7 @@
 
 ## 0.9.1 Beta 1
 
-Released: NOT RELEASED YET
+Released: September 26th, 2021
 
 * `FIX`: Issue #297. Improves determining reason for bad responses.
 

@@ -4,7 +4,7 @@
 
 > ## End of support for Non UnifiOS devices
 >
-> On **November 1st, 2021** future development will no longer support devices that do not run UnifiOS. This will affect all users who have a CloudKey+ with firmware version 1.x<br>
+> On **November 1st, 2021** new releases of this integration will no longer support devices that do not run UnifiOS. This will affect all users who have a CloudKey+ with firmware version 1.x<br>
 *All user with a UDMP, UNVR or a CloudKey+ with firmware V2.x will not be affected by this change.*<br>
 >
 >We estimate that the number of users still having demand for this, is so small that it is no longer worth the time and effort we have to put in to support it. If you are on a CloudKey+ with FW 1.x, please make sure to upgrade it to a V2.x before November 1st, to be able to continue to upgrade this Integration and get bug fixes and new features.

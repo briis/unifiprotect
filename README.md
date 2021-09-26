@@ -1,8 +1,15 @@
-
 # // UniFi Protect for Home Assistant
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/briis/unifiprotect?style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/custom-components/hacs) [![](https://img.shields.io/badge/COMMUNITY-FORUM-success?style=flat-square)](https://community.home-assistant.io/t/custom-component-unifi-protect/158041)
 
+> ## End of support for Non UnifiOS devices
+>
+> On **November 1st, 2021** this integration will no longer support devices that do not run UnifiOS. This will affect all users who have a CloudKey+ with firmware version 1.x<br>
+*All user with a UDMP, UNVR or a CloudKey+ with firmware V2.x will not be affected by this change.*<br>
+>
+>We estimate that the number of users still having demand for this, is so small that it is no longer worth the time and effort we have to put in to support it. If you are on a CloudKey+ with FW 1.x, please make sure to upgrade it to a V2.x before November 1st, to be able to continue to use this Integration.
+***
+                         
 The UniFi Protect Integration adds support for retrieving Camera feeds and Sensor data from a UniFi Protect installation on either a Ubiquiti CloudKey+ ,Ubiquiti UniFi Dream Machine Pro or UniFi Protect Network Video Recorder.
 
 There is support for the following device types within Home Assistant:

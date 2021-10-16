@@ -30,6 +30,7 @@ from .const import (
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    MIN_REQUIRED_PROTECT_V,
     UNIFI_PROTECT_PLATFORMS,
 )
 from .data import UnifiProtectData
@@ -85,6 +86,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         nvr_info = await protectserver.server_information()
+        if nvr_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+            _LOGGER.error(
+                "You are running V%s of UniFi Protect. Minimum required version is V%s. Please upgrade UniFi Protect and then retry.",
+                nvr_info["server_version"],
+                MIN_REQUIRED_PROTECT_V,
+            )
+            return False
+
     except NotAuthorized:
         _LOGGER.error(
             "Could not Authorize against Unifi Protect. Please reinstall the Integration."

@@ -27,6 +27,7 @@ from .const import (
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    MIN_REQUIRED_PROTECT_V,
     TYPE_IR_AUTO,
     TYPE_IR_OFF,
     TYPES_IR_OFF,
@@ -69,6 +70,11 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         try:
             server_info = await unifiprotect.server_information()
+            if server_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+                _LOGGER.debug("UniFi Protect Version not supported.")
+                errors["base"] = "protect_version"
+                return await self._show_setup_form(errors)
+
         except NotAuthorized as ex:
             _LOGGER.debug(ex)
             errors["base"] = "connection_error"

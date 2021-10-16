@@ -5,6 +5,7 @@
         },
         "error": {
             "connection_error": "Tilkobling mislyktes. Feil IP eller brukernavn / passord.",
+            "protect_version": "UniFi Protect Version is not supported by this Integration",
             "nvr_error": "Feil ved henting av data fra Unifi Protect."
         },
         "step": {

@@ -5,6 +5,7 @@
         },
         "error": {
             "connection_error": "Impossible de se connecter. Mauvaise IP ou identifiant/mot de passe.",
+            "protect_version": "UniFi Protect Version is not supported by this Integration",
             "nvr_error": "Erreur lors de la récupération de données sur Unifi Protect."
         },
         "step": {

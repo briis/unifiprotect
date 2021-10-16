@@ -39,15 +39,14 @@ set_recording_mode:
           domain: camera
     recording_mode:
       name: Recording Mode
-      description: "(Required) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording, smart = Smart Detect. Default value is: motion"
+      description: "(Required) Valid options are: always = Always Recording, detections = Only record on motion, never = stop recording"
       required: true
-      example: motion
+      example: detections
       selector:
         select:
           options:
             - "always"
-            - "motion"
-            - "smart"
+            - "detections"
             - "never"
 set_ir_mode:
   name: Set Infrared mode

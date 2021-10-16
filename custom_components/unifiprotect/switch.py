@@ -18,7 +18,6 @@ from .const import (
     TYPE_RECORD_MOTION,
     TYPE_RECORD_NEVER,
     TYPE_RECORD_OFF,
-    TYPE_RECORD_SMARTDETECT,
 )
 from .entity import UnifiProtectEntity
 
@@ -37,7 +36,6 @@ SWITCH_TYPES = {
         "recording_mode",
     ],
     "record_always": ["Record Always", "video", "record_always", "recording_mode"],
-    "record_smart": ["Record Smart", "video", "record_smart", "has_smartdetect"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode", "ir_mode"],
     "status_light": ["Status Light On", "led-on", "status_light", "has_ledstatus"],
     "hdr_mode": ["HDR Mode", "brightness-7", "hdr_mode", "has_hdr"],
@@ -127,8 +125,6 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
             return self._device_data["recording_mode"] == TYPE_RECORD_MOTION
         if self._switch_type == "record_always":
             return self._device_data["recording_mode"] == TYPE_RECORD_ALWAYS
-        if self._switch_type == "record_smart":
-            return self._device_data["recording_mode"] == TYPE_RECORD_SMARTDETECT
         if self._switch_type == "ir_mode":
             return self._device_data["ir_mode"] == self._ir_on_cmd
         if self._switch_type == "hdr_mode":
@@ -166,11 +162,6 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         elif self._switch_type == "record_always":
             _LOGGER.debug("Turning on Constant Recording")
             await self.upv.set_camera_recording(self._device_id, TYPE_RECORD_ALWAYS)
-        elif self._switch_type == "record_smart":
-            _LOGGER.debug("Turning on SmartDetect Recording")
-            await self.upv.set_camera_recording(
-                self._device_id, TYPE_RECORD_SMARTDETECT
-            )
         elif self._switch_type == "ir_mode":
             _LOGGER.debug("Turning on IR")
             await self.upv.set_camera_ir(self._device_id, self._ir_on_cmd)

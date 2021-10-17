@@ -29,13 +29,6 @@ _SWITCH_TYPE = 2
 _SWITCH_REQUIRES = 3
 
 SWITCH_TYPES = {
-    "record_motion": [
-        "Record Motion",
-        "video-outline",
-        "record_motion",
-        "recording_mode",
-    ],
-    "record_always": ["Record Always", "video", "record_always", "recording_mode"],
     "ir_mode": ["IR Active", "brightness-4", "ir_mode", "ir_mode"],
     "status_light": ["Status Light On", "led-on", "status_light", "has_ledstatus"],
     "hdr_mode": ["HDR Mode", "brightness-7", "hdr_mode", "has_hdr"],

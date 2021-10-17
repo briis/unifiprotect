@@ -10,7 +10,11 @@ from .const import (
     ATTR_DEVICE_MODEL,
     DEFAULT_ATTRIBUTION,
     DEVICES_WITH_CAMERA,
+    DEVICE_TYPE_LIGHT,
     DEVICE_TYPE_VIEWPORT,
+    TYPE_LIGHT_RECORD_MOTION,
+    TYPE_RECORD_ALWAYS,
+    TYPE_RECORD_OFF,
     DOMAIN,
 )
 from .entity import UnifiProtectEntity
@@ -22,6 +26,11 @@ _LOGGER = logging.getLogger(__name__)
 _SELECT_NAME = 0
 _SELECT_ICON = 1
 _SELECT_TYPE = 2
+
+LIGHT_MODE_MOTION = "On Motion"
+LIGHT_MODE_DARK = "When Dark"
+LIGHT_MODE_OFF = "Manual"
+LIGHT_MODES = [LIGHT_MODE_MOTION, LIGHT_MODE_DARK, LIGHT_MODE_OFF]
 
 RECORDING_MODES = ["Always", "Never", "Detections"]
 
@@ -35,6 +44,11 @@ SELECT_TYPES = {
         "Viewer",
         "view-dashboard",
         DEVICE_TYPE_VIEWPORT,
+    ],
+    "light_motion": [
+        "Lightning",
+        "spotlight",
+        DEVICE_TYPE_LIGHT,
     ],
 }
 
@@ -102,6 +116,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self._liveviews = liveviews
         if self._device_type == DEVICE_TYPE_VIEWPORT:
             self._attr_options = self.viewport_view_names()
+        elif self._device_type == DEVICE_TYPE_LIGHT:
+            self._attr_options = LIGHT_MODES
         else:
             self._attr_options = RECORDING_MODES
 
@@ -115,6 +131,15 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         """Return the current selected option."""
         if self._device_type == DEVICE_TYPE_VIEWPORT:
             return self.get_view_name_from_id(self._device_data["liveview"])
+        if self._device_type == DEVICE_TYPE_LIGHT:
+            lightmode = self._device_data["motion_mode"]
+            if lightmode == TYPE_LIGHT_RECORD_MOTION:
+                lightmode = LIGHT_MODE_MOTION
+            elif lightmode == TYPE_RECORD_ALWAYS:
+                lightmode = LIGHT_MODE_DARK
+            else:
+                lightmode = LIGHT_MODE_OFF
+            return lightmode
 
         return self._device_data["recording_mode"].capitalize()
 
@@ -170,6 +195,22 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             else:
                 raise ValueError(
                     f"Can't set the value to {option}. Allowed values are: {self.options}"
+                )
+        elif self._device_type == DEVICE_TYPE_LIGHT:
+            if option in self.options:
+                if option == LIGHT_MODE_MOTION:
+                    lightmode = TYPE_LIGHT_RECORD_MOTION
+                    timing = "fulltime"
+                elif option == LIGHT_MODE_DARK:
+                    lightmode = TYPE_RECORD_ALWAYS
+                    timing = "dark"
+                else:
+                    lightmode = TYPE_RECORD_OFF
+                    timing = None
+
+                _LOGGER.debug("Changing Light Mode to %s", option)
+                await self.upv.light_settings(
+                    self._device_id, lightmode, enable_at=timing
                 )
         else:
             if option in self.options:

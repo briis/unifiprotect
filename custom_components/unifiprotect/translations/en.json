@@ -5,6 +5,7 @@
         },
         "error": {
             "connection_error": "Failed to connect. Wrong IP or Username/Password.",
+            "protect_version": "UniFi Protect Version is not supported by this Integration",
             "nvr_error": "Error retrieving data from Unifi Protect."
         },
         "step": {

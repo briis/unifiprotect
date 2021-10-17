@@ -5,6 +5,7 @@
         },
         "error": {
             "connection_error": "Kan ikke forbinde. Forkert IP eller Brugernavn/Kodeord.",
+            "protect_version": "UniFi Protect Version er ikke understøttet af denne version.",
             "nvr_error": "Kan ikke hente data fra Unifi Protect."
         },
         "step": {

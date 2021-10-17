@@ -14,6 +14,7 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DOMAIN,
     TYPE_HIGH_FPS_ON,
+    TYPE_LIGHT_RECORD_MOTION,
     TYPE_RECORD_ALWAYS,
     TYPE_RECORD_MOTION,
     TYPE_RECORD_NEVER,
@@ -125,7 +126,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         if self._switch_type == "high_fps":
             return self._device_data["video_mode"] == TYPE_HIGH_FPS_ON
         if self._switch_type == "light_motion":
-            return self._device_data["motion_mode"] == TYPE_RECORD_MOTION
+            return self._device_data["motion_mode"] == TYPE_LIGHT_RECORD_MOTION
         if self._switch_type == "light_dark":
             return self._device_data["motion_mode"] == TYPE_RECORD_ALWAYS
         return (
@@ -167,7 +168,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         elif self._switch_type == "light_motion":
             _LOGGER.debug("Turning on Light Motion detection")
             await self.upv.light_settings(
-                self._device_id, TYPE_RECORD_MOTION, enable_at="fulltime"
+                self._device_id, TYPE_LIGHT_RECORD_MOTION, enable_at="fulltime"
             )
         elif self._switch_type == "light_dark":
             _LOGGER.debug("Turning on Light Motion when Dark")

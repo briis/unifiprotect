@@ -80,6 +80,7 @@ SERVICE_SET_WDR_VALUE = "set_wdr_value"
 SERVICE_SET_DOORBELL_CHIME_DURAION = "set_doorbell_chime_duration"
 SERVICE_SET_VIEWPORT_VIEW = "set_viewport_view"
 
+TYPE_LIGHT_RECORD_MOTION = "motion"
 TYPE_RECORD_MOTION = "detections"
 TYPE_RECORD_ALWAYS = "always"
 TYPE_RECORD_NEVER = "never"

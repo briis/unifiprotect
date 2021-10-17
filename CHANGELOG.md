@@ -1,8 +1,10 @@
 # // Changelog
 
-## 0.9.1 Beta 1
+## 0.9.1
 
-Released: September 26th, 2021
+Released: October 17th, 2021
+
+This will be the final release for devices not running the UnifiOS. With the next official release, there will no longer be support for the CloudKey+ running a firmware lover than 2.0.
 
 * `FIX`: Issue #297. Improves determining reason for bad responses.
 

@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_DEVICE_MODEL,
     DEFAULT_ATTRIBUTION,
+    DEVICES_WITH_CAMERA,
     DEVICE_TYPE_VIEWPORT,
     DOMAIN,
 )
@@ -18,11 +19,30 @@ ATTR_VIEWS = "views"
 
 _LOGGER = logging.getLogger(__name__)
 
+_SELECT_NAME = 0
+_SELECT_ICON = 1
+_SELECT_TYPE = 2
+
+RECORDING_MODES = ["Always", "Never", "Detections"]
+
+SELECT_TYPES = {
+    "recording_mode": [
+        "Recording Mode",
+        "video-outline",
+        DEVICES_WITH_CAMERA,
+    ],
+    "viewer": [
+        "Viewer",
+        "view-dashboard",
+        DEVICE_TYPE_VIEWPORT,
+    ],
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
-    """Set up Viewport Live Views for UniFi Protect integration."""
+    """Set up Select entities for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
     protect_data = entry_data["protect_data"]
@@ -33,29 +53,29 @@ async def async_setup_entry(
     # Get Current Views
     liveviews = await upv_object.get_live_views()
 
-    views = []
-    for device_id in protect_data.data:
-        device_data = protect_data.data[device_id]
-        if device_data["type"] == DEVICE_TYPE_VIEWPORT:
-            views.append(
-                UnifiProtectSelects(
-                    upv_object,
-                    protect_data,
-                    server_info,
-                    device_id,
-                    DEVICE_TYPE_VIEWPORT,
-                    liveviews,
+    select_entities = []
+    for item, item_type in SELECT_TYPES.items():
+        for device_id in protect_data.data:
+            if protect_data.data[device_id].get("type") in item_type[_SELECT_TYPE]:
+                select_entities.append(
+                    UnifiProtectSelects(
+                        upv_object,
+                        protect_data,
+                        server_info,
+                        device_id,
+                        item,
+                        liveviews,
+                    )
                 )
-            )
-            _LOGGER.debug(
-                "UNIFIPROTECT SELECT CREATED: %s",
-                device_data["name"],
-            )
+                _LOGGER.debug(
+                    "UNIFIPROTECT SELECT CREATED: %s",
+                    protect_data.data[device_id].get("name"),
+                )
 
-    if not views:
+    if not select_entities:
         return
 
-    async_add_entities(views)
+    async_add_entities(select_entities)
 
     return True
 
@@ -69,15 +89,21 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         protect_data,
         server_info,
         device_id,
-        sensor_type,
+        select_entity,
         liveviews,
     ):
         """Initialize the Viewport Media Player."""
         super().__init__(upv_object, protect_data, server_info, device_id, None)
-        self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
+        self.upv = upv_object
+        select_item = SELECT_TYPES[select_entity]
+        self._name = f"{select_item[_SELECT_NAME]} {self._device_data['name']}"
+        self._icon = f"mdi:{select_item[_SELECT_ICON]}"
+        self._device_type = select_item[_SELECT_TYPE]
         self._liveviews = liveviews
-        self._attr_options = self.viewport_view_names()
-        self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
+        if self._device_type == DEVICE_TYPE_VIEWPORT:
+            self._attr_options = self.viewport_view_names()
+        else:
+            self._attr_options = RECORDING_MODES
 
     @property
     def name(self):
@@ -87,16 +113,27 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
     @property
     def current_option(self) -> str:
         """Return the current selected option."""
-        return self.get_view_name_from_id(self._device_data["liveview"])
+        if self._device_type == DEVICE_TYPE_VIEWPORT:
+            return self.get_view_name_from_id(self._device_data["liveview"])
+
+        return self._device_data["recording_mode"].capitalize()
 
     @property
     def device_state_attributes(self):
         """Return the device state attributes."""
-        return {
+        attr = {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_DEVICE_MODEL: self._model,
-            ATTR_VIEWS: self._liveviews,
         }
+        if self._device_type == DEVICE_TYPE_VIEWPORT:
+            attr[ATTR_VIEWS] = self._liveviews
+
+        return attr
+
+    @property
+    def icon(self):
+        """Icon to use in the frontend, if any."""
+        return self._icon
 
     def get_view_name_from_id(self, view_id):
         """Returns the Liveview Name from the ID"""
@@ -124,12 +161,17 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         return views
 
     async def async_select_option(self, option: str) -> None:
-        """Change the diffuser room size."""
-        if option in self.options:
-            _LOGGER.debug("OPTION: %s", option)
-            view_id = self.get_view_id_from_name(option)
-            await self.upv_object.set_viewport_view(self._device_id, view_id)
+        """Change the Select Entity Option."""
+        if self._device_type == DEVICE_TYPE_VIEWPORT:
+            if option in self.options:
+                _LOGGER.debug("Viewport View set to: %s", option)
+                view_id = self.get_view_id_from_name(option)
+                await self.upv_object.set_viewport_view(self._device_id, view_id)
+            else:
+                raise ValueError(
+                    f"Can't set the value to {option}. Allowed values are: {self.options}"
+                )
         else:
-            raise ValueError(
-                f"Can't set the value to {option}. Allowed values are: {self.options}"
-            )
+            if option in self.options:
+                _LOGGER.debug("Changing Recording Mode to %s", option)
+                await self.upv.set_camera_recording(self._device_id, option.lower())

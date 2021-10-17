@@ -291,7 +291,7 @@ light_settings:
           options:
             - "off"
             - "motion"
-            - "dark"
+            - "always"
     enable_at:
       name: Enable At
       description: "string (optional) When motion is selected as mode, one can adjust if light turns on on motion detection. Where fulltime is always, and dark is only when dark."

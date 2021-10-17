@@ -121,11 +121,11 @@ VALID_RECORDING_MODES = [
 ]
 VALID_BOOLEAN_MODES = [True, False]
 
-
+VALID_LIGHT_MODES = [TYPE_LIGHT_RECORD_MOTION, TYPE_RECORD_ALWAYS, TYPE_RECORD_OFF]
 LIGHT_SETTINGS_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Required(CONF_MODE): cv.string,
+        vol.Required(CONF_MODE): vol.In(VALID_LIGHT_MODES),
         vol.Optional(CONF_ENABLE_AT): cv.string,
         vol.Optional(CONF_DURATION): vol.Coerce(int),
         vol.Optional(CONF_SENSITIVITY): vol.Coerce(int),

@@ -1,5 +1,27 @@
 # // Changelog
 
+## 0.10.0 Beta 1
+
+Released: October 17th, 2021
+
+This is the first Beta release that will support **UniFi Protect 1.20.0**. There have been a few changes to the Protect API, that requires us to change this Integration. Unfortunately it cannot be avoided that these are Breaking Changes, so please read carefully below before you do the upgrade.
+
+When reading the Release Notes for UniFi Protect 1.20.0-beta.2 the following changes are directly affecting this Integration:
+
+* Integrate “Smart detections” and “Motion Detections” into “Detections”.
+* Generate only RTSPS links for better security. (RTSP streams are still available by removing S from RTSPS and by changing port 7441 to 7447.
+
+#### Changes implemented in this version:
+* `CHANGE`: **IMPORTANT** You MUST have at least UniFi Protect **V1.20.0-beta.1** installed for this Integration to work. There are checks on both new installations and upgraded installations to see if your UniFi Protect App is at the right version number. Please consult the HA Logfile for more information if something does not work.
+If you are not running the 1.20.0 beta, DO NOT UPGRADE. If you did anyway, you can just uninstall and select the 0.9.1 release from HACS and all should be running again.
+* `CHANGE`: **BREAKING CHANGE** All switches called `switch.record_smart_CAMERANAME` have been removed from the system, as they are no longer valid due to the change listed above.
+* `CHANGE`: **BREAKING CHANGE** All switches called `switch.record_motion_CAMERANAME` have been removed from the system. They are being migrated to a `Select Entity` which you can read more about below.
+* `CHANGE`: **BREAKING CHANGE** All switches for the *Floodlight devices* have been removed from the system. They are being migrated to a `Select Entity` which you can read more about below.
+* `CHANGE`: **BREAKING CHANGE** The Service `unifiprotect.set_recording_mode` now only supports the following values for recording_mode: `"never, detections, always"`. If you have automations that uses the recording_mode `smart` or `motion` you will have to change this to `detections`.
+* `NEW`: For each Camera there will now be a `Select Entity` from where you can select the recording mode for each Camera. Valid options are `Always, Never, Detections`. Detections is what you use to enable motion detection. Whether they do People and Vehicle detection, depends on the Camera Type and the settings in the UniFi Protect App. We might later on implement a new Select Entity from where you can enable or disable the the Smart Detections. Until then, this needs to be done from the UniFi Protect App.
+* `NEW`: For each Floodlight there will now be a `Select Entity` from where you can select when the Light Turns on. This replaces the two switches that were in the earlier releases. Valid options are `On Motion, When Dark, Manual`.
+* `CHANGE`: We will now use RTSPS for displaying video. This is to further enhance security, and to ensure that the system will continue running if Ubiquiti decides to remove RTSP completely. This does not require any changes from your side.
+
 ## 0.9.1
 
 Released: October 17th, 2021

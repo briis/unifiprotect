@@ -101,6 +101,16 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def is_on(self):
         """Return true if the binary sensor is on."""
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
+            # Add Event to HA Event Bus
+            if self._device_data["event_on"]:
+                self._hass.bus.fire(
+                    f"{DOMAIN}_motion",
+                    {
+                        "entity_id": f"camera.{slugify(self._device_data['name'])}",
+                        "smart_detect": self._device_data["event_object"],
+                        "motion_on": self._device_data["event_on"],
+                    },
+                )
             return self._device_data["event_on"]
 
         if self._device_data["event_ring_on"]:

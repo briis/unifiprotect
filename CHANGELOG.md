@@ -1,5 +1,33 @@
 # // Changelog
 
+## 0.10.0 Beta 2
+
+Released: NOT RELEASED YET
+
+Everything from Beta 1 is included here, plus the following:
+
+`NEW`: Added a new event `unifiprotect_motion` that triggers on motion. You can use this instead of the Binary Sensor to watch for a motion event on any motion enabled device. The output from the event will look similar tom the below
+
+  ```json
+  {
+    "event_type": "unifiprotect_motion",
+    "data": {
+        "entity_id": "camera.outdoor",
+        "smart_detect": [
+            "person"
+        ],
+        "motion_on": true
+    },
+    "origin": "LOCAL",
+    "time_fired": "2021-10-18T10:55:36.134535+00:00",
+    "context": {
+        "id": "b3723102b4fb71a758a423d0f3a04ba6",
+        "parent_id": null,
+        "user_id": null
+    }
+  }
+  ````
+
 ## 0.10.0 Beta 1
 
 Released: October 17th, 2021

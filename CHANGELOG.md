@@ -2,10 +2,11 @@
 
 ## 0.10.0 Beta 2
 
-Released: NOT RELEASED YET
+Released: October 24th, 2021
 
 Everything from Beta 1 is included here, plus the following:
 
+`CHANGE`: Changes to the underlying `pyunifiprotect` module done by @AngellusMortis to ensure all tests are passing and adding new functionality to be used in a later release.
 `NEW`: Added a new event `unifiprotect_motion` that triggers on motion. You can use this instead of the Binary Sensor to watch for a motion event on any motion enabled device. The output from the event will look similar tom the below
 
   ```json

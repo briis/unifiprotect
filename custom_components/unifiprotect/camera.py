@@ -162,6 +162,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         super().__init__(upv_object, protect_data, server_info, camera_id, None)
         self._snapshot_direct = snapshot_direct
         self._name = self._device_data["name"]
+        self._disable_stream = disable_stream
         self._stream_source = None if disable_stream else self._device_data["rtsp"]
         self._last_image = None
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0

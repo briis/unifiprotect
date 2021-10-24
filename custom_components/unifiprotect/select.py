@@ -5,7 +5,6 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
-
 from .const import (
     ATTR_DEVICE_MODEL,
     DEFAULT_ATTRIBUTION,

@@ -21,7 +21,7 @@ _NUMBER_ICON = 1
 _NUMBER_MIN_VALUE = 2
 _NUMBER_MAX_VALUE = 3
 _NUMBER_STEP = 4
-_NUMBER_MODE = 5
+_NUMBER_MODE = 5  # auto, slider or box
 _NUMBER_TYPE = 6
 
 NUMBER_TYPES = {
@@ -100,7 +100,6 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         self._attr_min_value = number_item[_NUMBER_MIN_VALUE]
         self._attr_step = number_item[_NUMBER_STEP]
         self._attr_mode = number_item[_NUMBER_MODE]
-        _LOGGER.debug(self._attr_mode)
 
     @property
     def name(self):

@@ -10,15 +10,6 @@
         },
         "step": {
             "user": {
-                "data": {
-                    "host": "IP-adresse til Unifi Protect Server",
-                    "port": "Portnummer (7443 NON UnifiOS, 443 UnifiOS)",
-                    "username": "Brukenavn",
-                    "password": "Passord",
-                    "disable_rtsp": "Deaktiver RTSP-signalet",
-                    "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
-                    "scan_interval": "Skanneintervall for hendelser på NON UnifiOS Server (sett høyere hvis mange kameraer)"
-                },
                 "description": "Sett opp Unifi Protect for å overvåke kameraer og sensorer.",
                 "title": "Unifi Protect"
             }
@@ -28,7 +19,12 @@
         "step": {
             "init": {
                 "data": {
+                    "host": "IP-adresse til Unifi Protect Server",
+                    "port": "Portnummer (7443 NON UnifiOS, 443 UnifiOS)",
+                    "username": "Brukenavn",
+                    "password": "Passord",
                     "disable_rtsp": "Deaktiver RTSP-signalet",
+                    "doorbell_text": "Add a comma separated list of Custom Texts that can be displayed on the doorbell. Leave blank if no Doorbel",
                     "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)",
                     "scan_interval": "Skanneintervall for hendelser på NON UnifiOS Server (sett høyere hvis mange kameraer)"
                 }

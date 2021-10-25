@@ -11,6 +11,7 @@ Everything from Beta 1 and 2 is included here, plus the following:
 * `CHANGE`: **BREAKING CHANGE** The Service `unifiprotect.set_ir_mode` now supports the following values for ir_mode: `"auto, autoFilterOnly, on, off"`. This is a change from the previous valid options and if you have automations that uses this service you will need to make sure that you only use these supported modes.
 * `NEW`: For each Camera there will now be a `Select Entity` from where you can select the Infrared mode for each Camera. Valid options are `Auto, Always Enable, Auto (Filter Only, no LED's), Always Disable`. These are the same options you can use if you set this through the UniFi Protect App.
 * `NEW`: Added a new `Number` entity called `number.wide_dynamic_range_CAMERANAME`. You can now set the Wide Dynamic Range for a camera directly from the UI. This is a supplement to the already existing service `unifiprotect.set_wdr_value`.
+* `NEW`: Added `select.doorbell_text_DOORBELL_NAME` to be able to change the LCD Text on the Doorbell from the UI. In the configuration menu of the Integration there is now a field where you can type a list of Custom Texts that can be displayed on the Doorbell and then these options plus the two standard texts built-in to the Doorbell can now all be selected. The format of the custom text list has to ba a comma separated list, f.ex.: RING THE BELL, WE ARE SLEEPING, GO AWAY... etc.
 
 ## 0.10.0 Beta 2
 

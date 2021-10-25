@@ -25,6 +25,7 @@ from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 from pyunifiprotect.const import SERVER_ID
 
 from .const import (
+    CONF_DOORBELL_TEXT,
     CONF_DISABLE_RTSP,
     CONF_SNAPSHOT_DIRECT,
     DEFAULT_BRAND,
@@ -48,21 +49,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the Unifi Protect config entries."""
-
-    if not entry.options:
-        hass.config_entries.async_update_entry(
-            entry,
-            options={
-                CONF_SCAN_INTERVAL: entry.data.get(
-                    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                ),
-                CONF_SNAPSHOT_DIRECT: entry.data.get(CONF_SNAPSHOT_DIRECT, False),
-            },
-        )
-    if not entry.options.get(CONF_DISABLE_RTSP):
-        hass.config_entries.async_update_entry(
-            entry, options={CONF_DISABLE_RTSP: entry.data.get(CONF_DISABLE_RTSP, False)}
-        )
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
     protectserver = UpvServer(
@@ -110,14 +96,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryNotReady
 
     update_listener = entry.add_update_listener(_async_options_updated)
-
     data = hass.data[DOMAIN][entry.entry_id] = {
         "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
         "server_info": nvr_info,
         "update_listener": update_listener,
-        "disable_stream": entry.options[CONF_DISABLE_RTSP],
+        "disable_stream": entry.options.get(CONF_DISABLE_RTSP, False),
+        "doorbell_text": entry.options.get(CONF_DOORBELL_TEXT, None),
     }
 
     async def _async_stop_protect_data(event):

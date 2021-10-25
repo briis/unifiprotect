@@ -78,8 +78,8 @@ Before you install this Integration you need to ensure that the following two se
 
     The Integration uses the RTSP Stream as the Live Feed source, so this needs to be enabled on each camera. With the latest versions of UniFi Protect, the stream is enabled per default, but it is recommended to just check that this is done. To check and enable the the feature
     * open UniFi Protect and click on *Devices*
-    * Select *Manage* in the Menu bar at the top
-    * Click on the + Sign next to RTSP
+    * Select *Settings* in the Menu bar at the top
+    * Click on the *V* Sign next to *Advanced*
     * Enable minimum 1 stream out of the 3 available. UniFi Protect will select the Stream with the Highest resolution
 
 ![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
@@ -124,6 +124,10 @@ If the UniFi Protect Server is found on the network it will be added to your ins
 **deactivate rtsp stream**<br>
   *(bool)Optional*<br>
   If this box is checked, the camera stream will not use the RTSP stream, but instead jpeg push. This gives a realtime stream, but does not include Audio.
+
+**doorbell text**<br>
+  *(string)Optional*<br>
+  If a Doorbell is attached to UniFi Protect, you can use this field to write a list of Custom Texts that can be displayed on the Doorbell LCD Screen. The list must be comma separated and will be truncated to 30 characters per item.
 
 **scan_interval**:<br>
   *(int)(Optional)*<br>

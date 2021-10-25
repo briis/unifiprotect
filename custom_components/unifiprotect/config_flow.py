@@ -20,6 +20,7 @@ from pyunifiprotect.const import SERVER_ID, SERVER_NAME
 import voluptuous as vol
 
 from .const import (
+    CONF_DOORBELL_TEXT,
     CONF_DISABLE_RTSP,
     CONF_SNAPSHOT_DIRECT,
     DEFAULT_PORT,
@@ -93,6 +94,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_USERNAME: user_input.get(CONF_USERNAME),
                 CONF_PASSWORD: user_input.get(CONF_PASSWORD),
                 CONF_DISABLE_RTSP: user_input.get(CONF_DISABLE_RTSP),
+                CONF_DOORBELL_TEXT: user_input.get(CONF_DOORBELL_TEXT),
                 CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
                 CONF_SCAN_INTERVAL: user_input.get(CONF_SCAN_INTERVAL),
             },
@@ -109,6 +111,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_USERNAME): str,
                     vol.Required(CONF_PASSWORD): str,
                     vol.Optional(CONF_DISABLE_RTSP, default=False): bool,
+                    vol.Optional(CONF_DOORBELL_TEXT): str,
                     vol.Optional(CONF_SNAPSHOT_DIRECT, default=False): bool,
                     vol.Optional(
                         CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
@@ -139,6 +142,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_DISABLE_RTSP,
                         default=self.config_entry.options.get(CONF_DISABLE_RTSP, False),
                     ): bool,
+                    vol.Optional(
+                        CONF_DOORBELL_TEXT,
+                        default=self.config_entry.options.get(CONF_DOORBELL_TEXT, ""),
+                    ): str,
                     vol.Optional(
                         CONF_SNAPSHOT_DIRECT,
                         default=self.config_entry.options.get(

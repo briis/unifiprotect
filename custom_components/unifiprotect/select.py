@@ -9,6 +9,7 @@ from .const import (
     ATTR_DEVICE_MODEL,
     DEFAULT_ATTRIBUTION,
     DEVICES_WITH_CAMERA,
+    DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_LIGHT,
     DEVICE_TYPE_VIEWPORT,
     TYPE_INFRARED_AUTO,
@@ -32,12 +33,18 @@ _SELECT_NAME = 0
 _SELECT_ICON = 1
 _SELECT_TYPE = 2
 
+DOORBELL_BASE_TEXT = [
+    {"id": "LEAVE_PACKAGE_AT_DOOR", "value": "LEAVE PACKAGE AT DOOR"},
+    {"id": "DO_NOT_DISTURB", "value": "DO NOT DISTURB"},
+]
+
 INFRARED_MODES = [
     {"id": TYPE_INFRARED_AUTO, "name": "Auto"},
     {"id": TYPE_INFRARED_ON, "name": "Always Enable"},
     {"id": TYPE_INFRARED_AUTOFILTER, "name": "Auto (Filter Only, no LED's)"},
     {"id": TYPE_INFRARED_OFF, "name": "Always Disable"},
 ]
+
 LIGHT_MODE_MOTION = "On Motion"
 LIGHT_MODE_DARK = "When Dark"
 LIGHT_MODE_OFF = "Manual"
@@ -66,6 +73,11 @@ SELECT_TYPES = {
         "circle-opacity",
         DEVICES_WITH_CAMERA,
     ],
+    "doorbell_text": [
+        "Doorbell Text",
+        "card-text",
+        DEVICE_TYPE_DOORBELL,
+    ],
 }
 
 
@@ -77,6 +89,8 @@ async def async_setup_entry(
     upv_object = entry_data["upv"]
     protect_data = entry_data["protect_data"]
     server_info = entry_data["server_info"]
+    doorbell_text = entry_data["doorbell_text"]
+
     if not protect_data.data:
         return
 
@@ -95,6 +109,7 @@ async def async_setup_entry(
                         device_id,
                         item,
                         liveviews,
+                        doorbell_text,
                     )
                 )
                 _LOGGER.debug(
@@ -122,6 +137,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         device_id,
         select_entity,
         liveviews,
+        doorbell_text,
     ):
         """Initialize the Viewport Media Player."""
         super().__init__(
@@ -134,13 +150,26 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self._icon = f"mdi:{select_item[_SELECT_ICON]}"
         self._device_type = select_item[_SELECT_TYPE]
         self._liveviews = liveviews
+        self._doorbell_texts = []
         if self._device_type == DEVICE_TYPE_VIEWPORT:
             self._attr_options = self.viewport_view_names()
-        elif self._device_type == DEVICE_TYPE_LIGHT:
+        if self._device_type == DEVICE_TYPE_LIGHT:
             self._attr_options = LIGHT_MODES
-        elif self._select_entity == _SELECT_ENTITY_IR:
+        if self._select_entity == _SELECT_ENTITY_IR:
             self._attr_options = self.infrared_names()
-        else:
+        if self._device_type == DEVICE_TYPE_DOORBELL:
+            for item in DOORBELL_BASE_TEXT:
+                self._doorbell_texts.append({"id": item["id"], "value": item["value"]})
+            if doorbell_text is not None:
+                _local_text = doorbell_text.split(",")
+                for item in _local_text:
+                    if len(item.strip()) == 0:
+                        continue
+                    self._doorbell_texts.append(
+                        {"id": "CUSTOM_MESSAGE", "value": item.strip()}
+                    )
+            self._attr_options = self.doorbell_texts()
+        if self._device_type == DEVICES_WITH_CAMERA:
             self._attr_options = RECORDING_MODES
 
     @property
@@ -164,6 +193,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             return lightmode
         if self._select_entity == _SELECT_ENTITY_IR:
             return self.get_infrared_name_from_id()
+        if self._device_type == DEVICE_TYPE_DOORBELL:
+            return self._device_data["doorbell_text"]
 
         return self._device_data["recording_mode"].capitalize()
 
@@ -234,6 +265,23 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             arr.append(item["name"])
         return arr
 
+    def get_doorbell_text_type_from_name(self, option):
+        """Returns the Doorbell Text Type from the Option Text"""
+        _id = None
+        for item in self._doorbell_texts:
+            if option == item["value"]:
+                _id = item["id"]
+                break
+        return _id
+
+    def doorbell_texts(self):
+        """Returns a list of defined Doorbell Texts"""
+        arr = []
+        for item in self._doorbell_texts:
+            arr.append(item["value"])
+
+        return arr
+
     async def async_select_option(self, option: str) -> None:
         """Change the Select Entity Option."""
         if self._device_type == DEVICE_TYPE_VIEWPORT:
@@ -265,6 +313,11 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             if option in self.options:
                 infrared_id = self.get_infrared_id_from_name(option)
                 await self.upv.set_camera_ir(self._device_id, infrared_id)
+        elif self._device_type == DEVICE_TYPE_DOORBELL:
+            if option in self.options:
+                text_type = self.get_doorbell_text_type_from_name(option)
+                await self.upv.set_doorbell_lcd_text(self._device_id, text_type, option)
+                _LOGGER.debug("Changed Doorbell LCD Text to: %s", option)
         else:
             if option in self.options:
                 _LOGGER.debug("Changing Recording Mode to %s", option)

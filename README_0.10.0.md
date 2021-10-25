@@ -82,7 +82,7 @@ Before you install this Integration you need to ensure that the following two se
     * Click on the *V* Sign next to *Advanced*
     * Enable minimum 1 stream out of the 3 available. UniFi Protect will select the Stream with the Highest resolution
 
-![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_rtsp.png)
+![RTSP Settings](https://github.com/briis/unifiprotect/blob/master/images/setup_stream.png)
 
 ## Installation
 This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there. After the installation of the files you must restart Home Assistant, or else you will not be able to add UniFi Protect from the Integration Page.

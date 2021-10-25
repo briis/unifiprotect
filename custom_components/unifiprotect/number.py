@@ -31,7 +31,7 @@ NUMBER_TYPES = {
         0,
         3,
         1,
-        "auto",
+        "slider",
         DEVICES_WITH_CAMERA,
     ],
 }
@@ -100,6 +100,7 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         self._attr_min_value = number_item[_NUMBER_MIN_VALUE]
         self._attr_step = number_item[_NUMBER_STEP]
         self._attr_mode = number_item[_NUMBER_MODE]
+        _LOGGER.debug(self._attr_mode)
 
     @property
     def name(self):
@@ -112,10 +113,10 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         if self._number_entity == _ENTITY_WDR:
             return self._device_data["wdr"]
 
-    @property
-    def mode(self):
-        """Return the mode of the entity."""
-        return self._attr_mode
+    # @property
+    # def mode(self):
+    #     """Return the mode of the entity."""
+    #     return self._attr_mode
 
     @property
     def device_state_attributes(self):

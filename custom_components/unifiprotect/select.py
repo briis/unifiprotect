@@ -106,9 +106,12 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         liveviews,
     ):
         """Initialize the Viewport Media Player."""
-        super().__init__(upv_object, protect_data, server_info, device_id, None)
+        super().__init__(
+            upv_object, protect_data, server_info, device_id, select_entity
+        )
         self.upv = upv_object
-        select_item = SELECT_TYPES[select_entity]
+        self._select_entity = select_entity
+        select_item = SELECT_TYPES[self._select_entity]
         self._name = f"{select_item[_SELECT_NAME]} {self._device_data['name']}"
         self._icon = f"mdi:{select_item[_SELECT_ICON]}"
         self._device_type = select_item[_SELECT_TYPE]

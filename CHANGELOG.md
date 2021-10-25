@@ -1,5 +1,13 @@
 # // Changelog
 
+## 0.10.0 Beta 3
+
+Released: NOT RELEASED YET
+
+Everything from Beta 1 and 2 is included here, plus the following:
+
+* `CHANGE`: **BREAKING CHANGE** To future proof the Select entities, we had to change the the way the Unique ID is populated. The entity names are not changing, but the Unique ID's are, so when you install this, you will get a duplicate of all Select entities, and the ones that were there before, will be marked as unavailable. You can either removed them manually from the Integration page, or even easier, just delete the UniFi Protect integration, and readd it again.
+
 ## 0.10.0 Beta 2
 
 Released: October 24th, 2021

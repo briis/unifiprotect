@@ -213,14 +213,13 @@ set_privacy_mode:
           mode: slider
     recording_mode:
       name: Recording mode
-      description: "(Optional) Valid options are: always = Always Recording, motion = Only record on motion, never = stop recording, smart = Smart Detect. Default value is: no change"
+      description: "(Optional) Valid options are: always = Always Recording, detections = Only record on motion, never = stop recording. Default value is: no change"
       example: motion
       selector:
         select:
           options:
             - "always"
-            - "motion"
-            - "smart"
+            - "detections"
             - "never"
 set_zoom_position:
   name: Set Zoom Position

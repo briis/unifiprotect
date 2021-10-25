@@ -1,6 +1,5 @@
 """This component provides number entities for Unifi Protect."""
 import logging
-
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
@@ -112,6 +111,11 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         """Return the state of the sensor."""
         if self._number_entity == _ENTITY_WDR:
             return self._device_data["wdr"]
+
+    @property
+    def mode(self):
+        """Return the mode of the entity."""
+        return self._attr_mode
 
     @property
     def device_state_attributes(self):

@@ -63,7 +63,7 @@ SELECT_TYPES = {
     ],
     _SELECT_ENTITY_IR: [
         "Infrared",
-        "brightness-6",
+        "circle-opacity",
         DEVICES_WITH_CAMERA,
     ],
 }

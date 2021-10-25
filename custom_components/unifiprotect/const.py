@@ -98,6 +98,7 @@ UNIFI_PROTECT_PLATFORMS = [
     "switch",
     "light",
     "select",
+    "number",
 ]
 VALID_INFRARED_MODES = [
     TYPE_INFRARED_AUTO,

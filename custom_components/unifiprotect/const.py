@@ -48,6 +48,8 @@ CONF_POSITION = "position"
 CONF_SENSITIVITY = "sensitivity"
 CONF_VALUE = "value"
 
+CUSTOM_MESSAGE = "CUSTOM_MESSAGE"
+
 DEFAULT_PORT = 443
 DEFAULT_ATTRIBUTION = "Powered by UniFi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"

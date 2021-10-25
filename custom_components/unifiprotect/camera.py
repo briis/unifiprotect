@@ -20,6 +20,7 @@ from .const import (
     ATTR_UP_SINCE,
     ATTR_WDR_VALUE,
     ATTR_ZOOM_POSITION,
+    CUSTOM_MESSAGE,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_TYPE_CAMERA,
@@ -280,8 +281,8 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Set LCD Message on Doorbell display."""
         if not duration.isnumeric():
             duration = None
-        await self.upv_object.set_doorbell_custom_text(
-            self._device_id, message, duration
+        await self.upv_object.set_doorbell_lcd_text(
+            self._device_id, CUSTOM_MESSAGE, message, duration
         )
 
     async def async_set_mic_volume(self, level):

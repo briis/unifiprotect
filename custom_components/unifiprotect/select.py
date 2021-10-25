@@ -7,6 +7,7 @@ from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_DEVICE_MODEL,
+    CUSTOM_MESSAGE,
     DEFAULT_ATTRIBUTION,
     DEVICES_WITH_CAMERA,
     DEVICE_TYPE_DOORBELL,
@@ -166,7 +167,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                     if len(item.strip()) == 0:
                         continue
                     self._doorbell_texts.append(
-                        {"id": "CUSTOM_MESSAGE", "value": item.strip()}
+                        {"id": CUSTOM_MESSAGE, "value": item.strip()}
                     )
             self._attr_options = self.doorbell_texts()
         if self._device_type == DEVICES_WITH_CAMERA:

@@ -6,7 +6,10 @@ Released: NOT RELEASED YET
 
 Everything from Beta 1 and 2 is included here, plus the following:
 
-* `CHANGE`: **BREAKING CHANGE** To future proof the Select entities, we had to change the the way the Unique ID is populated. The entity names are not changing, but the Unique ID's are, so when you install this, you will get a duplicate of all Select entities, and the ones that were there before, will be marked as unavailable. You can either removed them manually from the Integration page, or even easier, just delete the UniFi Protect integration, and readd it again.
+* `CHANGE`: **BREAKING CHANGE** To future proof the Select entities, we had to change the the way the Unique ID is populated. The entity names are not changing, but the Unique ID's are, so when you install this, you will get a duplicate of all Select entities, and the ones that were there before, will be marked as unavailable. You can either removed them manually from the Integration page, or even easier, just delete the UniFi Protect integration, and add it again.
+* `CHANGE`: **BREAKING CHANGE** All switches called `switch.ir_active_CAMERANAME` have been removed from the system. They are being migrated to a `Select Entity` which you can read more about below. If you have automations that turns these switches on and off, you will have to replace this with the `select.select_option` service, using the valid options described below for the `option` data.
+* `CHANGE`: **BREAKING CHANGE** The Service `unifiprotect.set_ir_mode` now supports the following values for ir_mode: `"auto, autoFilterOnly, on, off"`. This is a change from the previous valid options and if you have automations that uses this service you will need to make sure that you only use these supported modes.
+* `NEW`: For each Camera there will now be a `Select Entity` from where you can select the Infrared mode for each Camera. Valid options are `Auto, Always Enable, Auto (Filter Only, no LED's), Always Disable`. These are the same options you can use if you set this through the UniFi Protect App.
 
 ## 0.10.0 Beta 2
 
@@ -35,7 +38,7 @@ Everything from Beta 1 is included here, plus the following:
         "user_id": null
     }
   }
-  ````
+  ```
 
 ## 0.10.0 Beta 1
 

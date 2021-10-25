@@ -11,6 +11,10 @@ from .const import (
     DEVICES_WITH_CAMERA,
     DEVICE_TYPE_LIGHT,
     DEVICE_TYPE_VIEWPORT,
+    TYPE_INFRARED_AUTO,
+    TYPE_INFRARED_AUTOFILTER,
+    TYPE_INFRARED_OFF,
+    TYPE_INFRARED_ON,
     TYPE_LIGHT_RECORD_MOTION,
     TYPE_RECORD_ALWAYS,
     TYPE_RECORD_OFF,
@@ -22,10 +26,18 @@ ATTR_VIEWS = "views"
 
 _LOGGER = logging.getLogger(__name__)
 
+_SELECT_ENTITY_IR = "infrared"
+
 _SELECT_NAME = 0
 _SELECT_ICON = 1
 _SELECT_TYPE = 2
 
+INFRARED_MODES = [
+    {"id": TYPE_INFRARED_AUTO, "name": "Auto"},
+    {"id": TYPE_INFRARED_ON, "name": "Always Enable"},
+    {"id": TYPE_INFRARED_AUTOFILTER, "name": "Auto (Filter Only, no LED's)"},
+    {"id": TYPE_INFRARED_OFF, "name": "Always Disable"},
+]
 LIGHT_MODE_MOTION = "On Motion"
 LIGHT_MODE_DARK = "When Dark"
 LIGHT_MODE_OFF = "Manual"
@@ -48,6 +60,11 @@ SELECT_TYPES = {
         "Lightning",
         "spotlight",
         DEVICE_TYPE_LIGHT,
+    ],
+    _SELECT_ENTITY_IR: [
+        "Infrared",
+        "brightness-6",
+        DEVICES_WITH_CAMERA,
     ],
 }
 
@@ -81,7 +98,8 @@ async def async_setup_entry(
                     )
                 )
                 _LOGGER.debug(
-                    "UNIFIPROTECT SELECT CREATED: %s",
+                    "UNIFIPROTECT SELECT CREATED: %s %s",
+                    item_type[_SELECT_NAME],
                     protect_data.data[device_id].get("name"),
                 )
 
@@ -120,6 +138,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             self._attr_options = self.viewport_view_names()
         elif self._device_type == DEVICE_TYPE_LIGHT:
             self._attr_options = LIGHT_MODES
+        elif self._select_entity == _SELECT_ENTITY_IR:
+            self._attr_options = self.infrared_names()
         else:
             self._attr_options = RECORDING_MODES
 
@@ -142,6 +162,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             else:
                 lightmode = LIGHT_MODE_OFF
             return lightmode
+        if self._select_entity == _SELECT_ENTITY_IR:
+            return self.get_infrared_name_from_id()
 
         return self._device_data["recording_mode"].capitalize()
 
@@ -187,6 +209,31 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             views.append(item["name"])
         return views
 
+    def get_infrared_name_from_id(self):
+        """Returns Select Option from Infrared setting"""
+        _value = None
+        for item in INFRARED_MODES:
+            if self._device_data["ir_mode"] == item["id"]:
+                _value = item["name"]
+                break
+        return _value
+
+    def get_infrared_id_from_name(self, option):
+        """Returns Infrared setting from Select Option"""
+        _value = None
+        for item in INFRARED_MODES:
+            if option == item["name"]:
+                _value = item["id"]
+                break
+        return _value
+
+    def infrared_names(self):
+        """Returns valid options array for Infrared"""
+        arr = []
+        for item in INFRARED_MODES:
+            arr.append(item["name"])
+        return arr
+
     async def async_select_option(self, option: str) -> None:
         """Change the Select Entity Option."""
         if self._device_type == DEVICE_TYPE_VIEWPORT:
@@ -214,6 +261,10 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                 await self.upv.light_settings(
                     self._device_id, lightmode, enable_at=timing
                 )
+        elif self._select_entity == _SELECT_ENTITY_IR:
+            if option in self.options:
+                infrared_id = self.get_infrared_id_from_name(option)
+                await self.upv.set_camera_ir(self._device_id, infrared_id)
         else:
             if option in self.options:
                 _LOGGER.debug("Changing Recording Mode to %s", option)

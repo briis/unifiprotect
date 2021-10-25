@@ -6,19 +6,11 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
-
 from .const import (
     ATTR_DEVICE_MODEL,
-    CONF_IR_OFF,
-    CONF_IR_ON,
     DEFAULT_ATTRIBUTION,
     DOMAIN,
     TYPE_HIGH_FPS_ON,
-    TYPE_LIGHT_RECORD_MOTION,
-    TYPE_RECORD_ALWAYS,
-    TYPE_RECORD_MOTION,
-    TYPE_RECORD_NEVER,
-    TYPE_RECORD_OFF,
 )
 from .entity import UnifiProtectEntity
 
@@ -30,7 +22,6 @@ _SWITCH_TYPE = 2
 _SWITCH_REQUIRES = 3
 
 SWITCH_TYPES = {
-    "ir_mode": ["IR Active", "brightness-4", "ir_mode", "ir_mode"],
     "status_light": ["Status Light On", "led-on", "status_light", "has_ledstatus"],
     "hdr_mode": ["HDR Mode", "brightness-7", "hdr_mode", "has_hdr"],
     "high_fps": ["High FPS", "video-high-definition", "high_fps", "has_highfps"],
@@ -49,16 +40,6 @@ async def async_setup_entry(
     if not protect_data.data:
         return
 
-    ir_on = entry.data[CONF_IR_ON]
-    if ir_on == "always_on":
-        ir_on = "on"
-
-    ir_off = entry.data[CONF_IR_OFF]
-    if ir_off == "led_off":
-        ir_off = "autoFilterOnly"
-    elif ir_off == "always_off":
-        ir_off = "off"
-
     switches = []
     for switch, switch_type in SWITCH_TYPES.items():
         required_field = switch_type[_SWITCH_REQUIRES]
@@ -75,8 +56,6 @@ async def async_setup_entry(
                     server_info,
                     device_id,
                     switch,
-                    ir_on,
-                    ir_off,
                 )
             )
             _LOGGER.debug("UNIFIPROTECT SWITCH CREATED: %s", switch)
@@ -87,17 +66,13 @@ async def async_setup_entry(
 class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     """A Unifi Protect Switch."""
 
-    def __init__(
-        self, upv_object, protect_data, server_info, device_id, switch, ir_on, ir_off
-    ):
+    def __init__(self, upv_object, protect_data, server_info, device_id, switch):
         """Initialize an Unifi Protect Switch."""
         super().__init__(upv_object, protect_data, server_info, device_id, switch)
         self.upv = upv_object
         switch_type = SWITCH_TYPES[switch]
         self._name = f"{switch_type[_SWITCH_NAME]} {self._device_data['name']}"
         self._icon = f"mdi:{switch_type[_SWITCH_ICON]}"
-        self._ir_on_cmd = ir_on
-        self._ir_off_cmd = ir_off
         self._switch_type = switch_type[_SWITCH_TYPE]
 
     @property
@@ -108,8 +83,6 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     @property
     def is_on(self):
         """Return true if device is on."""
-        if self._switch_type == "ir_mode":
-            return self._device_data["ir_mode"] == self._ir_on_cmd
         if self._switch_type == "hdr_mode":
             return self._device_data["hdr_mode"] is True
         if self._switch_type == "high_fps":
@@ -135,10 +108,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
-        if self._switch_type == "ir_mode":
-            _LOGGER.debug("Turning on IR")
-            await self.upv.set_camera_ir(self._device_id, self._ir_on_cmd)
-        elif self._switch_type == "hdr_mode":
+        if self._switch_type == "hdr_mode":
             _LOGGER.debug("Turning on HDR mode")
             await self.upv.set_camera_hdr_mode(self._device_id, True)
         elif self._switch_type == "high_fps":
@@ -153,10 +123,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn the device off."""
-        if self._switch_type == "ir_mode":
-            _LOGGER.debug("Turning off IR")
-            await self.upv.set_camera_ir(self._device_id, self._ir_off_cmd)
-        elif self._switch_type == "status_light":
+        if self._switch_type == "status_light":
             _LOGGER.debug("Changing Status Light to Off")
             await self.upv.set_device_status_light(
                 self._device_id, False, self._device_type

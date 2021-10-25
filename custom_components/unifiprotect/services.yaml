@@ -50,11 +50,11 @@ set_recording_mode:
             - "never"
 set_ir_mode:
   name: Set Infrared mode
-  description: "Set Infrared Settings for the camera"
+  description: "Set Infrared mode for the camera"
   fields:
     entity_id:
       name: Entity ID
-      description: string (required) camera to set IR mode for
+      description: string (required) camera to set Infrared mode for
       example: "camera.outdoor"
       required: true
       selector:
@@ -62,16 +62,16 @@ set_ir_mode:
           integration: unifiprotect
           domain: camera
     ir_mode:
-      name: IR Mode
-      description: "(Optional) Valid options are: always_on = IR always on, auto = Automatic, led_off = Automatic wo LEDs, always_off = Always Off. Default value is: auto"
+      name: Infrared Mode
+      description: "(Optional) Valid options are: auto = Automatic, autoFilterOnly = Auto (Filter Only, no LED's), on = Always Enable, off = Always Disable. Default value is: auto"
       example: auto
       selector:
         select:
           options:
-            - "always_on"
             - "auto"
-            - "led_off"
-            - "always_off"
+            - "autoFilterOnly"
+            - "on"
+            - "off"
 set_status_light:
   name: Set Status Lights
   description: "Turn the Cameras Led Light on or off"

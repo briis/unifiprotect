@@ -34,8 +34,6 @@ CONF_CHIME_DURATION = "chime_duration"
 CONF_DISABLE_RTSP = "disable_rtsp"
 CONF_ENABLE_AT = "enable_at"
 CONF_IR_MODE = "ir_mode"
-CONF_IR_ON = "ir_on"
-CONF_IR_OFF = "ir_off"
 CONF_STATUS_LIGHT = "light_on"
 CONF_HDR_ON = "hdr_on"
 CONF_HIGH_FPS_ON = "high_fps_on"
@@ -50,7 +48,7 @@ CONF_SENSITIVITY = "sensitivity"
 CONF_VALUE = "value"
 
 DEFAULT_PORT = 443
-DEFAULT_ATTRIBUTION = "Powered by Unifi Protect Server"
+DEFAULT_ATTRIBUTION = "Powered by UniFi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_THUMB_WIDTH = 640
 DEFAULT_SCAN_INTERVAL = 2
@@ -86,22 +84,12 @@ TYPE_RECORD_ALWAYS = "always"
 TYPE_RECORD_NEVER = "never"
 TYPE_RECORD_NOTSET = "notset"
 TYPE_RECORD_OFF = "off"
-TYPE_IR_AUTO = "auto"
-TYPE_IR_ON = "always_on"
-TYPE_IR_LED_OFF = "led_off"
-TYPE_IR_OFF = "always_off"
+TYPE_INFRARED_AUTO = "auto"
+TYPE_INFRARED_AUTOFILTER = "autoFilterOnly"
+TYPE_INFRARED_OFF = "off"
+TYPE_INFRARED_ON = "on"
 TYPE_HIGH_FPS_ON = "highFps"
 TYPE_HIGH_FPS_OFF = "default"
-
-TYPES_IR_OFF = [
-    TYPE_IR_OFF,
-    TYPE_IR_LED_OFF,
-]
-
-TYPES_IR_ON = [
-    TYPE_IR_AUTO,
-    TYPE_IR_ON,
-]
 
 UNIFI_PROTECT_PLATFORMS = [
     "camera",
@@ -111,8 +99,12 @@ UNIFI_PROTECT_PLATFORMS = [
     "light",
     "select",
 ]
-
-VALID_IR_MODES = [TYPE_IR_ON, TYPE_IR_AUTO, TYPE_IR_OFF, TYPE_IR_LED_OFF]
+VALID_INFRARED_MODES = [
+    TYPE_INFRARED_AUTO,
+    TYPE_INFRARED_AUTOFILTER,
+    TYPE_INFRARED_OFF,
+    TYPE_INFRARED_ON,
+]
 VALID_RECORDING_MODES = [
     TYPE_RECORD_MOTION,
     TYPE_RECORD_ALWAYS,
@@ -152,7 +144,9 @@ SET_RECORDING_MODE_SCHEMA = vol.Schema(
 SET_IR_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Optional(CONF_IR_MODE, default=TYPE_IR_AUTO): vol.In(VALID_IR_MODES),
+        vol.Optional(CONF_IR_MODE, default=TYPE_INFRARED_AUTO): vol.In(
+            VALID_INFRARED_MODES
+        ),
     }
 )
 

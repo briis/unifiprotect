@@ -11,7 +11,16 @@
         "step": {
             "user": {
                 "description": "Mettre en place Unifi Protect pour surveiller les caméras et les capteurs.",
-                "title": "Unifi Protect"
+                "title": "Unifi Protect",
+                "data": {
+                    "host": "Adresse IP de la Unifi Protect Server",
+                    "port": "Numéro de port (7443 NON UnifiOS, 443 UnifiOS)",
+                    "username": "Identifiant",
+                    "password": "Mot de passe",
+                    "disable_rtsp": "Désactiver le flux RTSP",
+                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
+                    "snapshot_direct": "Utiliser des clichés anonymes (doit être activé sur toutes les caméras)"
+                }
             }
         }
     },
@@ -19,10 +28,6 @@
         "step": {
             "init": {
                 "data": {
-                    "host": "Adresse IP de la Unifi Protect Server",
-                    "port": "Numéro de port (7443 NON UnifiOS, 443 UnifiOS)",
-                    "username": "Identifiant",
-                    "password": "Mot de passe",
                     "disable_rtsp": "Désactiver le flux RTSP",
                     "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
                     "snapshot_direct": "Utiliser des clichés anonymes (doit être activé sur toutes les caméras)"

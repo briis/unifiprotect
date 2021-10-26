@@ -11,7 +11,16 @@
         "step": {
             "user": {
                 "description": "Set up Unifi Protect to monitor cameras and sensors.",
-                "title": "Unifi Protect"
+                "title": "Unifi Protect",
+                "data": {
+                    "host": "IP Address of Unifi Protect Server",
+                    "port": "Port Number (7443 NON UnifiOS, 443 UnifiOS)",
+                    "username": "Username",
+                    "password": "Password",
+                    "disable_rtsp": "Disable the RTSP stream",
+                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
+                    "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)"
+                }
             }
         }
     },
@@ -19,10 +28,6 @@
         "step": {
             "init": {
                 "data": {
-                    "host": "IP Address of Unifi Protect Server",
-                    "port": "Port Number (7443 NON UnifiOS, 443 UnifiOS)",
-                    "username": "Username",
-                    "password": "Password",
                     "disable_rtsp": "Disable the RTSP stream",
                     "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
                     "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)"

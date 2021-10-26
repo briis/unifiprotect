@@ -97,6 +97,11 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
                 CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
             },
+            options={
+                CONF_DISABLE_RTSP: user_input.get(CONF_DISABLE_RTSP),
+                CONF_DOORBELL_TEXT: user_input.get(CONF_DOORBELL_TEXT),
+                CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
+            },
         )
 
     async def _show_setup_form(self, errors=None):

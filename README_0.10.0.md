@@ -22,7 +22,7 @@ There is support for the following device types within Home Assistant:
   * One to two binary sensors will be created per camera found. There will always be a binary sensor recording if motion is detected per camera. If the camera is a doorbell, there will also be a binary sensor created that records if the doorbell is pressed.
 * Switch
   * For each camera supporting High Dynamic Range (HDR) a switch will be created to turn this setting on or off.
-  * For each camera supporting Wide Dynamic Range (WDR) a switch will be created to turn this setting on or off.
+  * For each camera supporting High Frame Rate recording a switch will be created to turn this setting on or off.
   * For each camera a switch will be created to turn the status light on or off.
 * Light
   * A light entity will be created for each UniFi Floodlight found. This works as a normal light entity, and has a brightness scale also.

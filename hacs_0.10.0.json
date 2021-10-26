@@ -1,0 +1,16 @@
+{
+    "name": "UniFi Protect Integration",
+    "domains": [
+        "binary_sensor",
+        "sensor",
+        "camera",
+        "switch",
+        "light",
+        "select",
+        "number"
+    ],
+    "homeassistant": "2021.9.0",
+    "iot_class": [
+        "Local Push"
+    ]
+}

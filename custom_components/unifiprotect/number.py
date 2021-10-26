@@ -15,6 +15,8 @@ from .entity import UnifiProtectEntity
 _LOGGER = logging.getLogger(__name__)
 
 _ENTITY_WDR = "wdr_value"
+_ENTITY_MIC_LEVEL = "mic_level"
+_ENTITY_ZOOM_POS = "zoom_position"
 
 _NUMBER_NAME = 0
 _NUMBER_ICON = 1
@@ -23,6 +25,7 @@ _NUMBER_MAX_VALUE = 3
 _NUMBER_STEP = 4
 _NUMBER_MODE = 5  # auto, slider or box
 _NUMBER_TYPE = 6
+_NUMBER_REQUIRES = 7  # Required field present if not, skip adding
 
 NUMBER_TYPES = {
     _ENTITY_WDR: [
@@ -33,6 +36,27 @@ NUMBER_TYPES = {
         1,
         "slider",
         DEVICES_WITH_CAMERA,
+        None,
+    ],
+    _ENTITY_MIC_LEVEL: [
+        "Microphone Level",
+        "microphone",
+        0,
+        100,
+        1,
+        "slider",
+        DEVICES_WITH_CAMERA,
+        None,
+    ],
+    _ENTITY_ZOOM_POS: [
+        "Zoom Position",
+        "magnify-plus-outline",
+        0,
+        100,
+        1,
+        "slider",
+        DEVICES_WITH_CAMERA,
+        "has_opticalzoom",
     ],
 }
 
@@ -50,8 +74,14 @@ async def async_setup_entry(
 
     number_entities = []
     for item, item_type in NUMBER_TYPES.items():
+        required_field = item_type[_NUMBER_REQUIRES]
         for device_id in protect_data.data:
             if protect_data.data[device_id].get("type") in item_type[_NUMBER_TYPE]:
+                if required_field and not protect_data.data[device_id].get(
+                    required_field
+                ):
+                    continue
+
                 number_entities.append(
                     UnifiProtectNumbers(
                         upv_object,
@@ -111,6 +141,10 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         """Return the state of the sensor."""
         if self._number_entity == _ENTITY_WDR:
             return self._device_data["wdr"]
+        if self._number_entity == _ENTITY_MIC_LEVEL:
+            return self._device_data["mic_volume"]
+        if self._number_entity == _ENTITY_ZOOM_POS:
+            return self._device_data["zoom_position"]
 
     @property
     def device_state_attributes(self):
@@ -136,3 +170,17 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
                 self._device_data["name"],
             )
             await self.upv.set_camera_wdr(self._device_id, value)
+        if self._number_entity == _ENTITY_MIC_LEVEL:
+            _LOGGER.debug(
+                "Setting Microphone Level to %s for Camera %s",
+                value,
+                self._device_data["name"],
+            )
+            await self.upv.set_mic_volume(self._device_id, value)
+        if self._number_entity == _ENTITY_ZOOM_POS:
+            _LOGGER.debug(
+                "Setting Zoom Position to %s for Camera %s",
+                value,
+                self._device_data["name"],
+            )
+            await self.upv.set_camera_zoom_position(self._device_id, value)

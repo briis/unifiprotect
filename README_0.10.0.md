@@ -17,16 +17,25 @@ There is support for the following device types within Home Assistant:
   * A camera entity for each camera found on the NVR device will be created
 * Sensor
   * A sensor for each camera found will be created. This sensor will hold the current recording mode.
+  * A sensor for each Floodlight device found will be created. This sensor will hold the status of when light will turn on.
 * Binary Sensor
   * One to two binary sensors will be created per camera found. There will always be a binary sensor recording if motion is detected per camera. If the camera is a doorbell, there will also be a binary sensor created that records if the doorbell is pressed.
 * Switch
-  * Several switches will be created per camera found. What switches is depended on the capbability of the specific camera. But typically these switches are used to control recording mode, Infrared and Video mode settings.
+  * For each camera supporting High Dynamic Range (HDR) a switch will be created to turn this setting on or off.
+  * For each camera supporting Wide Dynamic Range (WDR) a switch will be created to turn this setting on or off.
+  * For each camera a switch will be created to turn the status light on or off.
 * Light
   * A light entity will be created for each UniFi Floodlight found. This works as a normal light entity, and has a brightness scale also.
 * Select
-  * Several Select entities covering Viewports, Floodlights and different Camera Settings
+  * For each Camera found there will be a Select entity created from where you can set the cameras recording mode.
+  * For each Doorbell found, there will be a Select entity created that makes it possible to set the LCD Text. If you make a list of Texts in the Integration configuration, you can both set the standard texts and custom text that you define here.
+  * For each Camera found there will be a Select entity created from where you can set the behaviour of the Infrared light on the Camera
+  * For each Viewport found, there will a Select entity from where you change the active View being displayed on the Viewport.
 * Number
-  * A number entity to set the WDR mode for each Camera
+  * For each camera supporting WDR, a number entity will be setup to set the active value.
+  * For each camera supporting HDR, a number entity will be setup to set the active value.
+  * For each camera a number entity will be created from where you can set the microphone sensitivity level.
+  * For each camera supporting Optical Zoom, a number entity will be setup to set the zoom position.
 
 It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 

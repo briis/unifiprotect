@@ -33,7 +33,6 @@ There is support for the following device types within Home Assistant:
   * For each Viewport found, there will a Select entity from where you change the active View being displayed on the Viewport.
 * Number
   * For each camera supporting WDR, a number entity will be setup to set the active value.
-  * For each camera supporting HDR, a number entity will be setup to set the active value.
   * For each camera a number entity will be created from where you can set the microphone sensitivity level.
   * For each camera supporting Optical Zoom, a number entity will be setup to set the zoom position.
 

@@ -154,11 +154,11 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self._doorbell_texts = []
         if self._device_type == DEVICE_TYPE_VIEWPORT:
             self._attr_options = self.viewport_view_names()
-        if self._device_type == DEVICE_TYPE_LIGHT:
+        elif self._device_type == DEVICE_TYPE_LIGHT:
             self._attr_options = LIGHT_MODES
-        if self._select_entity == _SELECT_ENTITY_IR:
+        elif self._select_entity == _SELECT_ENTITY_IR:
             self._attr_options = self.infrared_names()
-        if self._device_type == DEVICE_TYPE_DOORBELL:
+        elif self._device_type == DEVICE_TYPE_DOORBELL:
             for item in DOORBELL_BASE_TEXT:
                 self._doorbell_texts.append({"id": item["id"], "value": item["value"]})
             if doorbell_text is not None:
@@ -170,7 +170,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                         {"id": CUSTOM_MESSAGE, "value": item.strip()}
                     )
             self._attr_options = self.doorbell_texts()
-        if self._device_type == DEVICES_WITH_CAMERA:
+        else:
             self._attr_options = RECORDING_MODES
 
     @property

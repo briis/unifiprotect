@@ -30,7 +30,8 @@ There is support for the following device types within Home Assistant:
   * For each Camera found there will be a Select entity created from where you can set the cameras recording mode.
   * For each Doorbell found, there will be a Select entity created that makes it possible to set the LCD Text. If you make a list of Texts in the Integration configuration, you can both set the standard texts and custom text that you define here.
   * For each Camera found there will be a Select entity created from where you can set the behaviour of the Infrared light on the Camera
-  * For each Viewport found, there will a Select entity from where you change the active View being displayed on the Viewport.
+  * For each Viewport found, there will be a Select entity from where you change the active View being displayed on the Viewport.
+  * For each Floodlight device there be a Select entity to set the behaviour of the built-in motion sensor.
 * Number
   * For each camera supporting WDR, a number entity will be setup to set the active value.
   * For each camera a number entity will be created from where you can set the microphone sensitivity level.

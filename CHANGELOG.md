@@ -4,6 +4,17 @@
 
 Released: NOT RELEASED YET
 
+### Upgrade Instructions
+
+Due to the many changes and entities that have been removed and replaced, we recommend the following process to upgrade from an earlier Beta or from an earlier release:
+
+* Upgrade the Integration files, either through HACS (Recommended) or by copying the files manually to your `custom_components/unifiprotect` directory.
+* Restart Home Assistant
+* Remove the UniFi Protect Integration by going to the Integrations page, click the 3 dots in the lower right corner of the UniFi Protect Integration and select *Delete*
+* While still on this page, click the `+ ADD INTEGRATION` button in the lower right corner, search for UnFi Protect, and start the installation, supplying your credentials.
+
+### Changes in this release
+
 Everything from Beta 1 and 2 is included here, plus the following:
 
 * `CHANGE`: **BREAKING CHANGE** To future proof the Select entities, we had to change the the way the Unique ID is populated. The entity names are not changing, but the Unique ID's are, so when you install this, you will get a duplicate of all Select entities, and the ones that were there before, will be marked as unavailable. You can either remove them manually from the Integration page, or even easier, just delete the UniFi Protect integration, and add it again. (The later is the recommended method)

@@ -24,9 +24,8 @@
                     "username": "Brugernavn",
                     "password": "Kodeord",
                     "disable_rtsp": "Deaktiver RTSP-signalet",
-                    "doorbell_text": "Lav en komma separaret liste af tekst der kan vises på Dørklokken. Efterlad tom hvis ingen dørklokke.",
-                    "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)",
-                    "scan_interval": "Opdaterings frekvens for hændelser på NON UnifiOS Servere (Øg frekvens hvis mange kameraer)"
+                    "doorbell_text": "Komma separaret liste af tekst der kan vises på Dørklokken. Efterlad tom hvis ingen dørklokke.",
+                    "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)"
                 }
             }
         }

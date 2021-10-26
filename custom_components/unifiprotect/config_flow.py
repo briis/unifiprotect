@@ -3,7 +3,6 @@ import logging
 
 from aiohttp import CookieJar
 
-# from homeassistant.config_entries import ConfigFlow
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
@@ -96,7 +95,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_DISABLE_RTSP: user_input.get(CONF_DISABLE_RTSP),
                 CONF_DOORBELL_TEXT: user_input.get(CONF_DOORBELL_TEXT),
                 CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
-                CONF_SCAN_INTERVAL: user_input.get(CONF_SCAN_INTERVAL),
+                CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
             },
         )
 
@@ -113,9 +112,6 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Optional(CONF_DISABLE_RTSP, default=False): bool,
                     vol.Optional(CONF_DOORBELL_TEXT): str,
                     vol.Optional(CONF_SNAPSHOT_DIRECT, default=False): bool,
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
-                    ): vol.All(vol.Coerce(int), vol.Range(min=2, max=20)),
                 }
             ),
             errors=errors or {},
@@ -152,12 +148,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_SNAPSHOT_DIRECT, False
                         ),
                     ): bool,
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL,
-                        default=self.config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                        ),
-                    ): vol.All(vol.Coerce(int), vol.Range(min=2, max=20)),
                 }
             ),
         )

@@ -24,9 +24,8 @@
                     "username": "Gebruikersnaam",
                     "password": "Wachtwoord",
                     "disable_rtsp": "Schakel de RTSP-stream uit",
-                    "doorbell_text": "Add a comma separated list of Custom Texts that can be displayed on the doorbell. Leave blank if no Doorbel",
-                    "snapshot_direct": "Gebruik anonieme snapshots (moet op alle camera's worden ingeschakeld)",
-                    "scan_interval": "Scaninterval voor gebeurtenissen op niet UnifiOS Servers (Hoger instellen als er veel camera's zijn)"
+                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
+                    "snapshot_direct": "Gebruik anonieme snapshots (moet op alle camera's worden ingeschakeld)"
                 }
             }
         }

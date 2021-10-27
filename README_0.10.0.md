@@ -48,9 +48,8 @@ It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, 
 5. [UniFi Protect Events](#unifi-protect-events)
 6. [Automating Services](#automating-services)
     * [Send a notfication when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
-    * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
     * [Person Detection](#automate-person-detection)
-    * [Input Slider for Microphone Sensitivity](#create-input-slider-for-microphone-sensitivity)
+    * [Input Slider for Doorbell Chime Duration](#create-input-slider-for-doorbell-chime-duration)
 7. [Enable Debug Logging](#enable-debug-logging)
 8. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
 ## Hardware Support
@@ -197,49 +196,6 @@ action:
       title: The doorbell has been pressed
 ```
 
-### AUTOMATE SETTING RECORDING OR IR MODE
-If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.
-These Services support more than 2 different modes each, and as such it would be good to have a list to select from when switching the mode of those settings. I have not found a way to create a listbox as Custom Component, but it is fairly simpel to use an *input_select* integration and an *Automation* to achieve a UI friendly way of changing these modes. Below is an example that creates an *input*select* integration for one of the Cameras and then an example of an automation that is triggered whenever the user selects a new value in the dropdown list.
-
-Start by creating the *input_select* integration. If you are on Version 107.x or greater that can now be done directly from the menu under *Configuration* and then *Helpers*. Click the PLUS sign at the bottom and use the *Dropdown* option.
-**Important** Fill in the *Option* part as seen below for the Infrared Service.
-If you do it manually add the following to your *configuration.yaml* file:
-
-```yaml
-# Example configuration.yaml entry
-input_select:
-  camera_office_ir_mode:
-    name: IR Mode for Camera Office
-    options:
-      - auto
-      - always_on
-      - led_off
-      - always_off
-    icon: mdi:brightness-4
-```
-
-If you did it manually, you need to restart Home Assistant, else you can continue.
-
-Now add a new Automation, like the following:
-
-```yaml
-- id: '1585900471122'
-  alias: Camera Office IR Mode Change
-  description: ''
-  trigger:
-  - entity_id: input_select.camera_office_ir_mode
-    platform: state
-  condition: []
-  action:
-  - data_template:
-      entity_id: camera.camera_office
-      ir_mode: '{{ states(''input_select.camera_office_ir_mode'') }}'
-    entity_id: camera.camera_office
-    service: unifiprotect.set_ir_mode
-```
-
-Thats it. Whenever you now select a new value from the Dropdown, the automation is activated, and the service is called to change the IR mode. The same can then be achieved for the *recording_mode* by changing the options and the service call in the automation.
-
 ### AUTOMATE PERSON DETECTION
 
 If you have G4 Series Cameras, it is possible to do object detection directly on the Camera. Currently they only seem to support detecting a Person, but maybe Cars, Animals etc. will be added in the future.
@@ -262,29 +218,29 @@ Here is an example of how you can use this to send a notification to your phone 
   mode: single
 ```
 
-### CREATE INPUT SLIDER FOR MICROPHONE SENSITIVITY
+### CREATE INPUT SLIDER FOR DOORBELL CHIME DURATION
 
-To set the Microphone sensitivity you can use the Service `unifiprotect.set_mic_volume` but if you want to be able to do this from Lovelace, you can add a Input Slider for each camera and then do it from there. This shows you how you can do that.
+To set the Doorbell chime duration you can use the Service `unifiprotect.set_doorbell_chime_duration` but if you want to be able to do this from Lovelace, you can add a Input Slider for each doorbell and then do it from there. This shows you how you can do that.
 
 * Go to *Configuration* and select *Helpers*.
 * Click `+ ADD HELPER` and select *Number*.
-* Name your Slider, and then you can leave the rest of the values as default. (Min 0, Max 100, Display mode Slider) and then click CREATE.
+* Name your Slider, set Min to 0, Max to 10000 and step to 100 and then click CREATE.
 
-Now create a new Automation, that reacts to a value change of the above slider. In this case I named the slider `input_number.volume_test_cam` and the Camera is called `camera.test_cam`.
+Now create a new Automation, that reacts to a value change of the above slider. In this case I named the slider `input_number.doorbell_chime` and the Camera is called `camera.test_doorbell`.
 
 ```yaml
-alias: Adjust Mic Sensitivity on Test CAM
+alias: Adjust Doorbell Chime Durationon Test Doorbell
 description: ''
 trigger:
   - platform: state
-    entity_id: input_number.volume_test_cam
+    entity_id: input_number.doorbell_chime
 condition: []
 action:
-  - service: unifiprotect.set_mic_volume
+  - service: unifiprotect.set_doorbell_chime_duration
     data:
-      entity_id: camera.test_cam
-      level: '{{ states(''input_number.volume_test_cam'') | int }}'
-    entity_id: ' camera.test_cam'
+      entity_id: camera.test_doorbell
+      chime_duration: '{{ states(''input_number.doorbell_chime'') | int }}'
+    entity_id: ' camera.test_doorbell'
 mode: single
 ```
 

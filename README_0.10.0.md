@@ -114,13 +114,11 @@ If the UniFi Protect Server is found on the network it will be added to your ins
 ### CONFIGURATION VARIABLES
 **host**:<br>
   *(string)(Required)*<br>
-  Type the IP address of your *UniFi Protect NVR*. Example: `192.168.1.1`<br>
-  **Important** If you run UniFiOS this must be the IP Address. of your UDMP
+  Type the IP address of your *UniFi Protect NVR*. Example: `192.168.1.1`
 
 **port**:<br>
   *(int)(Optional)*<br>
-  The port used to communicate with the NVR. Default is 7443.<br>
-  **Important** If you run UniFiOS the port *must* be specified and it must be 443.
+  The port used to communicate with the NVR. Default is 443.
 
 **username**:<br>
   *(string)(Required)*<br>
@@ -137,11 +135,6 @@ If the UniFi Protect Server is found on the network it will be added to your ins
 **doorbell text**<br>
   *(string)Optional*<br>
   If a Doorbell is attached to UniFi Protect, you can use this field to write a list of Custom Texts that can be displayed on the Doorbell LCD Screen. The list must be comma separated and will be truncated to 30 characters per item.
-
-**scan_interval**:<br>
-  *(int)(Optional)*<br>
-  How often the Integration polls the UniFi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey with V1.x FW. CloudKey V2.x, UDMP and UNVR users get the data pushed, so polling not needed.<br>
-  *Default value*: `2` seconds
 
 **anonymous_snapshots**:<br>
   *(bool)(Optional)*<br>
@@ -161,7 +154,6 @@ The Integration adds specific *UniFi Protect* services and supports the standard
 
 Service | Parameters | Description
 :------------ | :------------ | :-------------
-`unifiprotect.save_thumbnail_image` | `entity_id` - Name of entity to retrieve thumbnail from.<br>`filename` - Filename to store thumbnail in<br>`image_width` - (Optional) Width of the image in pixels. Height will be scaled proportionally. Default is 640. | Get the thumbnail image of the last recording event (If any), from the specified camera
 `unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, detections or never| Set the recording mode for each Camera.
 `unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, autoFilterOnly, on, off | Set the infrared mode for each Camera.
 `unifiprotect.set_status_light` | `entity_id` - Name of entity to toggle status light for.<br>`light_on` - true or false | Turn the status light on or off for each Camera.
@@ -173,7 +165,7 @@ Service | Parameters | Description
 `unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100. | Adjust settings for the PIR motion sensor in the Floodlight.
 `unifiprotect.set_doorbell_chime_duration` | `entity_id` - The Doorbell attached to the Chime.<br>`chime_duration`  - 0 to 10000 | Set Doorbell Chime duration.
 
-**Note:** When using *camera.enable_motion_detection*, Recording in UniFi Protect will be set to *detections*. If you want to have the cameras recording all the time, you have to set that in UniFi Protect App or use the service `unifiprotect.set_recording_mode`.
+**Note:** When using the HA Service *camera.enable_motion_detection*, Recording in UniFi Protect will be set to *detections*. If you want to have the cameras recording all the time, you have to set that in UniFi Protect App or use the service `unifiprotect.set_recording_mode`.
 
 ## UniFi Protect Events
 

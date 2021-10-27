@@ -134,7 +134,7 @@ If the UniFi Protect Server is found on the network it will be added to your ins
 
 **doorbell text**<br>
   *(string)Optional*<br>
-  If a Doorbell is attached to UniFi Protect, you can use this field to write a list of Custom Texts that can be displayed on the Doorbell LCD Screen. The list must be comma separated and will be truncated to 30 characters per item.
+  If a Doorbell is attached to UniFi Protect, you can use this field to write a list of Custom Texts that can be displayed on the Doorbell LCD Screen. The list must be comma separated and will be truncated to 30 characters per item. Example: `RING THE BELL, WE ARE SLEEPING, GO AWAY`
 
 **anonymous_snapshots**:<br>
   *(bool)(Optional)*<br>
@@ -162,7 +162,7 @@ Service | Parameters | Description
 `unifiprotect.set_hdr_mode` | `entity_id` - Name of entity to toggle HDR for.<br>`hdr_on`  - true or false | Toggle HDR mode on supported Cameras.
 `unifiprotect.set_mic_volume` | `entity_id` - Name of entity to adjust microphone volume for.<br>`level`  - a value between 0 and 100| Set Microphone sensitivity on Cameras.
 `unifiprotect.set_privacy_mode` | `entity_id` - Name of entity to adjust privacy mode for.<br>`privacy_mode`  - true to enable, false to disable<br>`mic_level` - 0 to 100, where 0 is off<br>`recording_mode` - always, detections or never| Set Privacy mode for a camera, where the screen goes black when enabled.
-`unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100. | Adjust settings for the PIR motion sensor in the Floodlight.
+`unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100. | Adjust settings for the PIR motion sensor in the Floodlight.
 `unifiprotect.set_doorbell_chime_duration` | `entity_id` - The Doorbell attached to the Chime.<br>`chime_duration`  - 0 to 10000 | Set Doorbell Chime duration.
 
 **Note:** When using the HA Service *camera.enable_motion_detection*, Recording in UniFi Protect will be set to *detections*. If you want to have the cameras recording all the time, you have to set that in UniFi Protect App or use the service `unifiprotect.set_recording_mode`.

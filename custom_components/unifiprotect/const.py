@@ -1,7 +1,7 @@
 """Constant definitions for Unifi Protect Integration."""
 
 # from typing_extensions import Required
-from homeassistant.const import ATTR_ENTITY_ID, CONF_FILENAME
+from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 

@@ -7,14 +7,6 @@ body:
       value: |
         Thanks for taking the time to fill out this feature request.
   - type: textarea
-    id: related-to-bug
-    attributes:
-      label: Feature related to bug
-      description: Is your feature request related to a problem?
-      placeholder: Please describe
-    validations:
-      required: false
-  - type: textarea
     id: new-feature
     attributes:
       label: New Feature

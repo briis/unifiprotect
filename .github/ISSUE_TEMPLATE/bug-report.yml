@@ -1,0 +1,47 @@
+name: Bug Report
+description: File a bug report for then HA UniFi Protect Integration
+title: "[Bug]: "
+labels: ["bug"]
+assignees:
+  - briis
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant Version?
+      description: What version of Home Assistant are you running?
+      placeholder: "2021.10.6"
+    validations:
+      required: true
+  - type: input
+    id: ufp-version
+    attributes:
+      label: UniFi Protect Version?
+      description: What version of UniFi Protect is installed?
+      placeholder: "1.20.0"
+    validations:
+      required: true
+  - type: input
+    id: integration-version
+    attributes:
+      label: UniFi Protect HA Integration version?
+      description: What version of Integration do you have installed in Home Assistant?
+      placeholder: "0.10.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Describe the bug
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell

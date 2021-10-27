@@ -54,13 +54,15 @@ It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, 
 8. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
 ## Hardware Support
 
+### Hardware
+
 This Integration supports all Ubiquiti Hardware that can run UniFi Protect. Currently this includes:
 
 * UniFi Protect Network Video Recorder (**UNVR**)
 * UniFi Dream Machine Pro (**UDMP**)
 * UniFi Cloud Key Gen2 Plus (**CKGP**) Minimum required Firmware version is **2.0.24** Below that this Integration will not run on a CloudKey+
 
-Software Versions:
+### Software Versions
 * UniFi Protect minimum version is **1.20.0**
 * Home Assistant minimum version is **2021.9.0**
 

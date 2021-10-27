@@ -1,6 +1,6 @@
 name: Bug Report
 description: File a bug report for then HA UniFi Protect Integration
-title: ""
+title: "Write a meaningful title"
 labels: ["bug"]
 assignees:
   - briis

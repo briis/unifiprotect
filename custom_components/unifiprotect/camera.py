@@ -27,8 +27,6 @@ from .const import (
     DEVICE_TYPE_DOORBELL,
     DEVICES_WITH_CAMERA,
     DOMAIN,
-    SAVE_THUMBNAIL_SCHEMA,
-    SERVICE_SAVE_THUMBNAIL,
     SERVICE_SET_DOORBELL_CHIME_DURAION,
     SERVICE_SET_DOORBELL_LCD_MESSAGE,
     SERVICE_SET_HDR_MODE,
@@ -116,10 +114,6 @@ async def async_setup_entry(
         SERVICE_SET_DOORBELL_LCD_MESSAGE,
         SET_DOORBELL_LCD_MESSAGE_SCHEMA,
         "async_set_doorbell_lcd_message",
-    )
-
-    platform.async_register_entity_service(
-        SERVICE_SAVE_THUMBNAIL, SAVE_THUMBNAIL_SCHEMA, "async_save_thumbnail"
     )
 
     platform.async_register_entity_service(
@@ -231,26 +225,6 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Set Camera Recording Mode."""
         await self.upv_object.set_camera_recording(self._device_id, recording_mode)
 
-    async def async_save_thumbnail(self, filename, image_width):
-        """Save Thumbnail Image."""
-
-        if not self.hass.config.is_allowed_path(filename):
-            _LOGGER.error("Can't write %s, no access to path!", filename)
-            return
-
-        image = await self.upv_object.get_thumbnail(self._device_id, image_width)
-        if image is None:
-            _LOGGER.error("Last thumbnail not found for Camera %s", self.name)
-            return
-
-        try:
-            if not os.path.exists(os.path.dirname(filename)):
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-            await self.hass.async_add_executor_job(_write_image, filename, image)
-        except OSError as err:
-            _LOGGER.error("Can't write image to file: %s", err)
-
     async def async_set_ir_mode(self, ir_mode):
         """Set camera ir mode."""
         await self.upv_object.set_camera_ir(self._device_id, ir_mode)
@@ -337,10 +311,3 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     async def stream_source(self):
         """Return the Stream Source."""
         return self._stream_source
-
-
-def _write_image(to_file, image_data):
-    """Executor helper to write image."""
-    with open(to_file, "wb") as img_file:
-        img_file.write(image_data)
-        _LOGGER.debug("Thumbnail Image written to %s", to_file)

@@ -26,7 +26,6 @@ ATTR_VIEW_ID = "view_id"
 ATTR_WDR_VALUE = "wdr_value"
 ATTR_ZOOM_POSITION = "zoom_position"
 
-CONF_THUMB_WIDTH = "image_width"
 CONF_RECORDING_MODE = "recording_mode"
 CONF_SNAPSHOT_DIRECT = "snapshot_direct"
 CONF_CHIME_ON = "chime_on"
@@ -53,7 +52,6 @@ CUSTOM_MESSAGE = "CUSTOM_MESSAGE"
 DEFAULT_PORT = 443
 DEFAULT_ATTRIBUTION = "Powered by UniFi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
-DEFAULT_THUMB_WIDTH = 640
 DEFAULT_SCAN_INTERVAL = 2
 
 DEVICE_TYPE_CAMERA = "camera"
@@ -67,7 +65,6 @@ DEVICES_WITH_CAMERA = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL)
 MIN_REQUIRED_PROTECT_V = "1.20.0"
 
 SERVICE_LIGHT_SETTINGS = "light_settings"
-SERVICE_SAVE_THUMBNAIL = "save_thumbnail_image"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"
 SERVICE_SET_STATUS_LIGHT = "set_status_light"
@@ -125,14 +122,6 @@ LIGHT_SETTINGS_SCHEMA = vol.Schema(
         vol.Optional(CONF_ENABLE_AT): cv.string,
         vol.Optional(CONF_DURATION): vol.Coerce(int),
         vol.Optional(CONF_SENSITIVITY): vol.Coerce(int),
-    }
-)
-
-SAVE_THUMBNAIL_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
-        vol.Required(CONF_FILENAME): cv.string,
-        vol.Optional(CONF_THUMB_WIDTH, default=DEFAULT_THUMB_WIDTH): cv.string,
     }
 )
 

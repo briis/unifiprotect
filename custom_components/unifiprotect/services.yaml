@@ -1,29 +1,3 @@
-save_thumbnail_image:
-  name: Save Thumbnail Image
-  description: "Request the latest motion thumbnail from a camera and write it to a file"
-  fields:
-    entity_id:
-      name: Entity ID
-      description: string (required) camera to get thumbnail from
-      example: "camera.outdoor"
-      required: true
-      selector:
-        entity:
-          integration: unifiprotect
-          domain: camera
-    filename:
-      name: Filename
-      description: "string (required) where to save the thumbnail"
-      required: true
-      selector:
-        text:
-      example: "/config/www/thumbnail.png"
-    image_width:
-      name: Image Width
-      description: "string (optional) width of Thumbnail image in pixels"
-      example: 640
-      selector:
-        number:
 set_recording_mode:
   name: Set Recording Mode
   description: "Set recording mode for the camera"

@@ -1,6 +1,5 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
 import logging
-import os
 from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
@@ -49,6 +48,8 @@ from .const import (
     SET_STATUS_LIGHT_SCHEMA,
     SET_WDR_VALUE_SCHEMA,
     SET_ZOOM_POSITION_SCHEMA,
+    TYPE_RECORD_MOTION,
+    TYPE_RECORD_NEVER,
 )
 from .entity import UnifiProtectEntity
 
@@ -283,13 +284,17 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     async def async_enable_motion_detection(self):
         """Enable motion detection in camera."""
-        if not await self.upv_object.set_camera_recording(self._device_id, "motion"):
+        if not await self.upv_object.set_camera_recording(
+            self._device_id, TYPE_RECORD_MOTION
+        ):
             return
         _LOGGER.debug("Motion Detection Enabled for Camera: %s", self._name)
 
     async def async_disable_motion_detection(self):
         """Disable motion detection in camera."""
-        if not await self.upv_object.set_camera_recording(self._device_id, "never"):
+        if not await self.upv_object.set_camera_recording(
+            self._device_id, TYPE_RECORD_NEVER
+        ):
             return
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self._name)
 

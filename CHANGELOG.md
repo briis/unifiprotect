@@ -2,7 +2,9 @@
 
 ## 0.10.0 Beta 3
 
-Released: NOT RELEASED YET
+Released: October 27th, 2021
+
+**REMINDER** This version is only valid for V1.20.0-beta2 or higher of UniFi Protect. If you are not on that version, stick with V0.9.1.
 
 ### Upgrade Instructions
 

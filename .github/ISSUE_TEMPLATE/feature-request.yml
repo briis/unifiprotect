@@ -7,6 +7,14 @@ body:
       value: |
         Thanks for taking the time to fill out this feature request.
   - type: textarea
+    id: related-to-bug
+    attributes:
+      label: Feature related to bug
+      description: Is your feature request related to a problem?
+      placeholder: Please describe
+    validations:
+      required: false
+  - type: textarea
     id: new-feature
     attributes:
       label: New Feature
@@ -15,8 +23,9 @@ body:
     validations:
       required: true
   - type: textarea
-    id: logs
+    id: additional-context
     attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
+    validations:
+      required: false

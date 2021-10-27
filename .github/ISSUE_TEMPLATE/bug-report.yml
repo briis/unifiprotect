@@ -1,6 +1,5 @@
 name: Bug Report
 description: File a bug report for the Home Assistant UniFi Protect Integration
-title: "Write a meaningful title"
 labels: ["bug"]
 assignees:
   - briis

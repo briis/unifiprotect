@@ -38,6 +38,8 @@ from .data import UnifiProtectData
 
 _LOGGER = logging.getLogger(__name__)
 
+SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Unifi Protect components."""

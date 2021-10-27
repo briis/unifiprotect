@@ -29,6 +29,10 @@ ATTR_VIEWS = "views"
 _LOGGER = logging.getLogger(__name__)
 
 _SELECT_ENTITY_IR = "infrared"
+_SELECT_ENTITY_REC_MODE = "recording_mode"
+_SELECT_ENTITY_VIEWER = "viewer"
+_SELECT_ENTITY_LIGHT_MOTION = "light_motion"
+_SELECT_ENTITY_DOORBELL_TEXT = "doorbell_text"
 
 _SELECT_NAME = 0
 _SELECT_ICON = 1
@@ -54,17 +58,17 @@ LIGHT_MODES = [LIGHT_MODE_MOTION, LIGHT_MODE_DARK, LIGHT_MODE_OFF]
 RECORDING_MODES = ["Always", "Never", "Detections"]
 
 SELECT_TYPES = {
-    "recording_mode": [
+    _SELECT_ENTITY_REC_MODE: [
         "Recording Mode",
         "video-outline",
         DEVICES_WITH_CAMERA,
     ],
-    "viewer": [
+    _SELECT_ENTITY_VIEWER: [
         "Viewer",
         "view-dashboard",
         DEVICE_TYPE_VIEWPORT,
     ],
-    "light_motion": [
+    _SELECT_ENTITY_LIGHT_MOTION: [
         "Lightning",
         "spotlight",
         DEVICE_TYPE_LIGHT,
@@ -74,7 +78,7 @@ SELECT_TYPES = {
         "circle-opacity",
         DEVICES_WITH_CAMERA,
     ],
-    "doorbell_text": [
+    _SELECT_ENTITY_DOORBELL_TEXT: [
         "Doorbell Text",
         "card-text",
         DEVICE_TYPE_DOORBELL,
@@ -152,13 +156,13 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self._device_type = select_item[_SELECT_TYPE]
         self._liveviews = liveviews
         self._doorbell_texts = []
-        if self._device_type == DEVICE_TYPE_VIEWPORT:
+        if self._select_entity == _SELECT_ENTITY_VIEWER:
             self._attr_options = self.viewport_view_names()
-        elif self._device_type == DEVICE_TYPE_LIGHT:
+        if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
             self._attr_options = LIGHT_MODES
-        elif self._select_entity == _SELECT_ENTITY_IR:
+        if self._select_entity == _SELECT_ENTITY_IR:
             self._attr_options = self.infrared_names()
-        elif self._device_type == DEVICE_TYPE_DOORBELL:
+        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
             for item in DOORBELL_BASE_TEXT:
                 self._doorbell_texts.append({"id": item["id"], "value": item["value"]})
             if doorbell_text is not None:
@@ -170,7 +174,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                         {"id": CUSTOM_MESSAGE, "value": item.strip()}
                     )
             self._attr_options = self.doorbell_texts()
-        else:
+        if self._select_entity == _SELECT_ENTITY_REC_MODE:
             self._attr_options = RECORDING_MODES
 
     @property
@@ -181,9 +185,10 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
     @property
     def current_option(self) -> str:
         """Return the current selected option."""
-        if self._device_type == DEVICE_TYPE_VIEWPORT:
+        if self._select_entity == _SELECT_ENTITY_VIEWER:
             return self.get_view_name_from_id(self._device_data["liveview"])
-        if self._device_type == DEVICE_TYPE_LIGHT:
+
+        if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
             lightmode = self._device_data["motion_mode"]
             if lightmode == TYPE_LIGHT_RECORD_MOTION:
                 lightmode = LIGHT_MODE_MOTION
@@ -192,12 +197,15 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             else:
                 lightmode = LIGHT_MODE_OFF
             return lightmode
+
         if self._select_entity == _SELECT_ENTITY_IR:
             return self.get_infrared_name_from_id()
-        if self._device_type == DEVICE_TYPE_DOORBELL:
+
+        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
             return self._device_data["doorbell_text"]
 
-        return self._device_data["recording_mode"].capitalize()
+        if self._select_entity == _SELECT_ENTITY_REC_MODE:
+            return self._device_data["recording_mode"].capitalize()
 
     @property
     def device_state_attributes(self):
@@ -285,7 +293,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the Select Entity Option."""
-        if self._device_type == DEVICE_TYPE_VIEWPORT:
+        if self._select_entity == _SELECT_ENTITY_VIEWER:
             if option in self.options:
                 _LOGGER.debug("Viewport View set to: %s", option)
                 view_id = self.get_view_id_from_name(option)
@@ -294,7 +302,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                 raise ValueError(
                     f"Can't set the value to {option}. Allowed values are: {self.options}"
                 )
-        elif self._device_type == DEVICE_TYPE_LIGHT:
+
+        if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
             if option in self.options:
                 if option == LIGHT_MODE_MOTION:
                     lightmode = TYPE_LIGHT_RECORD_MOTION
@@ -310,16 +319,19 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                 await self.upv.light_settings(
                     self._device_id, lightmode, enable_at=timing
                 )
-        elif self._select_entity == _SELECT_ENTITY_IR:
+
+        if self._select_entity == _SELECT_ENTITY_IR:
             if option in self.options:
                 infrared_id = self.get_infrared_id_from_name(option)
                 await self.upv.set_camera_ir(self._device_id, infrared_id)
-        elif self._device_type == DEVICE_TYPE_DOORBELL:
+
+        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
             if option in self.options:
                 text_type = self.get_doorbell_text_type_from_name(option)
                 await self.upv.set_doorbell_lcd_text(self._device_id, text_type, option)
                 _LOGGER.debug("Changed Doorbell LCD Text to: %s", option)
-        else:
+
+        if self._select_entity == _SELECT_ENTITY_REC_MODE:
             if option in self.options:
                 _LOGGER.debug("Changing Recording Mode to %s", option)
                 await self.upv.set_camera_recording(self._device_id, option.lower())

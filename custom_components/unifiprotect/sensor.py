@@ -31,7 +31,7 @@ SENSOR_TYPES = {
         "Light Turn On",
         None,
         ["leak", "leak-off"],
-        (DEVICE_TYPE_LIGHT,),
+        DEVICE_TYPE_LIGHT,
     ],
 }
 

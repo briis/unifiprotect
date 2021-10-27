@@ -36,8 +36,6 @@ from .const import (
 )
 from .data import UnifiProtectData
 
-SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
-
 _LOGGER = logging.getLogger(__name__)
 
 

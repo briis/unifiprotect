@@ -1,0 +1,22 @@
+name: Feature Reuest
+description: Ask for a new feature for the Home Assistant UniFi Protect Integration
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request.
+  - type: textarea
+    id: new-feature
+    attributes:
+      label: New Feature
+      description: Please describe in detail what feature you would like to have.
+      placeholder: Describe the feature
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell

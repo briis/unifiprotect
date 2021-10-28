@@ -2,7 +2,7 @@
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
+from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_DIAGNOSTIC
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
@@ -82,6 +82,7 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         self._name = f"{sensor_type[_SENSOR_NAME]} {self._device_data['name']}"
         self._units = sensor_type[_SENSOR_UNITS]
         self._icons = sensor_type[_SENSOR_ICONS]
+        self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
 
     @property
     def name(self):

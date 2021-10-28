@@ -7,7 +7,11 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
+from homeassistant.const import (
+    ATTR_ATTRIBUTION,
+    ATTR_LAST_TRIP_TIME,
+    ENTITY_CATEGORY_DIAGNOSTIC,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
 
@@ -91,6 +95,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
         self._device_class = PROTECT_TO_HASS_DEVICE_CLASS.get(sensor_type)
         self._hass = hass
+        self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
 
     @property
     def name(self):

@@ -3,7 +3,7 @@ import logging
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
+from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -155,13 +155,16 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self._icon = f"mdi:{select_item[_SELECT_ICON]}"
         self._device_type = select_item[_SELECT_TYPE]
         self._liveviews = liveviews
+
         self._doorbell_texts = []
         if self._select_entity == _SELECT_ENTITY_VIEWER:
             self._attr_options = self.viewport_view_names()
         if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
             self._attr_options = LIGHT_MODES
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
         if self._select_entity == _SELECT_ENTITY_IR:
             self._attr_options = self.infrared_names()
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
         if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
             for item in DOORBELL_BASE_TEXT:
                 self._doorbell_texts.append({"id": item["id"], "value": item["value"]})
@@ -174,8 +177,10 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                         {"id": CUSTOM_MESSAGE, "value": item.strip()}
                     )
             self._attr_options = self.doorbell_texts()
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
         if self._select_entity == _SELECT_ENTITY_REC_MODE:
             self._attr_options = RECORDING_MODES
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def name(self):

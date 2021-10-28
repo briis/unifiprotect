@@ -4,7 +4,10 @@ from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LAST_TRIP_TIME
+from homeassistant.const import (
+    ATTR_ATTRIBUTION,
+    ATTR_LAST_TRIP_TIME,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 

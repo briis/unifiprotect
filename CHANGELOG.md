@@ -1,5 +1,26 @@
 # // Changelog
 
+## 0.10.0 Beta 4
+
+Released: NOT RELEASED YET
+
+**REMINDER** This version is only valid for **V1.20.0-beta.2** or higher of UniFi Protect. If you are not on that version, stick with V0.9.1.
+
+### Upgrade Instructions
+
+Due to the many changes and entities that have been removed and replaced, we recommend the following process to upgrade from an earlier Beta or from an earlier release:
+
+* Upgrade the Integration files, either through HACS (Recommended) or by copying the files manually to your `custom_components/unifiprotect` directory.
+* Restart Home Assistant
+* Remove the UniFi Protect Integration by going to the Integrations page, click the 3 dots in the lower right corner of the UniFi Protect Integration and select *Delete*
+* While still on this page, click the `+ ADD INTEGRATION` button in the lower right corner, search for UnFi Protect, and start the installation, supplying your credentials.
+
+### Changes in this release
+
+Everything from Beta 1, 2 and 3 is included here, plus the following:
+
+* `NEW`: Device Configuration URL's are introduced in Home Assistant 2021.11. In this release we add URL Link to allow the user to visit the device for configuration or diagnostics from the *Devices* page.
+
 ## 0.10.0 Beta 3
 
 Released: October 27th, 2021

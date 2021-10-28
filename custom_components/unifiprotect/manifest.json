@@ -5,7 +5,7 @@
   "issue_tracker": "https://github.com/briis/unifiprotect/issues",
   "config_flow": true,
   "requirements": [
-    "pyunifiprotect==0.35.0"
+    "pyunifiprotect==0.35.1"
   ],
   "dependencies": [],
   "version": "0.10.0",

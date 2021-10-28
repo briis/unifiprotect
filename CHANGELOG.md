@@ -20,6 +20,14 @@ Due to the many changes and entities that have been removed and replaced, we rec
 Everything from Beta 1, 2 and 3 is included here, plus the following:
 
 * `NEW`: Device Configuration URL's are introduced in Home Assistant 2021.11. In this release we add URL Link to allow the user to visit the device for configuration or diagnostics from the *Devices* page.
+* `NEW`: Also as part of Home Assistant 2021.11 a new Entity Category is introduced. This makes it possible to classify an entity as either `config` or `diagnostic`. A `config` entity is used for entities that can change the configuration of a device and a `diagnostic` entity is used for devices that report status, but does not allow changes. These to entity categories have been applied to selected entities in this Integration.<br>
+We would like to have feedback from people on this choice. Have we categorized too many entities, should we not use this at all. Please come with the feedback.<br>
+Entities which have the entity_category set:
+  * Are not included in a service call targetting a whole device or area.
+  * Are, by default, not exposed to Google Assistant or Alexa.
+  * Are shown on a separate card on the device configuration page.
+  * Do not show up on the automatically generated Lovelace Dashboards.
+
 
 ## 0.10.0 Beta 3
 

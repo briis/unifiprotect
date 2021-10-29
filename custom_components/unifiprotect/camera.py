@@ -3,6 +3,7 @@ import logging
 from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
+from homeassistant.components.camera.const import STREAM_TYPE_HLS
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
@@ -175,6 +176,11 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     def supported_features(self):
         """Return supported features for this camera."""
         return self._supported_features
+
+    @property
+    def frontend_stream_type(self) -> str:
+        """Return the type of stream supported by this camera."""
+        return STREAM_TYPE_HLS
 
     @property
     def motion_detection_enabled(self):

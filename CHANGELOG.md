@@ -23,10 +23,10 @@ Everything from Beta 1, 2 and 3 is included here, plus the following:
 * `NEW`: Also as part of Home Assistant 2021.11 a new Entity Category is introduced. This makes it possible to classify an entity as either `config` or `diagnostic`. A `config` entity is used for entities that can change the configuration of a device and a `diagnostic` entity is used for devices that report status, but does not allow changes. These to entity categories have been applied to selected entities in this Integration.<br>
 We would like to have feedback from people on this choice. Have we categorized too many entities, should we not use this at all. Please come with the feedback.<br>
 Entities which have the entity_category set:
-  * Are not included in a service call targetting a whole device or area.
-  * Are, by default, not exposed to Google Assistant or Alexa.
+  * Are not included in a service call targetting a whole device or area. **BREAKING CHANGE**
+  * Are, by default, not exposed to Google Assistant or Alexa. **BREAKING CHANGE**
   * Are shown on a separate card on the device configuration page.
-  * Do not show up on the automatically generated Lovelace Dashboards.
+  * Do not show up on the automatically generated Lovelace Dashboards. **BREAKING CHANGE**
 
 
 ## 0.10.0 Beta 3

@@ -2,8 +2,10 @@
 import logging
 
 from homeassistant.components.binary_sensor import (
+    DEVICE_CLASS_DOOR,
     DEVICE_CLASS_MOTION,
     DEVICE_CLASS_OCCUPANCY,
+    DEVICE_CLASS_SAFETY,
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -23,6 +25,7 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_MOTION,
+    DEVICE_TYPE_SENSOR,
     DEVICES_WITH_CAMERA,
     DOMAIN,
 )
@@ -33,6 +36,14 @@ _LOGGER = logging.getLogger(__name__)
 PROTECT_TO_HASS_DEVICE_CLASS = {
     DEVICE_TYPE_DOORBELL: DEVICE_CLASS_OCCUPANCY,
     DEVICE_TYPE_MOTION: DEVICE_CLASS_MOTION,
+}
+
+_SENSE_NAME = 0
+_SENSE_DEVICE_CLASS = 1
+SENSE_SENSORS = {
+    "motion": ["Motion", DEVICE_CLASS_MOTION],
+    "door": ["Door open", DEVICE_CLASS_DOOR],
+    "alarm": ["Alarm", DEVICE_CLASS_SAFETY],
 }
 
 
@@ -58,6 +69,7 @@ async def async_setup_entry(
                     server_info,
                     device_id,
                     DEVICE_TYPE_DOORBELL,
+                    None,
                     hass,
                 )
             )
@@ -74,10 +86,27 @@ async def async_setup_entry(
                     server_info,
                     device_id,
                     DEVICE_TYPE_MOTION,
+                    None,
                     hass,
                 )
             )
             _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
+
+        if device_data["type"] == DEVICE_TYPE_SENSOR:
+            for sensor, sensor_type in SENSE_SENSORS.items():
+                sensors.append(
+                    UnifiProtectBinarySensor(
+                        upv_object,
+                        protect_data,
+                        server_info,
+                        device_id,
+                        sensor_type[_SENSE_DEVICE_CLASS],
+                        sensor,
+                        hass,
+                    )
+                )
+
+                _LOGGER.debug("UNIFIPROTECT UFP SENSE CREATED: %s", device_data["name"])
 
     async_add_entities(sensors)
 
@@ -88,14 +117,24 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     """A Unifi Protect Binary Sensor."""
 
     def __init__(
-        self, upv_object, protect_data, server_info, device_id, sensor_type, hass
+        self,
+        upv_object,
+        protect_data,
+        server_info,
+        device_id,
+        sensor_type,
+        sensor,
+        hass,
     ):
         """Initialize the Binary Sensor."""
         super().__init__(upv_object, protect_data, server_info, device_id, sensor_type)
         self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
-        self._device_class = PROTECT_TO_HASS_DEVICE_CLASS.get(sensor_type)
         self._hass = hass
         self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
+        if self._device_data["type"] == DEVICE_TYPE_SENSOR:
+            self._device_class = sensor_type
+        else:
+            self._device_class = PROTECT_TO_HASS_DEVICE_CLASS.get(sensor_type)
 
     @property
     def name(self):
@@ -105,6 +144,13 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
+        if self._sensor_type == DEVICE_TYPE_SENSOR:
+            if self._device_class == DEVICE_CLASS_DOOR:
+                return "off"
+            if self._device_class == DEVICE_CLASS_SAFETY:
+                return "off"
+            return self._device_data["event_on"]
+
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
             # Add Event to HA Event Bus
             if self._device_data["event_on"]:

@@ -20,7 +20,7 @@ Due to the many changes and entities that have been removed and replaced, we rec
 Everything from Beta 1, 2 and 3 is included here, plus the following:
 
 * `NEW`: Device Configuration URL's are introduced in Home Assistant 2021.11. In this release we add URL Link to allow the user to visit the device for configuration or diagnostics from the *Devices* page.
-* `NEW`: Also as part of Home Assistant 2021.11 a new Entity Category is introduced. This makes it possible to classify an entity as either `config` or `diagnostic`. A `config` entity is used for entities that can change the configuration of a device and a `diagnostic` entity is used for devices that report status, but does not allow changes. These to entity categories have been applied to selected entities in this Integration.<br>
+* `NEW`: Also as part of Home Assistant 2021.11 a new Entity Category is introduced. This makes it possible to classify an entity as either `config` or `diagnostic`. A `config` entity is used for entities that can change the configuration of a device and a `diagnostic` entity is used for devices that report status, but does not allow changes. These to entity categories have been applied to selected entities in this Integration. If you are not on HA 2021.11+ then this will not have any effect on your installation<br>
 We would like to have feedback from people on this choice. Have we categorized too many entities, should we not use this at all. Please come with the feedback.<br>
 Entities which have the entity_category set:
   * Are not included in a service call targetting a whole device or area.
@@ -28,6 +28,7 @@ Entities which have the entity_category set:
   * Are shown on a separate card on the device configuration page.
   * Do not show up on the automatically generated Lovelace Dashboards.
 * `NEW`: A switch is being created to turn on and off the Privacy Mode for each Camera. This makes it possible to set the Privacy mode for a Camera directly from the UI. This is a supplement to the already existing service `unifiprotect.set_privacy_mode`
+* `NEW`: Restarted the work on implementing the UFP Sense device. We don't have physical access to this device, but @Madbeefer is kindly enough to do all the testing.
 
 
 ## 0.10.0 Beta 3

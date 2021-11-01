@@ -2,7 +2,14 @@
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
+from homeassistant.const import (
+    ATTR_ATTRIBUTION,
+    DEVICE_CLASS_BATTERY,
+    DEVICE_CLASS_HUMIDITY,
+    DEVICE_CLASS_ILLUMINANCE,
+    DEVICE_CLASS_SIGNAL_STRENGTH,
+    DEVICE_CLASS_TEMPERATURE,
+)
 
 # from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_DIAGNOSTIC
 from homeassistant.core import HomeAssistant
@@ -13,6 +20,7 @@ from .const import (
     ATTR_ENABLED_AT,
     DEFAULT_ATTRIBUTION,
     DEVICE_TYPE_LIGHT,
+    DEVICE_TYPE_SENSOR,
     DEVICES_WITH_CAMERA,
     DOMAIN,
     ENTITY_CATEGORY_DIAGNOSTIC,
@@ -29,12 +37,49 @@ SENSOR_TYPES = {
         None,
         ["video-outline", "video-off-outline"],
         DEVICES_WITH_CAMERA,
+        None,
     ],
     "light_turn_on": [
         "Light Turn On",
         None,
         ["leak", "leak-off"],
         DEVICE_TYPE_LIGHT,
+        None,
+    ],
+    "battery_level": [
+        "Battery Level",
+        None,
+        None,
+        DEVICE_TYPE_SENSOR,
+        DEVICE_CLASS_BATTERY,
+    ],
+    "light_level": [
+        "Light Level",
+        None,
+        None,
+        DEVICE_TYPE_SENSOR,
+        DEVICE_CLASS_ILLUMINANCE,
+    ],
+    "humidity_level": [
+        "Humidity Level",
+        None,
+        None,
+        DEVICE_TYPE_SENSOR,
+        DEVICE_CLASS_HUMIDITY,
+    ],
+    "temperature_level": [
+        "Temperature",
+        None,
+        None,
+        DEVICE_TYPE_SENSOR,
+        DEVICE_CLASS_TEMPERATURE,
+    ],
+    "ble_signal": [
+        "Bluetooth Signal Strength",
+        None,
+        None,
+        DEVICE_TYPE_SENSOR,
+        DEVICE_CLASS_SIGNAL_STRENGTH,
     ],
 }
 
@@ -42,6 +87,7 @@ _SENSOR_NAME = 0
 _SENSOR_UNITS = 1
 _SENSOR_ICONS = 2
 _SENSOR_MODEL = 3
+_SENSOR_DEVICE_CLASS = 4
 
 _ICON_ON = 0
 _ICON_OFF = 1
@@ -85,6 +131,7 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         self._name = f"{sensor_type[_SENSOR_NAME]} {self._device_data['name']}"
         self._units = sensor_type[_SENSOR_UNITS]
         self._icons = sensor_type[_SENSOR_ICONS]
+        self._device_class = sensor_type[_SENSOR_DEVICE_CLASS]
         self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
 
     @property
@@ -97,11 +144,26 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         """Return the state of the sensor."""
         if self._device_type == DEVICE_TYPE_LIGHT:
             return self._device_data["motion_mode"]
+
+        if self._device_type == DEVICE_TYPE_SENSOR:
+            if self._device_class == DEVICE_CLASS_BATTERY:
+                return self._device_data["battery_status"]
+            if self._device_class == DEVICE_CLASS_HUMIDITY:
+                return self._device_data["humidity_value"]
+            if self._device_class == DEVICE_CLASS_ILLUMINANCE:
+                return self._device_data["light_value"]
+            if self._device_class == DEVICE_CLASS_SIGNAL_STRENGTH:
+                return self._device_data["bluetooth_signal"]
+            if self._device_class == DEVICE_CLASS_TEMPERATURE:
+                return self._device_data["temperature_value"]
         return self._device_data["recording_mode"]
 
     @property
     def icon(self):
         """Icon to use in the frontend, if any."""
+        if self._device_class is not None:
+            return
+
         if self._device_type == DEVICE_TYPE_LIGHT:
             icon_id = _ICON_ON if self.state != TYPE_RECORD_OFF else _ICON_OFF
             return f"mdi:{self._icons[icon_id]}"
@@ -109,14 +171,14 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         return f"mdi:{self._icons[icon_id]}"
 
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         """Return the units of measurement."""
         return self._units
 
     @property
     def device_class(self):
         """Return the device class of the sensor."""
-        return None
+        return self._device_class
 
     @property
     def device_state_attributes(self):

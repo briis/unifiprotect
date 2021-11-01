@@ -2,10 +2,10 @@
 import logging
 
 from homeassistant.components.binary_sensor import (
+    DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_DOOR,
     DEVICE_CLASS_MOTION,
     DEVICE_CLASS_OCCUPANCY,
-    DEVICE_CLASS_SAFETY,
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -39,12 +39,11 @@ PROTECT_TO_HASS_DEVICE_CLASS = {
     DEVICE_TYPE_MOTION: DEVICE_CLASS_MOTION,
 }
 
-_SENSE_NAME = 0
-_SENSE_DEVICE_CLASS = 1
+_SENSE_DEVICE_CLASS = 0
 SENSE_SENSORS = {
-    "motion": ["Motion", DEVICE_CLASS_MOTION],
-    "door": ["Door open", DEVICE_CLASS_DOOR],
-    "alarm": ["Alarm", DEVICE_CLASS_SAFETY],
+    "motion": [DEVICE_CLASS_MOTION],
+    "door": [DEVICE_CLASS_DOOR],
+    "battery_low": [DEVICE_CLASS_BATTERY],
 }
 
 
@@ -147,9 +146,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         """Return true if the binary sensor is on."""
         if self._sensor_type == DEVICE_TYPE_SENSOR:
             if self._device_class == DEVICE_CLASS_DOOR:
-                return "off"
-            if self._device_class == DEVICE_CLASS_SAFETY:
-                return "off"
+                return self._device_data["is_open"]
+            if self._device_class == DEVICE_CLASS_BATTERY:
+                return self._device_data["battery_low"]
             return self._device_data["event_on"]
 
         if self._sensor_type != DEVICE_TYPE_DOORBELL:

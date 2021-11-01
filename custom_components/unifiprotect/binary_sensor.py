@@ -27,6 +27,7 @@ from .const import (
     DEVICE_TYPE_MOTION,
     DEVICE_TYPE_SENSOR,
     DEVICES_WITH_CAMERA,
+    ENTITY_CATEGORY_DIAGNOSTIC,
     DOMAIN,
 )
 from .entity import UnifiProtectEntity
@@ -130,7 +131,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         super().__init__(upv_object, protect_data, server_info, device_id, sensor_type)
         self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
         self._hass = hass
-        # self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
+        self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
         if self._device_data["type"] == DEVICE_TYPE_SENSOR:
             self._device_class = sensor_type
         else:

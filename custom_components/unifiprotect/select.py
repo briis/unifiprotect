@@ -15,6 +15,7 @@ from .const import (
     DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_LIGHT,
     DEVICE_TYPE_VIEWPORT,
+    ENTITY_CATEGORY_CONFIG,
     TYPE_INFRARED_AUTO,
     TYPE_INFRARED_AUTOFILTER,
     TYPE_INFRARED_OFF,
@@ -163,10 +164,10 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             self._attr_options = self.viewport_view_names()
         if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
             self._attr_options = LIGHT_MODES
-            # self._attr_entity_category = ENTITY_CATEGORY_CONFIG
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
         if self._select_entity == _SELECT_ENTITY_IR:
             self._attr_options = self.infrared_names()
-            # self._attr_entity_category = ENTITY_CATEGORY_CONFIG
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
         if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
             for item in DOORBELL_BASE_TEXT:
                 self._doorbell_texts.append({"id": item["id"], "value": item["value"]})
@@ -179,10 +180,10 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                         {"id": CUSTOM_MESSAGE, "value": item.strip()}
                     )
             self._attr_options = self.doorbell_texts()
-            # self._attr_entity_category = ENTITY_CATEGORY_CONFIG
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
         if self._select_entity == _SELECT_ENTITY_REC_MODE:
             self._attr_options = RECORDING_MODES
-            # self._attr_entity_category = ENTITY_CATEGORY_CONFIG
+            self._attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def name(self):

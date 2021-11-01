@@ -11,6 +11,7 @@ from .const import (
     DEFAULT_ATTRIBUTION,
     DEVICES_WITH_CAMERA,
     DOMAIN,
+    ENTITY_CATEGORY_CONFIG,
 )
 from .entity import UnifiProtectEntity
 
@@ -132,7 +133,7 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         self._attr_min_value = number_item[_NUMBER_MIN_VALUE]
         self._attr_step = number_item[_NUMBER_STEP]
         self._attr_mode = number_item[_NUMBER_MODE]
-        # self._attr_entity_category = ENTITY_CATEGORY_CONFIG
+        self._attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def name(self):

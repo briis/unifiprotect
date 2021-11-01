@@ -12,6 +12,7 @@ from .const import (
     ATTR_DEVICE_MODEL,
     DEFAULT_ATTRIBUTION,
     DOMAIN,
+    ENTITY_CATEGORY_CONFIG,
     TYPE_HIGH_FPS_ON,
     TYPE_RECORD_NEVER,
 )
@@ -87,7 +88,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         self._name = f"{switch_type[_SWITCH_NAME]} {self._device_data['name']}"
         self._icon = f"mdi:{switch_type[_SWITCH_ICON]}"
         self._switch_type = switch_type[_SWITCH_TYPE]
-        # self._attr_entity_category = ENTITY_CATEGORY_CONFIG
+        self._attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def name(self):

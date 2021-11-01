@@ -15,6 +15,7 @@ from .const import (
     DEVICE_TYPE_LIGHT,
     DEVICES_WITH_CAMERA,
     DOMAIN,
+    ENTITY_CATEGORY_DIAGNOSTIC,
     TYPE_RECORD_NEVER,
     TYPE_RECORD_OFF,
 )
@@ -84,7 +85,7 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         self._name = f"{sensor_type[_SENSOR_NAME]} {self._device_data['name']}"
         self._units = sensor_type[_SENSOR_UNITS]
         self._icons = sensor_type[_SENSOR_ICONS]
-        # self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
+        self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
 
     @property
     def name(self):

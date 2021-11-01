@@ -63,6 +63,13 @@ DEVICE_TYPE_SENSOR = "sensor"
 
 DEVICES_WITH_CAMERA = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL)
 
+ENTITY_CATEGORY_CONFIG = (
+    "config"  # Replace with value from HA Core when more people are on 2021.11
+)
+ENTITY_CATEGORY_DIAGNOSTIC = (
+    "diagnostic"  # Replace with value from HA Core when more people are on 2021.11
+)
+
 MIN_REQUIRED_PROTECT_V = "1.20.0"
 
 SERVICE_LIGHT_SETTINGS = "light_settings"

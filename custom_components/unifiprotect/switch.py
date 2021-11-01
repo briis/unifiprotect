@@ -4,7 +4,9 @@ import logging
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_CONFIG
+from homeassistant.const import ATTR_ATTRIBUTION
+
+# from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -85,7 +87,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         self._name = f"{switch_type[_SWITCH_NAME]} {self._device_data['name']}"
         self._icon = f"mdi:{switch_type[_SWITCH_ICON]}"
         self._switch_type = switch_type[_SWITCH_TYPE]
-        self._attr_entity_category = ENTITY_CATEGORY_CONFIG
+        # self._attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def name(self):

@@ -17,10 +17,10 @@ Due to the many changes and entities that have been removed and replaced, we rec
 
 ### Changes in this release
 
-Everything from Beta 1, 2 and 3 is included here, plus the following:
+This will be the last beta with functional changes, so after this release it will only be bug fixes. The final release will come out when 1.20 of UniFi Protect is officially launched. Everything from Beta 1, 2 and 3 is included here, plus the following:
 
-* `NEW`: Device Configuration URL's are introduced in Home Assistant 2021.11. In this release we add URL Link to allow the user to visit the device for configuration or diagnostics from the *Devices* page.
-* `NEW`: Also as part of Home Assistant 2021.11 a new Entity Category is introduced. This makes it possible to classify an entity as either `config` or `diagnostic`. A `config` entity is used for entities that can change the configuration of a device and a `diagnostic` entity is used for devices that report status, but does not allow changes. These to entity categories have been applied to selected entities in this Integration. If you are not on HA 2021.11+ then this will not have any effect on your installation<br>
+* `NEW`: Device Configuration URL's are introduced in Home Assistant 2021.11. In this release we add URL Link to allow the user to visit the device for configuration or diagnostics from the *Devices* page. If you are not on HA 2021.11+ then this will not have any effect on your installation.
+* `NEW`: Also as part of Home Assistant 2021.11 a new Entity Category is introduced. This makes it possible to classify an entity as either `config` or `diagnostic`. A `config` entity is used for entities that can change the configuration of a device and a `diagnostic` entity is used for devices that report status, but does not allow changes. These to entity categories have been applied to selected entities in this Integration. If you are not on HA 2021.11+ then this will not have any effect on your installation.<br>
 We would like to have feedback from people on this choice. Have we categorized too many entities, should we not use this at all. Please come with the feedback.<br>
 Entities which have the entity_category set:
   * Are not included in a service call targetting a whole device or area.

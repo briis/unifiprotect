@@ -196,6 +196,16 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
                 ATTR_LAST_TRIP_TIME: self._device_data["last_ring"],
             }
+
+        if self._device_data["type"] == DEVICE_TYPE_SENSOR:
+            attr = {
+                ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+                ATTR_DEVICE_MODEL: self._model,
+            }
+            if self._device_class == DEVICE_CLASS_MOTION:
+                attr[ATTR_LAST_TRIP_TIME] = self._device_data["last_motion"]
+            return attr
+
         if (
             self._device_data["event_object"] is not None
             and len(self._device_data["event_object"]) > 0

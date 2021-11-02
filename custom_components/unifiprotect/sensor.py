@@ -9,11 +9,12 @@ from homeassistant.const import (
     DEVICE_CLASS_ILLUMINANCE,
     DEVICE_CLASS_SIGNAL_STRENGTH,
     DEVICE_CLASS_TEMPERATURE,
+    TEMP_CELSIUS,
 )
 
 # from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_DIAGNOSTIC
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import Entity
 
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -48,35 +49,35 @@ SENSOR_TYPES = {
     ],
     "battery_level": [
         "Battery Level",
-        None,
+        "%",
         None,
         DEVICE_TYPE_SENSOR,
         DEVICE_CLASS_BATTERY,
     ],
     "light_level": [
         "Light Level",
-        None,
+        "lux",
         None,
         DEVICE_TYPE_SENSOR,
         DEVICE_CLASS_ILLUMINANCE,
     ],
     "humidity_level": [
         "Humidity Level",
-        None,
+        "%",
         None,
         DEVICE_TYPE_SENSOR,
         DEVICE_CLASS_HUMIDITY,
     ],
     "temperature_level": [
         "Temperature",
-        None,
+        TEMP_CELSIUS,
         None,
         DEVICE_TYPE_SENSOR,
         DEVICE_CLASS_TEMPERATURE,
     ],
     "ble_signal": [
         "Bluetooth Signal Strength",
-        None,
+        "dB",
         None,
         DEVICE_TYPE_SENSOR,
         DEVICE_CLASS_SIGNAL_STRENGTH,
@@ -121,7 +122,7 @@ async def async_setup_entry(
     return True
 
 
-class UnifiProtectSensor(UnifiProtectEntity, Entity):
+class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
     """A Ubiquiti Unifi Protect Sensor."""
 
     def __init__(self, upv_object, protect_data, server_info, device_id, sensor):
@@ -140,7 +141,7 @@ class UnifiProtectSensor(UnifiProtectEntity, Entity):
         return self._name
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         if self._device_type == DEVICE_TYPE_LIGHT:
             return self._device_data["motion_mode"]

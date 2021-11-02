@@ -56,7 +56,7 @@ SENSOR_TYPES = {
     ],
     "light_level": [
         "Light Level",
-        "lux",
+        "lx",
         None,
         DEVICE_TYPE_SENSOR,
         DEVICE_CLASS_ILLUMINANCE,

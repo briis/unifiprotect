@@ -28,7 +28,8 @@ Entities which have the entity_category set:
   * Are shown on a separate card on the device configuration page.
   * Do not show up on the automatically generated Lovelace Dashboards.
 * `NEW`: A switch is being created to turn on and off the Privacy Mode for each Camera. This makes it possible to set the Privacy mode for a Camera directly from the UI. This is a supplement to the already existing service `unifiprotect.set_privacy_mode`
-* `NEW`: Restarted the work on implementing the UFP Sense device. We don't have physical access to this device, but @Madbeefer is kindly enough to do all the testing.
+* `NEW`: Restarted the work on implementing the UFP Sense device. We don't have physical access to this device, but @Madbeefer is kindly enough to do all the testing.<br>
+  The following new sensors will be created for each UFP Sense device: `Battery %`, `Ambient Light`, `Humidity`, `Temperature` and `BLE Signal Strength`.
 
 
 ## 0.10.0 Beta 3

@@ -146,7 +146,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         """Return true if the binary sensor is on."""
         if self._sensor_type == DEVICE_TYPE_SENSOR:
             if self._device_class == DEVICE_CLASS_DOOR:
-                return self._device_data["is_open"]
+                return self._device_data["event_open_on"]
             if self._device_class == DEVICE_CLASS_BATTERY:
                 return self._device_data["battery_low"]
             return self._device_data["event_on"]

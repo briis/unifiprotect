@@ -204,8 +204,10 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             }
             if self._device_class == DEVICE_CLASS_MOTION:
                 attr[ATTR_LAST_TRIP_TIME] = self._device_data["last_motion"]
+                attr[ATTR_EVENT_LENGTH] = self._device_data["event_length"]
             if self._device_class == DEVICE_CLASS_DOOR:
                 attr[ATTR_LAST_TRIP_TIME] = self._device_data["last_openchange"]
+                attr[ATTR_EVENT_LENGTH] = self._device_data["event_length"]
             return attr
 
         if (

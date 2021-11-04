@@ -98,6 +98,8 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
             },
             options={
+                CONF_USERNAME: user_input.get(CONF_USERNAME),
+                CONF_PASSWORD: user_input.get(CONF_PASSWORD),
                 CONF_DISABLE_RTSP: user_input.get(CONF_DISABLE_RTSP),
                 CONF_DOORBELL_TEXT: user_input.get(CONF_DOORBELL_TEXT),
                 CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
@@ -139,6 +141,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
+                    vol.Required(
+                        CONF_USERNAME,
+                        default=self.config_entry.options.get(CONF_USERNAME, ""),
+                    ): str,
+                    vol.Required(
+                        CONF_PASSWORD,
+                        default=self.config_entry.options.get(CONF_PASSWORD, ""),
+                    ): str,
                     vol.Optional(
                         CONF_DISABLE_RTSP,
                         default=self.config_entry.options.get(CONF_DISABLE_RTSP, False),

@@ -28,6 +28,8 @@
         "step": {
             "init": {
                 "data": {
+                    "username": "Brugernavn",
+                    "password": "Kodeord",
                     "disable_rtsp": "Deaktiver RTSP-signalet",
                     "doorbell_text": "Komma separaret liste af tekst der kan vises på Dørklokken. Efterlad tom hvis ingen dørklokke.",
                     "snapshot_direct": "Brug anonyme snapshots (Skal være aktiveret på alle kameraer)"

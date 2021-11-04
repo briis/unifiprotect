@@ -1,5 +1,25 @@
 # // Changelog
 
+## 0.10.0 RC 1
+
+Released: not released yet
+
+**REMINDER** This version is only valid for **V1.20.0-beta.7** or higher of UniFi Protect. If you are not on that version, stick with V0.9.1.
+
+### Upgrade Instructions
+
+Due to the many changes and entities that have been removed and replaced, we recommend the following process to upgrade from an earlier Beta or from an earlier release:
+
+* Upgrade the Integration files, either through HACS (Recommended) or by copying the files manually to your `custom_components/unifiprotect` directory.
+* Restart Home Assistant
+* Remove the UniFi Protect Integration by going to the Integrations page, click the 3 dots in the lower right corner of the UniFi Protect Integration and select *Delete*
+* While still on this page, click the `+ ADD INTEGRATION` button in the lower right corner, search for UnFi Protect, and start the installation, supplying your credentials.
+
+### Changes in this release
+
+* `CHANGE`: It is now possible to change the UFP Device username and password without removing and reinstallating the Integration. On the Home Assistant Integration page, select CONFIGURE in the lower left corner of the UniFi Protect integration, and you will have the option to enter a new username and/or password.
+
+
 ## 0.10.0 Beta 4
 
 Released: November 4th, 2021

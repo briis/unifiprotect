@@ -28,6 +28,8 @@
         "step": {
             "init": {
                 "data": {
+                    "username": "Username",
+                    "password": "Password",
                     "disable_rtsp": "Disable the RTSP stream",
                     "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
                     "snapshot_direct": "Use Anonymous Snapshots (Must be enabled on all Cameras)"

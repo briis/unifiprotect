@@ -28,6 +28,8 @@
         "step": {
             "init": {
                 "data": {
+                    "username": "Brukenavn",
+                    "password": "Passord",
                     "disable_rtsp": "Deaktiver RTSP-signalet",
                     "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
                     "snapshot_direct": "Bruk anonyme øyeblikksbilder (må være aktivert på alle kameraer)"

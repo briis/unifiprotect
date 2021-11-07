@@ -1,6 +1,7 @@
 default_config:
 
 stream:
+  ll_hls: True
 
 logger:
   default: error

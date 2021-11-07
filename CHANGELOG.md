@@ -18,7 +18,7 @@ Due to the many changes and entities that have been removed and replaced, we rec
 ### Changes in this release
 
 * `CHANGE`: It is now possible to change the UFP Device username and password without removing and reinstallating the Integration. On the Home Assistant Integration page, select CONFIGURE in the lower left corner of the UniFi Protect integration, and you will have the option to enter a new username and/or password.
-
+* `NEW`: Despite the comments for Beta.4 about no new stuff, we still decided to bring one new binary sensor. For each Camera there will be a binary sensor called `binary_sensor.is_dark_CAMERANAME`. This sensor will be on if the camera is perceiving it is as so dark that the Infrared lights will turn on (If enabled).
 
 ## 0.10.0 Beta 4
 

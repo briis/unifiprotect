@@ -1,98 +1,125 @@
 ---
-title: Unifi Protect
-description: Instructions on how to integrate Unifi Protect into Home Assistant.
+title: Ubiquiti UniFi Protect
+description: Instructions on how to configure UniFi Protect integration by Ubiquiti.
 ha_category:
-  - Binary Sensor
+  - Hub
   - Camera
+  - Light
+  - Number
   - Sensor
+  - Select
   - Switch
-ha_release: '0.115'
-ha_iot_class: Cloud Polling
+ha_release: 2022.1
+ha_iot_class: Local Push
+ha_config_flow: true
+ha_quality_scale: platinum
 ha_codeowners:
   - '@briis'
-ha_config_flow: true
 ha_domain: unifiprotect
+ha_ssdp: true
+ha_platforms:
+  - camera
+  - binary_sensor
+  - sensor
+  - light
+  - switch
+  - select
+  - number
 ---
 
-The `unifiprotect` integration adds support for retrieving Camera feeds and Sensor data from a Unifi Protect installation on either a Ubiquiti CloudKey+ ,Ubiquiti Unifi Dream Machine Pro or UniFi Protect Network Video Recorder.
+The [UniFi Protect Integration](https://ui.com/camera-security) by [Ubiquiti Networks, inc.](https://www.ui.com/), adds support for retrieving Camera feeds and Sensor data from a UniFi Protect installation on either a Ubiquiti CloudKey+, Ubiquiti UniFi Dream Machine Pro or UniFi Protect Network Video Recorder.
 
-There is currently support for the following device types within Home Assistant:
+There is support for the following device types within Home Assistant:
+* Camera
+  * A camera entity for each camera found on the NVR device will be created
+* Sensor
+  * A sensor for each camera found will be created. This sensor will hold the current recording mode.
+  * A sensor for each Floodlight device found will be created. This sensor will hold the status of when light will turn on.
+* Binary Sensor
+  * One to two binary sensors will be created per camera found. There will always be a binary sensor recording if motion is detected per camera. If the camera is a doorbell, there will also be a binary sensor created that records if the doorbell is pressed.
+* Switch
+  * For each camera supporting High Dynamic Range (HDR) a switch will be created to turn this setting on or off.
+  * For each camera supporting High Frame Rate recording a switch will be created to turn this setting on or off.
+  * For each camera a switch will be created to turn the status light on or off.
+* Light
+  * A light entity will be created for each UniFi Floodlight found. This works as a normal light entity, and has a brightness scale also.
+* Select
+  * For each Camera found there will be a Select entity created from where you can set the cameras recording mode.
+  * For each Doorbell found, there will be a Select entity created that makes it possible to set the LCD Text. If you make a list of Texts in the Integration configuration, you can both set the standard texts and custom text that you define here.
+  * For each Camera found there will be a Select entity created from where you can set the behaviour of the Infrared light on the Camera
+  * For each Viewport found, there will be a Select entity from where you change the active View being displayed on the Viewport.
+  * For each Floodlight device there be a Select entity to set the behaviour of the built-in motion sensor.
+* Number
+  * For each camera supporting WDR, a number entity will be setup to set the active value.
+  * For each camera a number entity will be created from where you can set the microphone sensitivity level.
+  * For each camera supporting Optical Zoom, a number entity will be setup to set the zoom position.
 
-- [Binary Sensor](#binary-sensor)
-- [Camera](#camera)
-- [Sensor](#sensor)
-- [Switch](#switch)
 
-## Prerequisites
+{% include integrations/config_flow.md %}
 
-Before you install this Integration you need to ensure that the following two settings are applied in Unifi Protect:
+### Hardware
 
-1. **Local User** There must be a local user with administrative rights set up on your Unifi Protect Server. The process of creating a local users varies depending on whether you use a CloudKey+ or an UDMP/UNVR server (UnifiOS devices).
-    * **CloudKey+** - open Unifi Protect in your browser. Click the USERS tab and you will get a list of users. Either select an existing user, or create a new one. The important thing is that the user is part of *Administrators* and that a local username and password is set for that user. This is the username and password you will use when setting up the Integration later.
-    * **UnifiOS device** - open Unifi Protect in your browser. Click the device name, and then in the bottom, click *Users*. Either select an existing user, or create a new one. It is importent that for Unifi Protect, this user is part of the Administrator group.
+This Integration supports all Ubiquiti Hardware that can run UniFi Protect. Currently this includes:
 
-2. **RTSP Stream** Live Streaming for Cameras is enabled by activating the RTSP stream on each attached camera. Select each camera under the CAMERAS tab in the Unfi Protect App or Web Interface, click on the camera and you will get a menu on the right side. Click the MANAGE button and there will be a menu like the picture below. (If you can't see the same picture click the + sign to the right of RTSP). Make sure that at least one of the streams is set to on. It does not matter which one, or if you select more than one, the integration will pick the one with the highest resolution.
+* UniFi Protect Network Video Recorder (**UNVR**)
+* UniFi Dream Machine Pro (**UDMP**)
+* UniFi Cloud Key Gen2 Plus (**CKGP**) Minimum required Firmware version is **2.0.24** Below that this Integration will not run on a CloudKey+
 
-<p class='img'>
-<img src='images/screenshots/unifiprotect_rtsp.png' height='350px' />
-</p>
+### Software Versions
+* UniFi Protect minimum version is **1.20.0**
+* Home Assistant minimum version is **2021.9.0**
 
-
-## Configuration
-
-Go to the integrations page in your configuration and click on new integration -> Unifi Protect.
-
-A dialog box will be presented, where the following information needs to be entered:
-* **IP Address of CloudKey+ or UDMP/UNVR** - IP address of the Unifi Protect NVR
-* **Port Number** - It will be 7443 for a CloudKey+ or else 443
-* **Username** - Type the username of the local user created in the *Prerequisites* step
-* **Password** - Type the password for the local user
-
-The rest of the Options can be left as they are. They can all be adjusted later, using *Options* on the Widget.
-
-YAML configuration is not available.
-
-## Binary Sensor
-
-Once you have enabled the `unifiprotect` integration , you can start using a binary sensor. Currently, it supports doorbell and cameras.
-
-## Camera
-
-The `unifiprotect` camera platform is consuming the information provided by a camera connected to a [Unifi Protect Video Recorder](https://unifi-network.ui.com/building-security). This integration allows you to view the current live stream created by the camera.
-
-## Sensor
-
-The `unifiprotect` sensor platform is consuming the information provided by a camera connected to a [Unifi Protect Video Recorder](https://unifi-network.ui.com/building-security). This integration allows you to view the recording state of each camera.
-
-## Switch
-
-The `unifiprotect` switch platform is consuming the information provided by a camera connected to a [Unifi Protect Video Recorder](https://unifi-network.ui.com/building-security). This integration allows you to quickly switch ir mode for a camera and to switch recording mode for a camera.
 
 ## Services
 
-The Integration supports the standard Camera services like `camera.snapshot` and `camera.record`, but also adds specific *Unifi Protect* services.
+### Service unifi.reconnect_client
 
-### Save Thumbnail Image
+Try to get a wireless client to reconnect to the network.
 
-`unifiprotect.save_thumbnail_image`
+| Service data attribute | Optional | Description                                                                 |
+| ---------------------- | -------- | --------------------------------------------------------------------------- |
+| `device_id`            | No       | String representing a device ID related to a UniFi integration.             |
 
-Get the thumbnail image of the last recording event. This requires entity id and filename to store the image in.
+### Service unifi.remove_clients
 
-### Set Recording Mode
+Clean up clients on the UniFi Controller that has only been associated with the controller for a short period of time. The difference between first seen and last seen needs to be less than 15 minutes and the client can not have a fixed IP, hostname or name associated with it.
 
-`unifiprotect.set_recording_mode`
+## Switch
 
-Set the recording mode for a camera to either: never record, motion only or always record. This requires entity id and the recording mode.
+### Block network access for clients
 
-### Set Infra Red Light Mode
+Allow control of network access to clients configured in the integration options by adding MAC addresses. Items in this list will have a Home Assistant switch created, using the UniFi Device name, allowing for blocking and unblocking.
 
-`unifiprotect.set_ir_mode`
+### Control clients powered by POE
 
-Set the infrared mode for a camera to either: auto, always on, always off or led off. This requires entity id and the ir mode.
+Entities appear automatically for each connected POE client. If no POE client device is in operation, no entity will be visible. Note: UniFi infrastructure devices such as access points and other switches are not (yet) supported, even if they are powered over ethernet themselves.
 
-### Set Camera Status Light
+Note that POE control actually configures the network port of the switch which the client is connected to.
 
-`unifiprotect.set_status_light`
+### Control DPI Traffic Restrictions
 
-Turn the status light on or off for a camera. This requires entity id and light on mode, that can be true or false.
+Entities appear automatically for each restriction group. If there are no restrictions in a group, no entity will be visible. Toggling the switch in Home Assistant will enable or disable all restrictions inside a group.
 
+## Sensor
+
+### Bandwidth sensor
+
+Get entities reporting receiving and transmitting bandwidth per network client.
+
+### Uptime sensor
+
+Get entities reporting uptime per network client.
+
+## Debugging integration
+
+If you have problems with UniFi or the integration you can add debug prints to the log.
+
+```yaml
+logger:
+  default: info
+  logs:
+    aiounifi: debug
+    homeassistant.components.unifi: debug
+    homeassistant.components.device_tracker.unifi: debug
+    homeassistant.components.switch.unifi: debug
+```

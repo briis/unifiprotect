@@ -1,5 +1,6 @@
 """This component provides binary sensors for Unifi Protect."""
 import logging
+from typing import Any, Dict
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY,
@@ -23,6 +24,7 @@ from .const import (
     ATTR_EVENT_OBJECT,
     ATTR_EVENT_SCORE,
     DEFAULT_ATTRIBUTION,
+    DEVICE_TYPE_DARK,
     DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_MOTION,
     DEVICE_TYPE_SENSOR,
@@ -37,10 +39,11 @@ _LOGGER = logging.getLogger(__name__)
 PROTECT_TO_HASS_DEVICE_CLASS = {
     DEVICE_TYPE_DOORBELL: DEVICE_CLASS_OCCUPANCY,
     DEVICE_TYPE_MOTION: DEVICE_CLASS_MOTION,
+    DEVICE_TYPE_DARK: None,
 }
 
 _SENSE_DEVICE_CLASS = 0
-SENSE_SENSORS = {
+SENSE_SENSORS: Dict[str, Any] = {
     "motion": [DEVICE_CLASS_MOTION],
     "door": [DEVICE_CLASS_DOOR],
     "battery_low": [DEVICE_CLASS_BATTERY],
@@ -91,6 +94,20 @@ async def async_setup_entry(
                 )
             )
             _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
+            sensors.append(
+                UnifiProtectBinarySensor(
+                    upv_object,
+                    protect_data,
+                    server_info,
+                    device_id,
+                    DEVICE_TYPE_DARK,
+                    None,
+                    hass,
+                )
+            )
+            _LOGGER.debug(
+                "UNIFIPROTECT IS_DARK SENSOR CREATED: %s", device_data["name"]
+            )
 
         if device_data["type"] == DEVICE_TYPE_SENSOR:
             for sensor, sensor_type in SENSE_SENSORS.items():
@@ -149,6 +166,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 return self._device_data["battery_low"]
             return self._device_data["event_on"]
 
+        if self._sensor_type == DEVICE_TYPE_DARK:
+            return self._device_data["is_dark"]
+
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
             # Add Event to HA Event Bus
             if self._device_data["event_on"]:
@@ -180,6 +200,8 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     @property
     def icon(self):
         """Select icon to display in Frontend."""
+        if self._sensor_type == DEVICE_TYPE_DARK:
+            return "mdi:brightness-6"
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
             return None
         if self._device_data["event_ring_on"]:
@@ -193,6 +215,11 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             return {
                 ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
                 ATTR_LAST_TRIP_TIME: self._device_data["last_ring"],
+            }
+
+        if self._sensor_type == DEVICE_TYPE_DARK:
+            return {
+                ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             }
 
         if self._device_data["type"] == DEVICE_TYPE_SENSOR:

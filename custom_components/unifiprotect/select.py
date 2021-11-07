@@ -1,5 +1,6 @@
 """This component provides select entities for Unifi Protect."""
 import logging
+from typing import Any
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -60,7 +61,7 @@ LIGHT_MODES = [LIGHT_MODE_MOTION, LIGHT_MODE_DARK, LIGHT_MODE_OFF]
 
 RECORDING_MODES = ["Always", "Never", "Detections"]
 
-SELECT_TYPES = {
+SELECT_TYPES: list[dict[str, Any]] = {
     _SELECT_ENTITY_REC_MODE: [
         "Recording Mode",
         "video-outline",

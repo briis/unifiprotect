@@ -1,5 +1,7 @@
 """This component provides number entities for Unifi Protect."""
 import logging
+from typing import Any
+
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
@@ -30,7 +32,7 @@ _NUMBER_MODE = 5  # auto, slider or box
 _NUMBER_TYPE = 6
 _NUMBER_REQUIRES = 7  # Required field present if not, skip adding
 
-NUMBER_TYPES = {
+NUMBER_TYPES: list[dict[str, Any]] = {
     _ENTITY_WDR: [
         "Wide Dynamic Range",
         "state-machine",

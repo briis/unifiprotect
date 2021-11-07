@@ -1,5 +1,6 @@
 """This component provides sensors for Unifi Protect."""
 import logging
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -32,7 +33,7 @@ from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-SENSOR_TYPES = {
+SENSOR_TYPES: list[dict[str, Any]] = {
     "motion_recording": [
         "Motion Recording",
         None,

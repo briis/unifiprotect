@@ -131,8 +131,6 @@ async def async_setup_entry(
 
     async_add_entities(select_entities)
 
-    return True
-
 
 class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
     """A Unifi Protect Select Entity."""

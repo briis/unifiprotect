@@ -110,8 +110,6 @@ async def async_setup_entry(
 
     async_add_entities(sensors)
 
-    return True
-
 
 class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     """A Unifi Protect Binary Sensor."""

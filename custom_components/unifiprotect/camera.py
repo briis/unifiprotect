@@ -90,7 +90,7 @@ async def async_setup_entry(
             )
     async_add_entities(cameras)
 
-    platform = entity_platform.current_platform.get()
+    platform = entity_platform.async_get_current_platform()
 
     platform.async_register_entity_service(
         SERVICE_SET_RECORDING_MODE,
@@ -143,8 +143,6 @@ async def async_setup_entry(
         SET_DOORBELL_CHIME_DURATION_SCHEMA,
         "async_set_doorbell_chime_duration",
     )
-
-    return True
 
 
 class UnifiProtectCamera(UnifiProtectEntity, Camera):

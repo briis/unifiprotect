@@ -105,8 +105,6 @@ async def async_setup_entry(
 
     async_add_entities(number_entities)
 
-    return True
-
 
 class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
     """A Unifi Protect Number Entity."""

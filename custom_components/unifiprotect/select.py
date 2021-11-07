@@ -211,8 +211,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
             return self._device_data["doorbell_text"]
 
-        if self._select_entity == _SELECT_ENTITY_REC_MODE:
-            return self._device_data["recording_mode"].capitalize()
+        return self._device_data["recording_mode"].capitalize()
 
     @property
     def device_state_attributes(self):

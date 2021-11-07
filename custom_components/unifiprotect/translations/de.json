@@ -16,10 +16,7 @@
                     "host": "IP-Adresse des Unifi Protect Server",
                     "port": "Portnummer (7443 NON UnifiOS, 443 UnifiOS)",
                     "username": "Username",
-                    "password": "Password",
-                    "disable_rtsp": "Den RTSP-stream deaktivieren",
-                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
-                    "snapshot_direct": "Nutze anonyme Snapshots (Muss für alle Kameras eingestellt sein)"
+                    "password": "Password"
                 }
             }
         }

@@ -16,7 +16,7 @@ from homeassistant.const import (
     CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
@@ -40,8 +40,36 @@ _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
 
+@callback
+def _async_normalize_config_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Move options from data for imported entries.
+    Initialize options with default values for other entries.
+    Copy the unique id to CONF_ID if it is missing
+    """
+    if not entry.options:
+        hass.config_entries.async_update_entry(
+            entry,
+            data={
+                CONF_HOST: entry.data.get(CONF_HOST),
+                CONF_ID: entry.data.get(CONF_ID) or entry.unique_id,
+                CONF_PORT: entry.data.get(CONF_PORT),
+                CONF_USERNAME: entry.data.get(CONF_USERNAME),
+                CONF_PASSWORD: entry.data.get(CONF_PASSWORD),
+            },
+            options={
+                CONF_USERNAME: entry.data.get(CONF_USERNAME),
+                CONF_PASSWORD: entry.data.get(CONF_PASSWORD),
+                CONF_SNAPSHOT_DIRECT: entry.data.get(CONF_SNAPSHOT_DIRECT, False),
+                CONF_DISABLE_RTSP: entry.data.get(CONF_DISABLE_RTSP, False),
+                CONF_DOORBELL_TEXT: entry.data.get(CONF_DOORBELL_TEXT, ""),
+            },
+            unique_id=entry.unique_id or entry.data.get(CONF_ID),
+        )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the Unifi Protect config entries."""
+    _async_normalize_config_entry(hass, entry)
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
     protectserver = UpvServer(

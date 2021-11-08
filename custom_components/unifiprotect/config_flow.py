@@ -91,8 +91,6 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_PASSWORD: user_input.get(CONF_PASSWORD),
             },
             options={
-                CONF_USERNAME: user_input.get(CONF_USERNAME),
-                CONF_PASSWORD: user_input.get(CONF_PASSWORD),
                 CONF_DISABLE_RTSP: False,
                 CONF_DOORBELL_TEXT: "",
                 CONF_SNAPSHOT_DIRECT: False,
@@ -133,11 +131,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Required(
                         CONF_USERNAME,
-                        default=self.config_entry.options.get(CONF_USERNAME, ""),
+                        default=self.config_entry.data.get(CONF_USERNAME, ""),
                     ): str,
                     vol.Required(
                         CONF_PASSWORD,
-                        default=self.config_entry.options.get(CONF_PASSWORD, ""),
+                        default=self.config_entry.data.get(CONF_PASSWORD, ""),
                     ): str,
                     vol.Optional(
                         CONF_DOORBELL_TEXT,

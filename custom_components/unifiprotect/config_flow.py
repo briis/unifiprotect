@@ -131,11 +131,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Required(
                         CONF_USERNAME,
-                        default=self.config_entry.options.get(CONF_USERNAME, ""),
+                        default=self.config_entry.data.get(CONF_USERNAME, ""),
                     ): str,
                     vol.Required(
                         CONF_PASSWORD,
-                        default=self.config_entry.options.get(CONF_PASSWORD, ""),
+                        default=self.config_entry.data.get(CONF_PASSWORD, ""),
                     ): str,
                     vol.Optional(
                         CONF_DOORBELL_TEXT,

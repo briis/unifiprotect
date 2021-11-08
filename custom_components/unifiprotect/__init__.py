@@ -27,6 +27,7 @@ from .const import (
     CONF_DOORBELL_TEXT,
     CONF_DISABLE_RTSP,
     CONF_SNAPSHOT_DIRECT,
+    CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -41,35 +42,23 @@ SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
 
 @callback
-def _async_normalize_config_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Move options from data for imported entries.
-    Initialize options with default values for other entries.
-    Copy the unique id to CONF_ID if it is missing
-    """
-    if not entry.options:
-        hass.config_entries.async_update_entry(
-            entry,
-            data={
-                CONF_HOST: entry.data.get(CONF_HOST),
-                CONF_ID: entry.data.get(CONF_ID) or entry.unique_id,
-                CONF_PORT: entry.data.get(CONF_PORT),
-                CONF_USERNAME: entry.data.get(CONF_USERNAME),
-                CONF_PASSWORD: entry.data.get(CONF_PASSWORD),
-            },
-            options={
-                CONF_USERNAME: entry.data.get(CONF_USERNAME),
-                CONF_PASSWORD: entry.data.get(CONF_PASSWORD),
-                CONF_SNAPSHOT_DIRECT: entry.data.get(CONF_SNAPSHOT_DIRECT, False),
-                CONF_DISABLE_RTSP: entry.data.get(CONF_DISABLE_RTSP, False),
-                CONF_DOORBELL_TEXT: entry.data.get(CONF_DOORBELL_TEXT, ""),
-            },
-            unique_id=entry.unique_id or entry.data.get(CONF_ID),
-        )
+def _async_import_options_from_data_if_missing(hass: HomeAssistant, entry: ConfigEntry):
+    options = dict(entry.options)
+    data = dict(entry.data)
+    modified = False
+    for importable_option in CONFIG_OPTIONS:
+        if importable_option not in entry.options and importable_option in entry.data:
+            options[importable_option] = entry.data[importable_option]
+            del data[importable_option]
+            modified = True
+
+    if modified:
+        hass.config_entries.async_update_entry(entry, data=data, options=options)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the Unifi Protect config entries."""
-    _async_normalize_config_entry(hass, entry)
+    _async_import_options_from_data_if_missing(hass, entry)
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
     protectserver = UpvServer(

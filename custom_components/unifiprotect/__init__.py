@@ -41,10 +41,10 @@ _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
 
-async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the Unifi Protect components."""
+# async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+#     """Set up the Unifi Protect components."""
 
-    return True
+#     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -93,31 +93,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not protect_data.last_update_success:
         raise ConfigEntryNotReady
 
-    update_listener = entry.add_update_listener(_async_options_updated)
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, protect_data.async_stop)
+    )
+
+    # update_listener = entry.add_update_listener(_async_options_updated)
     data = hass.data[DOMAIN][entry.entry_id] = {
         "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
         "server_info": nvr_info,
-        "update_listener": update_listener,
         "disable_stream": entry.options.get(CONF_DISABLE_RTSP, False),
         "doorbell_text": entry.options.get(CONF_DOORBELL_TEXT, None),
     }
 
-    async def _async_stop_protect_data(event):
-        """Stop updates."""
-        await protect_data.async_stop()
+    # async def _async_stop_protect_data(event):
+    #     """Stop updates."""
+    #     await protect_data.async_stop()
 
-    data["stop_event_listener"] = hass.bus.async_listen_once(
-        EVENT_HOMEASSISTANT_STOP, _async_stop_protect_data
-    )
+    # data["stop_event_listener"] = hass.bus.async_listen_once(
+    #     EVENT_HOMEASSISTANT_STOP, _async_stop_protect_data
+    # )
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
-    for platform in UNIFI_PROTECT_PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, platform)
-        )
+    hass.config_entries.async_setup_platforms(entry, UNIFI_PROTECT_PLATFORMS)
 
     return True
 
@@ -144,19 +145,14 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Unifi Protect config entry."""
-    unload_ok = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in UNIFI_PROTECT_PLATFORMS
-            ]
-        )
+    unload_ok = await hass.config_entries.async_unload_platforms(
+        entry, UNIFI_PROTECT_PLATFORMS
     )
 
     if unload_ok:
         data = hass.data[DOMAIN][entry.entry_id]
-        data["update_listener"]()
-        data["stop_event_listener"]()
+        # data["update_listener"]()
+        # data["stop_event_listener"]()
         await data["protect_data"].async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 

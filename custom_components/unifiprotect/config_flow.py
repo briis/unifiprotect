@@ -9,7 +9,6 @@ from homeassistant.const import (
     CONF_ID,
     CONF_PASSWORD,
     CONF_PORT,
-    CONF_SCAN_INTERVAL,
     CONF_USERNAME,
 )
 from homeassistant.core import callback
@@ -23,7 +22,6 @@ from .const import (
     CONF_DISABLE_RTSP,
     CONF_SNAPSHOT_DIRECT,
     DEFAULT_PORT,
-    DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
 )
@@ -35,7 +33,6 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a Unifi Protect config flow."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @staticmethod
     @callback

@@ -143,13 +143,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         default=self.config_entry.options.get(CONF_PASSWORD, ""),
                     ): str,
                     vol.Optional(
-                        CONF_DISABLE_RTSP,
-                        default=self.config_entry.options.get(CONF_DISABLE_RTSP, False),
-                    ): bool,
-                    vol.Optional(
                         CONF_DOORBELL_TEXT,
                         default=self.config_entry.options.get(CONF_DOORBELL_TEXT, ""),
                     ): str,
+                    vol.Optional(
+                        CONF_DISABLE_RTSP,
+                        default=self.config_entry.options.get(CONF_DISABLE_RTSP, False),
+                    ): bool,
                     vol.Optional(
                         CONF_SNAPSHOT_DIRECT,
                         default=self.config_entry.options.get(

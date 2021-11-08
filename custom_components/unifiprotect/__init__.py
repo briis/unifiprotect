@@ -41,12 +41,6 @@ _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
 
-# async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-#     """Set up the Unifi Protect components."""
-
-#     return True
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the Unifi Protect config entries."""
 
@@ -93,13 +87,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not protect_data.last_update_success:
         raise ConfigEntryNotReady
 
-    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
-    entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, protect_data.async_stop)
-    )
-
-    # update_listener = entry.add_update_listener(_async_options_updated)
-    data = hass.data[DOMAIN][entry.entry_id] = {
+    hass.data[DOMAIN][entry.entry_id] = {
         "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
@@ -108,17 +96,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "doorbell_text": entry.options.get(CONF_DOORBELL_TEXT, None),
     }
 
-    # async def _async_stop_protect_data(event):
-    #     """Stop updates."""
-    #     await protect_data.async_stop()
-
-    # data["stop_event_listener"] = hass.bus.async_listen_once(
-    #     EVENT_HOMEASSISTANT_STOP, _async_stop_protect_data
-    # )
-
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
     hass.config_entries.async_setup_platforms(entry, UNIFI_PROTECT_PLATFORMS)
+
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, protect_data.async_stop)
+    )
 
     return True
 
@@ -151,8 +136,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if unload_ok:
         data = hass.data[DOMAIN][entry.entry_id]
-        # data["update_listener"]()
-        # data["stop_event_listener"]()
         await data["protect_data"].async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 

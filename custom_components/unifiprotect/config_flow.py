@@ -90,6 +90,11 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_USERNAME: user_input.get(CONF_USERNAME),
                 CONF_PASSWORD: user_input.get(CONF_PASSWORD),
             },
+            options={
+                CONF_DISABLE_RTSP: False,
+                CONF_DOORBELL_TEXT: "",
+                CONF_SNAPSHOT_DIRECT: False,
+            },
         )
 
     async def _show_setup_form(self, errors=None):

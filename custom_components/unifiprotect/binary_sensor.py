@@ -73,7 +73,6 @@ async def async_setup_entry(
                     device_id,
                     DEVICE_TYPE_DOORBELL,
                     None,
-                    hass,
                 )
             )
             _LOGGER.debug(
@@ -90,7 +89,6 @@ async def async_setup_entry(
                     device_id,
                     DEVICE_TYPE_MOTION,
                     None,
-                    hass,
                 )
             )
             _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
@@ -102,7 +100,6 @@ async def async_setup_entry(
                     device_id,
                     DEVICE_TYPE_DARK,
                     None,
-                    hass,
                 )
             )
             _LOGGER.debug(
@@ -119,7 +116,6 @@ async def async_setup_entry(
                         device_id,
                         sensor_type[_SENSE_DEVICE_CLASS],
                         sensor,
-                        hass,
                     )
                 )
 
@@ -139,12 +135,10 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         device_id,
         sensor_type,
         sensor,
-        hass,
     ):
         """Initialize the Binary Sensor."""
         super().__init__(upv_object, protect_data, server_info, device_id, sensor_type)
         self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
-        self._hass = hass
         self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
         if self._device_data["type"] == DEVICE_TYPE_SENSOR:
             self._device_class = sensor_type
@@ -172,7 +166,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
             # Add Event to HA Event Bus
             if self._device_data["event_on"]:
-                self._hass.bus.fire(
+                self.hass.bus.fire(
                     f"{DOMAIN}_motion",
                     {
                         "entity_id": f"camera.{slugify(self._device_data['name'])}",
@@ -183,7 +177,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             return self._device_data["event_on"]
 
         if self._device_data["event_ring_on"]:
-            self._hass.bus.fire(
+            self.hass.bus.fire(
                 f"{DOMAIN}_doorbell",
                 {
                     "ring": self._device_data["event_ring_on"],

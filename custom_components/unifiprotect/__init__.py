@@ -12,7 +12,6 @@ from homeassistant.const import (
     CONF_ID,
     CONF_PASSWORD,
     CONF_PORT,
-    CONF_SCAN_INTERVAL,
     CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
 )

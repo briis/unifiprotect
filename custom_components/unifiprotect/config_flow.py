@@ -92,17 +92,13 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_PORT: user_input[CONF_PORT],
                 CONF_USERNAME: user_input.get(CONF_USERNAME),
                 CONF_PASSWORD: user_input.get(CONF_PASSWORD),
-                CONF_DISABLE_RTSP: user_input.get(CONF_DISABLE_RTSP),
-                CONF_DOORBELL_TEXT: user_input.get(CONF_DOORBELL_TEXT),
-                CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
-                CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
             },
             options={
                 CONF_USERNAME: user_input.get(CONF_USERNAME),
                 CONF_PASSWORD: user_input.get(CONF_PASSWORD),
-                CONF_DISABLE_RTSP: user_input.get(CONF_DISABLE_RTSP),
-                CONF_DOORBELL_TEXT: user_input.get(CONF_DOORBELL_TEXT),
-                CONF_SNAPSHOT_DIRECT: user_input.get(CONF_SNAPSHOT_DIRECT),
+                CONF_DISABLE_RTSP: False,
+                CONF_DOORBELL_TEXT: "",
+                CONF_SNAPSHOT_DIRECT: False,
             },
         )
 
@@ -116,9 +112,6 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
                     vol.Required(CONF_USERNAME): str,
                     vol.Required(CONF_PASSWORD): str,
-                    vol.Optional(CONF_DISABLE_RTSP, default=False): bool,
-                    vol.Optional(CONF_DOORBELL_TEXT): str,
-                    vol.Optional(CONF_SNAPSHOT_DIRECT, default=False): bool,
                 }
             ),
             errors=errors or {},

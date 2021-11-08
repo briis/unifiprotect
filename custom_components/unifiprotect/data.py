@@ -31,7 +31,7 @@ class UnifiProtectData:
         )
         await self.async_refresh()
 
-    async def async_stop(self):
+    async def async_stop(self, *args):
         """Stop processing data."""
         if self._unsub_websocket:
             self._unsub_websocket()

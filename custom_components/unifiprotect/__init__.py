@@ -20,7 +20,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
-from homeassistant.helpers.typing import ConfigType
 from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 from pyunifiprotect.const import SERVER_ID
 

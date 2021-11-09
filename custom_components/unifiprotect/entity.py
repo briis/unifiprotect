@@ -3,6 +3,7 @@ import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.entity import Entity, DeviceInfo
 from homeassistant.const import ATTR_ATTRIBUTION
 from .const import (
+    ATTR_DEVICE_MODEL,
     DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DOMAIN,
@@ -73,6 +74,7 @@ class UnifiProtectEntity(Entity):
         """Return common attributes"""
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            ATTR_DEVICE_MODEL: self._model,
         }
 
     async def async_added_to_hass(self):

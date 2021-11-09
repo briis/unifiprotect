@@ -16,7 +16,6 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
 
 from .const import (
-    ATTR_DEVICE_MODEL,
     ATTR_ENABLED_AT,
     DEVICE_TYPE_LIGHT,
     DEVICE_TYPE_SENSOR,
@@ -182,7 +181,6 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         """Return the device state attributes."""
         attr = {
             **super().extra_state_attributes,
-            ATTR_DEVICE_MODEL: self._model,
         }
         if self._device_type == DEVICE_TYPE_LIGHT:
             attr[ATTR_ENABLED_AT] = self._device_data["motion_mode_enabled_at"]

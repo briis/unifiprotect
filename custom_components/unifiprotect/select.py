@@ -6,7 +6,6 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from .const import (
-    ATTR_DEVICE_MODEL,
     CUSTOM_MESSAGE,
     DEVICES_WITH_CAMERA,
     DEVICE_TYPE_DOORBELL,
@@ -214,7 +213,6 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         """Return the device state attributes."""
         attr = {
             **super().extra_state_attributes,
-            ATTR_DEVICE_MODEL: self._model,
         }
         if self._device_type == DEVICE_TYPE_VIEWPORT:
             attr[ATTR_VIEWS] = self._liveviews

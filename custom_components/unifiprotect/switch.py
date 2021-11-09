@@ -6,7 +6,6 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from .const import (
-    ATTR_DEVICE_MODEL,
     DOMAIN,
     ENTITY_CATEGORY_CONFIG,
     TYPE_HIGH_FPS_ON,
@@ -116,7 +115,6 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         """Return the device state attributes."""
         return {
             **super().extra_state_attributes,
-            ATTR_DEVICE_MODEL: self._model,
         }
 
     async def async_turn_on(self, **kwargs):

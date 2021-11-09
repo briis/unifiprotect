@@ -6,7 +6,6 @@ from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from .const import (
-    ATTR_DEVICE_MODEL,
     DEVICES_WITH_CAMERA,
     DOMAIN,
     ENTITY_CATEGORY_CONFIG,
@@ -151,7 +150,6 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         """Return the device state attributes."""
         return {
             **super().extra_state_attributes,
-            ATTR_DEVICE_MODEL: self._model,
         }
 
     @property

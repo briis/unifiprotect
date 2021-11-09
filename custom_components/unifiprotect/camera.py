@@ -199,7 +199,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @property
     def extra_state_attributes(self):
         """Add additional Attributes to Camera."""
-        chime_enabled = "No Chime Attached"
+        chime_enabled = False
         if self._device_type == DEVICE_TYPE_DOORBELL:
             if self._device_data["has_chime"]:
                 chime_enabled = self._device_data["chime_enabled"]

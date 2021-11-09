@@ -138,3 +138,4 @@ custom_components/unifiprotect/unifi_protect_server_new.py
 custom_components/unifiprotect/unifi_protect_server_org.py
 .devcontainer/secret.yaml
 custom_components/unifiprotect/services-old.yaml
+test.py

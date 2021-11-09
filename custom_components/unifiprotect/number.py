@@ -140,17 +140,11 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         """Return the state of the sensor."""
         if self._number_entity == _ENTITY_WDR:
             return self._device_data["wdr"]
+
         if self._number_entity == _ENTITY_MIC_LEVEL:
             return self._device_data["mic_volume"]
-        if self._number_entity == _ENTITY_ZOOM_POS:
-            return self._device_data["zoom_position"]
 
-    @property
-    def extra_state_attributes(self):
-        """Return the device state attributes."""
-        return {
-            **super().extra_state_attributes,
-        }
+        return self._device_data["zoom_position"]
 
     @property
     def icon(self):

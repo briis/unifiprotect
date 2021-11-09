@@ -110,13 +110,6 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         """Icon to use in the frontend, if any."""
         return self._icon
 
-    @property
-    def extra_state_attributes(self):
-        """Return the device state attributes."""
-        return {
-            **super().extra_state_attributes,
-        }
-
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
         if self._switch_type == "hdr_mode":

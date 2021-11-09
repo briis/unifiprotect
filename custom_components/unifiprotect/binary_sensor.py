@@ -11,9 +11,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    ATTR_ATTRIBUTION,
     ATTR_LAST_TRIP_TIME,
-    # ENTITY_CATEGORY_DIAGNOSTIC,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
@@ -23,7 +21,6 @@ from .const import (
     ATTR_EVENT_LENGTH,
     ATTR_EVENT_OBJECT,
     ATTR_EVENT_SCORE,
-    DEFAULT_ATTRIBUTION,
     DEVICE_TYPE_DARK,
     DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_MOTION,
@@ -164,7 +161,6 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             return self._device_data["is_dark"]
 
         if self._sensor_type != DEVICE_TYPE_DOORBELL:
-            # Add Event to HA Event Bus
             if self._device_data["event_on"]:
                 self.hass.bus.fire(
                     f"{DOMAIN}_motion",
@@ -203,22 +199,16 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         return "mdi:doorbell-video"
 
     @property
-    def device_state_attributes(self):
-        """Return the device state attributes."""
+    def extra_state_attributes(self):
+        """Return the extra state attributes."""
         if self._sensor_type == DEVICE_TYPE_DOORBELL:
             return {
-                ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+                **super().extra_state_attributes,
                 ATTR_LAST_TRIP_TIME: self._device_data["last_ring"],
             }
-
-        if self._sensor_type == DEVICE_TYPE_DARK:
-            return {
-                ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            }
-
         if self._device_data["type"] == DEVICE_TYPE_SENSOR:
             attr = {
-                ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+                **super().extra_state_attributes,
                 ATTR_DEVICE_MODEL: self._model,
             }
             if self._device_class == DEVICE_CLASS_MOTION:
@@ -240,7 +230,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         else:
             detected_object = "None Identified"
         return {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            **super().extra_state_attributes,
             ATTR_DEVICE_MODEL: self._model,
             ATTR_LAST_TRIP_TIME: self._device_data["last_motion"],
             ATTR_EVENT_SCORE: self._device_data["event_score"],

@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    ATTR_ATTRIBUTION,
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_ILLUMINANCE,
@@ -13,14 +12,12 @@ from homeassistant.const import (
     TEMP_CELSIUS,
 )
 
-# from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_DIAGNOSTIC
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
 
 from .const import (
     ATTR_DEVICE_MODEL,
     ATTR_ENABLED_AT,
-    DEFAULT_ATTRIBUTION,
     DEVICE_TYPE_LIGHT,
     DEVICE_TYPE_SENSOR,
     DEVICES_WITH_CAMERA,
@@ -181,10 +178,10 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         return self._device_class
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the device state attributes."""
         attr = {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            **super().extra_state_attributes,
             ATTR_DEVICE_MODEL: self._model,
         }
         if self._device_type == DEVICE_TYPE_LIGHT:

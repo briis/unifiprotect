@@ -4,14 +4,10 @@ from typing import Any, Dict
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
-
-# from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_DEVICE_MODEL,
     CUSTOM_MESSAGE,
-    DEFAULT_ATTRIBUTION,
     DEVICES_WITH_CAMERA,
     DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_LIGHT,
@@ -214,10 +210,10 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         return self._device_data["recording_mode"].capitalize()
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the device state attributes."""
         attr = {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            **super().extra_state_attributes,
             ATTR_DEVICE_MODEL: self._model,
         }
         if self._device_type == DEVICE_TYPE_VIEWPORT:

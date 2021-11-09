@@ -4,13 +4,9 @@ from typing import Any, Dict
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
-
-# from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_DEVICE_MODEL,
-    DEFAULT_ATTRIBUTION,
     DEVICES_WITH_CAMERA,
     DOMAIN,
     ENTITY_CATEGORY_CONFIG,
@@ -28,9 +24,9 @@ _NUMBER_ICON = 1
 _NUMBER_MIN_VALUE = 2
 _NUMBER_MAX_VALUE = 3
 _NUMBER_STEP = 4
-_NUMBER_MODE = 5  # auto, slider or box
+_NUMBER_MODE = 5
 _NUMBER_TYPE = 6
-_NUMBER_REQUIRES = 7  # Required field present if not, skip adding
+_NUMBER_REQUIRES = 7
 
 NUMBER_TYPES: Dict[str, Any] = {
     _ENTITY_WDR: [
@@ -151,14 +147,12 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
             return self._device_data["zoom_position"]
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the device state attributes."""
-        attr = {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+        return {
+            **super().extra_state_attributes,
             ATTR_DEVICE_MODEL: self._model,
         }
-
-        return attr
 
     @property
     def icon(self):

@@ -1,8 +1,12 @@
 """Shared Entity definition for Unifi Protect Integration."""
 import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.entity import Entity, DeviceInfo
-
-from .const import DEFAULT_BRAND, DOMAIN
+from homeassistant.const import ATTR_ATTRIBUTION
+from .const import (
+    DEFAULT_ATTRIBUTION,
+    DEFAULT_BRAND,
+    DOMAIN,
+)
 
 
 class UnifiProtectEntity(Entity):
@@ -63,6 +67,13 @@ class UnifiProtectEntity(Entity):
     def available(self):
         """Return if entity is available."""
         return self.protect_data.last_update_success
+
+    @property
+    def extra_state_attributes(self):
+        """Return common attributes"""
+        return {
+            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+        }
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""

@@ -4,13 +4,9 @@ import logging
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
-
-# from homeassistant.const import ATTR_ATTRIBUTION, ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_DEVICE_MODEL,
-    DEFAULT_ATTRIBUTION,
     DOMAIN,
     ENTITY_CATEGORY_CONFIG,
     TYPE_HIGH_FPS_ON,
@@ -116,10 +112,10 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         return self._icon
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the device state attributes."""
         return {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            **super().extra_state_attributes,
             ATTR_DEVICE_MODEL: self._model,
         }
 

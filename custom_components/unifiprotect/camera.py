@@ -4,10 +4,8 @@ from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 
-# from homeassistant.components.camera.const import STREAM_TYPE_HLS # Wait a Few releases
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    ATTR_ATTRIBUTION,
     ATTR_LAST_TRIP_TIME,
 )
 from homeassistant.core import HomeAssistant
@@ -25,7 +23,6 @@ from .const import (
     ATTR_WDR_VALUE,
     ATTR_ZOOM_POSITION,
     CUSTOM_MESSAGE,
-    DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_TYPE_CAMERA,
     DEVICE_TYPE_DOORBELL,
@@ -176,12 +173,6 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Return supported features for this camera."""
         return self._supported_features
 
-    # Introduced in 2021.11, not usefull before we can generate a WebRTC Stream
-    # @property
-    # def frontend_stream_type(self) -> str:
-    #     """Return the type of stream supported by this camera."""
-    #     return STREAM_TYPE_HLS
-
     @property
     def motion_detection_enabled(self):
         """Camera Motion Detection Status."""
@@ -206,7 +197,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         )
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Add additional Attributes to Camera."""
         chime_enabled = "No Chime Attached"
         if self._device_type == DEVICE_TYPE_DOORBELL:
@@ -217,7 +208,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             last_trip_time = self._device_data["last_motion"]
 
         return {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            **super().extra_state_attributes,
             ATTR_UP_SINCE: self._device_data["up_since"],
             ATTR_ONLINE: self._device_data["online"],
             ATTR_CAMERA_ID: self._device_id,

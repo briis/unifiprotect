@@ -68,7 +68,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_PASSWORD],
     )
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = protectserver
     _LOGGER.debug("Connect to Unfi Protect")
 
     events_update_interval = DEFAULT_SCAN_INTERVAL
@@ -102,7 +101,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not protect_data.last_update_success:
         raise ConfigEntryNotReady
 
-    hass.data[DOMAIN][entry.entry_id] = {
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "protect_data": protect_data,
         "upv": protectserver,
         "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),

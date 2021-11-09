@@ -3,11 +3,7 @@ import logging
 from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
-
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    ATTR_LAST_TRIP_TIME,
-)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 
@@ -17,7 +13,6 @@ from .const import (
     ATTR_CHIME_ENABLED,
     ATTR_IS_DARK,
     ATTR_MIC_SENSITIVITY,
-    ATTR_ONLINE,
     ATTR_PRIVACY_MODE,
     ATTR_UP_SINCE,
     ATTR_WDR_VALUE,
@@ -197,24 +192,24 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         )
 
     @property
+    def available(self):
+        """Return if entity is available."""
+        return self._device_data["online"]
+
+    @property
     def extra_state_attributes(self):
         """Add additional Attributes to Camera."""
         chime_enabled = "No Chime Attached"
         if self._device_type == DEVICE_TYPE_DOORBELL:
-            last_trip_time = self._device_data["last_ring"]
             if self._device_data["has_chime"]:
                 chime_enabled = self._device_data["chime_enabled"]
-        else:
-            last_trip_time = self._device_data["last_motion"]
 
         return {
             **super().extra_state_attributes,
             ATTR_UP_SINCE: self._device_data["up_since"],
-            ATTR_ONLINE: self._device_data["online"],
             ATTR_CAMERA_ID: self._device_id,
             ATTR_CHIME_ENABLED: chime_enabled,
             ATTR_CHIME_DURATION: self._device_data["chime_duration"],
-            ATTR_LAST_TRIP_TIME: last_trip_time,
             ATTR_IS_DARK: self._device_data["is_dark"],
             ATTR_MIC_SENSITIVITY: self._device_data["mic_volume"],
             ATTR_PRIVACY_MODE: self._device_data["privacy_on"],

@@ -194,7 +194,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @property
     def available(self):
         """Return if entity is available."""
-        return self._device_data["online"]
+        return self._device_data["online"] and super().available
 
     @property
     def extra_state_attributes(self):

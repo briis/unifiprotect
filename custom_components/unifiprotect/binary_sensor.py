@@ -1,6 +1,6 @@
 """This component provides binary sensors for Unifi Protect."""
 import logging
-from typing import Any, Dict
+from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY,
@@ -8,6 +8,7 @@ from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_MOTION,
     DEVICE_CLASS_OCCUPANCY,
     BinarySensorEntity,
+    BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -38,12 +39,41 @@ PROTECT_TO_HASS_DEVICE_CLASS = {
     DEVICE_TYPE_DARK: None,
 }
 
-_SENSE_DEVICE_CLASS = 0
-SENSE_SENSORS: Dict[str, Any] = {
-    "motion": [DEVICE_CLASS_MOTION],
-    "door": [DEVICE_CLASS_DOOR],
-    "battery_low": [DEVICE_CLASS_BATTERY],
-}
+
+@dataclass
+class UnifiprotectRequiredKeysMixin:
+    """Mixin for required keys."""
+
+    ufp_device_type: str
+
+
+@dataclass
+class UnifiProtectBinaryEntityDescription(
+    BinarySensorEntityDescription, UnifiprotectRequiredKeysMixin
+):
+    """Describes Unifi Protect Binary Sensor entity."""
+
+
+SENSE_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
+    UnifiProtectBinaryEntityDescription(
+        key="motion",
+        name="Motion",
+        device_class=DEVICE_CLASS_MOTION,
+        ufp_device_type=DEVICE_TYPE_SENSOR,
+    ),
+    UnifiProtectBinaryEntityDescription(
+        key="door",
+        name="Door",
+        device_class=DEVICE_CLASS_DOOR,
+        ufp_device_type=DEVICE_TYPE_SENSOR,
+    ),
+    UnifiProtectBinaryEntityDescription(
+        key="battery_low",
+        name="Battery low",
+        device_class=DEVICE_CLASS_BATTERY,
+        ufp_device_type=DEVICE_TYPE_SENSOR,
+    ),
+)
 
 
 async def async_setup_entry(
@@ -57,67 +87,88 @@ async def async_setup_entry(
     if not protect_data.data:
         return
 
-    sensors = []
+    entities = []
     for device_id in protect_data.data:
         device_data = protect_data.data[device_id]
         if device_data["type"] == DEVICE_TYPE_DOORBELL:
-            sensors.append(
+
+            entities.append(
                 UnifiProtectBinarySensor(
                     upv_object,
                     protect_data,
                     server_info,
                     device_id,
-                    DEVICE_TYPE_DOORBELL,
-                    None,
+                    UnifiProtectBinaryEntityDescription(
+                        key=DEVICE_TYPE_DOORBELL,
+                        name=DEVICE_TYPE_DOORBELL,
+                        device_class=DEVICE_CLASS_OCCUPANCY,
+                        icon="mdi:doorbell-video",
+                        ufp_device_type=DEVICE_TYPE_DOORBELL,
+                    ),
                 )
             )
             _LOGGER.debug(
-                "UNIFIPROTECT DOORBELL SENSOR CREATED: %s",
+                "Adding Doorbel Binary Sensor entity for %s",
                 device_data["name"],
             )
 
         if device_data["type"] in DEVICES_WITH_CAMERA:
-            sensors.append(
+            entities.append(
                 UnifiProtectBinarySensor(
                     upv_object,
                     protect_data,
                     server_info,
                     device_id,
-                    DEVICE_TYPE_MOTION,
-                    None,
-                )
-            )
-            _LOGGER.debug("UNIFIPROTECT MOTION SENSOR CREATED: %s", device_data["name"])
-            sensors.append(
-                UnifiProtectBinarySensor(
-                    upv_object,
-                    protect_data,
-                    server_info,
-                    device_id,
-                    DEVICE_TYPE_DARK,
-                    None,
+                    UnifiProtectBinaryEntityDescription(
+                        key=DEVICE_TYPE_MOTION,
+                        name=DEVICE_TYPE_MOTION,
+                        device_class=DEVICE_CLASS_MOTION,
+                        ufp_device_type=DEVICE_TYPE_MOTION,
+                    ),
                 )
             )
             _LOGGER.debug(
-                "UNIFIPROTECT IS_DARK SENSOR CREATED: %s", device_data["name"]
+                "Adding Motion Binary Sensor entity for %s",
+                device_data["name"],
+            )
+
+            entities.append(
+                UnifiProtectBinarySensor(
+                    upv_object,
+                    protect_data,
+                    server_info,
+                    device_id,
+                    UnifiProtectBinaryEntityDescription(
+                        key=DEVICE_TYPE_DARK,
+                        name=DEVICE_TYPE_DARK,
+                        icon="mdi:brightness-6",
+                        ufp_device_type=DEVICE_TYPE_DARK,
+                    ),
+                )
+            )
+            _LOGGER.debug(
+                "Adding Is Dark Binary Sensor entity for %s",
+                device_data["name"],
             )
 
         if device_data["type"] == DEVICE_TYPE_SENSOR:
-            for sensor, sensor_type in SENSE_SENSORS.items():
-                sensors.append(
+            for description in SENSE_SENSORS:
+                entities.append(
                     UnifiProtectBinarySensor(
                         upv_object,
                         protect_data,
                         server_info,
                         device_id,
-                        sensor_type[_SENSE_DEVICE_CLASS],
-                        sensor,
+                        description,
                     )
                 )
+                _LOGGER.debug(
+                    "Adding binary sensor entity %s for %s",
+                    description.name,
+                    device_data["name"],
+                )
 
-                _LOGGER.debug("UNIFIPROTECT UFP SENSE CREATED: %s", device_data["name"])
-
-    async_add_entities(sensors)
+    async_add_entities(entities)
 
 
 class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
@@ -129,17 +180,18 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         protect_data,
         server_info,
         device_id,
-        sensor_type,
-        sensor,
+        description: UnifiProtectBinaryEntityDescription,
     ):
         """Initialize the Binary Sensor."""
-        super().__init__(upv_object, protect_data, server_info, device_id, sensor_type)
-        self._name = f"{sensor_type.capitalize()} {self._device_data['name']}"
+        super().__init__(upv_object, protect_data, server_info, device_id, description)
+        self.entity_description = description
+        self._name = (
+            f"{self.entity_description.name.capitalize()} {self._device_data['name']}"
+        )
         self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
-        if self._device_data["type"] == DEVICE_TYPE_SENSOR:
-            self._device_class = sensor_type
-        else:
-            self._device_class = PROTECT_TO_HASS_DEVICE_CLASS.get(sensor_type)
+        self._device_class = self.entity_description.device_class
+        self._icon = self.entity_description.icon
+        self._sensor_type = self.entity_description.ufp_device_type
 
     @property
     def name(self):
@@ -189,13 +241,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     @property
     def icon(self):
         """Select icon to display in Frontend."""
-        if self._sensor_type == DEVICE_TYPE_DARK:
-            return "mdi:brightness-6"
-        if self._sensor_type != DEVICE_TYPE_DOORBELL:
-            return None
-        if self._device_data["event_ring_on"]:
-            return "mdi:bell-ring-outline"
-        return "mdi:doorbell-video"
+        return self._icon
 
     @property
     def extra_state_attributes(self):

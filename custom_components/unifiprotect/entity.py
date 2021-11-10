@@ -13,13 +13,13 @@ from .const import (
 class UnifiProtectEntity(Entity):
     """Base class for unifi protect entities."""
 
-    def __init__(self, upv_object, protect_data, server_info, device_id, sensor_type):
+    def __init__(self, upv_object, protect_data, server_info, device_id, description):
         """Initialize the entity."""
         super().__init__()
         self.upv_object = upv_object
         self.protect_data = protect_data
         self._device_id = device_id
-        self._sensor_type = sensor_type
+        self._description = description
 
         self._device_data = self.protect_data.data[self._device_id]
         self._device_name = self._device_data["name"]
@@ -29,10 +29,10 @@ class UnifiProtectEntity(Entity):
         self._server_ip = server_info["server_ip"]
         self._device_type = self._device_data["type"]
         self._model = self._device_data["model"]
-        if self._sensor_type is None:
+        if self._description is None:
             self._unique_id = f"{self._device_id}_{self._mac}"
         else:
-            self._unique_id = f"{self._sensor_type}_{self._mac}"
+            self._unique_id = f"{self._description.key}_{self._mac}"
 
     @property
     def should_poll(self):

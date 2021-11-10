@@ -9,12 +9,25 @@ There is support for the following device types within Home Assistant:
   * A camera entity for each camera found on the NVR device will be created
 * Sensor
   * A sensor for each camera found will be created. This sensor will hold the current recording mode.
+  * A sensor for each Floodlight device found will be created. This sensor will hold the status of when light will turn on.
 * Binary Sensor
   * One to two binary sensors will be created per camera found. There will always be a binary sensor recording if motion is detected per camera. If the camera is a doorbell, there will also be a binary sensor created that records if the doorbell is pressed.
 * Switch
-  * Several switches will be created per camera found. What switches is depended on the capability of the specific camera. But typically these switches are used to control recording mode, Infrared and Video mode settings.
+  * For each camera supporting High Dynamic Range (HDR) a switch will be created to turn this setting on or off.
+  * For each camera supporting High Frame Rate recording a switch will be created to turn this setting on or off.
+  * For each camera a switch will be created to turn the status light on or off.
 * Light
   * A light entity will be created for each UniFi Floodlight found. This works as a normal light entity, and has a brightness scale also.
+* Select
+  * For each Camera found there will be a Select entity created from where you can set the cameras recording mode.
+  * For each Doorbell found, there will be a Select entity created that makes it possible to set the LCD Text. If you make a list of Texts in the Integration configuration, you can both set the standard texts and custom text that you define here.
+  * For each Camera found there will be a Select entity created from where you can set the behaviour of the Infrared light on the Camera
+  * For each Viewport found, there will be a Select entity from where you change the active View being displayed on the Viewport.
+  * For each Floodlight device there be a Select entity to set the behaviour of the built-in motion sensor.
+* Number
+  * For each camera supporting WDR, a number entity will be setup to set the active value.
+  * For each camera a number entity will be created from where you can set the microphone sensitivity level.
+  * For each camera supporting Optical Zoom, a number entity will be setup to set the zoom position.
 
 It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
 
@@ -27,10 +40,9 @@ It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, 
 5. [UniFi Protect Services](#special-unifi-protect-services)
 6. [UniFi Protect Events](#unifi-protect-events)
 7. [Automating Services](#automating-services)
-    * [Send a notification when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
-    * [Setting Recording or IR Mode](#automate-setting-recording-or-ir-mode)
+    * [Send a notfication when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
     * [Person Detection](#automate-person-detection)
-    * [Input Slider for Microphone Sensitivity](#create-input-slider-for-microphone-sensitivity)
+    * [Input Slider for Doorbell Chime Duration](#create-input-slider-for-doorbell-chime-duration)
 8. [Enable Debug Logging](#enable-debug-logging)
 9. [Contribute to Development](#contribute-to-the-project-and-developing-with-a-devcontainer)
 
@@ -41,6 +53,19 @@ In general, stable/beta version of this integration mirror stable/beta versions 
 **Stable versions of this integration require the latest stable version of UniFi Protect to run.**
 
 **Beta versions / `master` branch of this integration require the latest beta version of UniFi Protect to run (or the latest stable if there is no beta)**
+
+We try our best to avoid breaking changes so you may need to use older versions of UniFi Protect with newer versions of the integration. Just keep in mind, we may not be able to support you if you do.
+
+## Docs for Old Versions
+
+If you are not using the latest beta of the integration, you can view old versions of this README at any time in Github at `https://github.com/briis/unifiprotect/tree/{VERSION}`. Example, docs for v0.9.1 can be found at [https://github.com/briis/unifiprotect/tree/v0.9.1](https://github.com/briis/unifiprotect/tree/v0.9.1)
+
+## Minimal Versions
+
+As of v0.10 of the integration, the following versions of HA and UniFi Protect are _required_ to even install the integration:
+
+* UniFi Protect minimum version is **1.20.0**
+* Home Assistant minimum version is **2021.9.0**
 
 ## Hardware Support
 
@@ -94,7 +119,7 @@ Before you restart Home Assistant, make sure that the stream component is enable
 
 ## Configuration
 
-To add *UniFi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel, click on 'ADD INTEGRATION', find *UniFi Protect*, and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
+To add *UniFi Protect* to your Home Assistant installation, go to the Integrations page inside the configuration panel, click on `+ ADD INTEGRATION`, find *UniFi Protect*, and add your UniFi Protect server by providing the Host IP, Port Number, Username and Password.
 
 **Note**: If you can't find the *UniFi Protect* integration, hard refresh your browser, when you are on the Integrations page.
 
@@ -113,13 +138,11 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UniFiOS
 
 **host**:<br>
   *(string)(Required)*<br>
-  Type the IP address of your *UniFi Protect NVR*. Example: `192.168.1.1`<br>
-  **Important** If you run UniFiOS this must be the IP Address. of your UDMP
+  Type the IP address of your *UniFi Protect NVR*. Example: `192.168.1.1`
 
 **port**:<br>
   *(int)(Optional)*<br>
-  The port used to communicate with the NVR. Default is 7443.<br>
-  **Important** If you run UniFiOS the port *must* be specified and it must be 443.
+  The port used to communicate with the NVR. Default is 443.
 
 **username**:<br>
   *(string)(Required)*<br>
@@ -133,10 +156,9 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UniFiOS
   *(bool)Optional*<br>
   If this box is checked, the camera stream will not use the RTSP stream, but instead jpeg push. This gives a realtime stream, but does not include Audio.
 
-**scan_interval**:<br>
-  *(int)(Optional)*<br>
-  How often the Integration polls the UniFi Protect Server for Event Updates. Set a higher value if you have many Cameras (+20). This value only is only relevant for People using a CloudKey with V1.x FW. CloudKey V2.x, UDMP and UNVR users get the data pushed, so polling not needed.<br>
-  *Default value*: `2` seconds
+**doorbell text**<br>
+  *(string)Optional*<br>
+  If a Doorbell is attached to UniFi Protect, you can use this field to write a list of Custom Texts that can be displayed on the Doorbell LCD Screen. The list must be comma separated and will be truncated to 30 characters per item. Example: `RING THE BELL, WE ARE SLEEPING, GO AWAY`
 
 **anonymous_snapshots**:<br>
   *(bool)(Optional)*<br>
@@ -158,19 +180,18 @@ The Integration adds specific *UniFi Protect* services and supports the standard
 
 Service | Parameters | Description
 :------------ | :------------ | :-------------
-`unifiprotect.save_thumbnail_image` | `entity_id` - Name of entity to retrieve thumbnail from.<br>`filename` - Filename to store thumbnail in<br>`image_width` - (Optional) Width of the image in pixels. Height will be scaled proportionally. Default is 640. | Get the thumbnail image of the last recording event (If any), from the specified camera
-`unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, motion, never or smart| Set the recording mode for each Camera.
-`unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, always_on, led_off or always_off | Set the infrared mode for each Camera.
+`unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, detections or never| Set the recording mode for each Camera.
+`unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, autoFilterOnly, on, off | Set the infrared mode for each Camera.
 `unifiprotect.set_status_light` | `entity_id` - Name of entity to toggle status light for.<br>`light_on` - true or false | Turn the status light on or off for each Camera.
 `unifiprotect.set_doorbell_lcd_message` | `entity_id` - Name of doorbell to display message on.<br>`message` - The message to display. (Will be truncated to 30 Characters)<br>`duration` - The time in minutes the message should display. Leave blank to display always. | Display a Custom message on the LCD display on a G4 Doorbell
 `unifiprotect.set_highfps_video_mode` | `entity_id` - Name of entity to toggle High FPS for.<br>`high_fps_on`  - true or false | Toggle High FPS on supported Cameras.
 `unifiprotect.set_hdr_mode` | `entity_id` - Name of entity to toggle HDR for.<br>`hdr_on`  - true or false | Toggle HDR mode on supported Cameras.
 `unifiprotect.set_mic_volume` | `entity_id` - Name of entity to adjust microphone volume for.<br>`level`  - a value between 0 and 100| Set Microphone sensitivity on Cameras.
-`unifiprotect.set_privacy_mode` | `entity_id` - Name of entity to adjust privacy mode for.<br>`privacy_mode`  - true to enable, false to disable<br>`mic_level` - 0 to 100, where 0 is off<br>`recording_mode` - never, motion, always or smart| Set Privacy mode for a camera, where the screen goes black when enabled.
-`unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100. | Adjust settings for the PIR motion sensor in the Floodlight.
+`unifiprotect.set_privacy_mode` | `entity_id` - Name of entity to adjust privacy mode for.<br>`privacy_mode`  - true to enable, false to disable<br>`mic_level` - 0 to 100, where 0 is off<br>`recording_mode` - always, detections or never| Set Privacy mode for a camera, where the screen goes black when enabled.
+`unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100. | Adjust settings for the PIR motion sensor in the Floodlight.
 `unifiprotect.set_doorbell_chime_duration` | `entity_id` - The Doorbell attached to the Chime.<br>`chime_duration`  - 0 to 10000 | Set Doorbell Chime duration.
 
-**Note:** When using *camera.enable_motion_detection*, Recording in UniFi Protect will be set to *motion*. If you want to have the cameras recording all the time, you have to set that in UniFi Protect App or use the service `unifiprotect.set_recording_mode`.
+**Note:** When using the HA Service *camera.enable_motion_detection*, Recording in UniFi Protect will be set to *detections*. If you want to have the cameras recording all the time, you have to set that in UniFi Protect App or use the service `unifiprotect.set_recording_mode`.
 
 ## UniFi Protect Events
 
@@ -179,12 +200,13 @@ The following UniFi Protect events are triggered when running this Integration:
 Event Type | Description | Data
 :------------ | :------------ | :-------------
 `unifiprotect_doorbell` | Triggers when the doorbell button is pressed | `ring`: true, `entity_id`: The entity that triggers the event
+`unifiprotect_motion` | Triggers when motion is detected on a camera | `motion_on`: true, `entity_id`: The entity that triggers the event
 
 ## Automating Services
 
 Below is a couple of examples on how you can automate some of the things you might do with this Integration.
 
-### SEND A NOTFICATION WHEN THE DOORBELL IS PRESSED
+### SEND A NOTIFICATION WHEN THE DOORBELL IS PRESSED
 
 Below is a very basic example on how to perform an action when the doorbell is pressed. Modify the action part to what you want to happen.
 
@@ -202,50 +224,6 @@ action:
       message: There is somebody at your door
       title: The doorbell has been pressed
 ```
-
-### AUTOMATE SETTING RECORDING OR IR MODE
-
-If you want to change *Recording Mode* or *Infrared Mode* for a camera, this can be done through the two services `unifiprotect.set_recording_mode` and `unifiprotect.set_ir_mode`.
-These Services support more than 2 different modes each, and as such it would be good to have a list to select from when switching the mode of those settings. I have not found a way to create a listbox as Custom Component, but it is fairly simpel to use an *input_select* integration and an *Automation* to achieve a UI friendly way of changing these modes. Below is an example that creates an *input*select* integration for one of the Cameras and then an example of an automation that is triggered whenever the user selects a new value in the dropdown list.
-
-Start by creating the *input_select* integration. If you are on Version 107.x or greater that can now be done directly from the menu under *Configuration* and then *Helpers*. Click the PLUS sign at the bottom and use the *Dropdown* option.
-**Important** Fill in the *Option* part as seen below for the Infrared Service.
-If you do it manually add the following to your *configuration.yaml* file:
-
-```yaml
-# Example configuration.yaml entry
-input_select:
-  camera_office_ir_mode:
-    name: IR Mode for Camera Office
-    options:
-      - auto
-      - always_on
-      - led_off
-      - always_off
-    icon: mdi:brightness-4
-```
-
-If you did it manually, you need to restart Home Assistant, else you can continue.
-
-Now add a new Automation, like the following:
-
-```yaml
-- id: '1585900471122'
-  alias: Camera Office IR Mode Change
-  description: ''
-  trigger:
-  - entity_id: input_select.camera_office_ir_mode
-    platform: state
-  condition: []
-  action:
-  - data_template:
-      entity_id: camera.camera_office
-      ir_mode: '{{ states(''input_select.camera_office_ir_mode'') }}'
-    entity_id: camera.camera_office
-    service: unifiprotect.set_ir_mode
-```
-
-Thats it. Whenever you now select a new value from the Dropdown, the automation is activated, and the service is called to change the IR mode. The same can then be achieved for the *recording_mode* by changing the options and the service call in the automation.
 
 ### AUTOMATE PERSON DETECTION
 
@@ -269,29 +247,29 @@ Here is an example of how you can use this to send a notification to your phone 
   mode: single
 ```
 
-### CREATE INPUT SLIDER FOR MICROPHONE SENSITIVITY
+### CREATE INPUT SLIDER FOR DOORBELL CHIME DURATION
 
-To set the Microphone sensitivity you can use the Service `unifiprotect.set_mic_volume` but if you want to be able to do this from Lovelace, you can add a Input Slider for each camera and then do it from there. This shows you how you can do that.
+To set the Doorbell chime duration you can use the Service `unifiprotect.set_doorbell_chime_duration` but if you want to be able to do this from Lovelace, you can add a Input Slider for each doorbell and then do it from there. This shows you how you can do that.
 
 * Go to *Configuration* and select *Helpers*.
 * Click `+ ADD HELPER` and select *Number*.
-* Name your Slider, and then you can leave the rest of the values as default. (Min 0, Max 100, Display mode Slider) and then click CREATE.
+* Name your Slider, set Min to 0, Max to 10000 and step to 100 and then click CREATE.
 
-Now create a new Automation, that reacts to a value change of the above slider. In this case I named the slider `input_number.volume_test_cam` and the Camera is called `camera.test_cam`.
+Now create a new Automation, that reacts to a value change of the above slider. In this case I named the slider `input_number.doorbell_chime` and the Camera is called `camera.test_doorbell`.
 
 ```yaml
-alias: Adjust Mic Sensitivity on Test CAM
+alias: Adjust Doorbell Chime Durationon Test Doorbell
 description: ''
 trigger:
   - platform: state
-    entity_id: input_number.volume_test_cam
+    entity_id: input_number.doorbell_chime
 condition: []
 action:
-  - service: unifiprotect.set_mic_volume
+  - service: unifiprotect.set_doorbell_chime_duration
     data:
-      entity_id: camera.test_cam
-      level: '{{ states(''input_number.volume_test_cam'') | int }}'
-    entity_id: ' camera.test_cam'
+      entity_id: camera.test_doorbell
+      chime_duration: '{{ states(''input_number.doorbell_chime'') | int }}'
+    entity_id: ' camera.test_doorbell'
 mode: single
 ```
 

@@ -3,13 +3,7 @@ import logging
 from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
-
-# from homeassistant.components.camera.const import STREAM_TYPE_HLS # Wait a Few releases
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    ATTR_ATTRIBUTION,
-    ATTR_LAST_TRIP_TIME,
-)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 
@@ -19,13 +13,11 @@ from .const import (
     ATTR_CHIME_ENABLED,
     ATTR_IS_DARK,
     ATTR_MIC_SENSITIVITY,
-    ATTR_ONLINE,
     ATTR_PRIVACY_MODE,
     ATTR_UP_SINCE,
     ATTR_WDR_VALUE,
     ATTR_ZOOM_POSITION,
     CUSTOM_MESSAGE,
-    DEFAULT_ATTRIBUTION,
     DEFAULT_BRAND,
     DEVICE_TYPE_CAMERA,
     DEVICE_TYPE_DOORBELL,
@@ -176,16 +168,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         """Return supported features for this camera."""
         return self._supported_features
 
-    # Introduced in 2021.11, not usefull before we can generate a WebRTC Stream
-    # @property
-    # def frontend_stream_type(self) -> str:
-    #     """Return the type of stream supported by this camera."""
-    #     return STREAM_TYPE_HLS
-
     @property
     def motion_detection_enabled(self):
         """Camera Motion Detection Status."""
-        return self._device_data["recording_mode"]
+        return self._device_data["recording_mode"] and super().available
 
     @property
     def brand(self):
@@ -206,24 +192,24 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         )
 
     @property
-    def device_state_attributes(self):
+    def available(self):
+        """Return if entity is available."""
+        return self._device_data["online"]
+
+    @property
+    def extra_state_attributes(self):
         """Add additional Attributes to Camera."""
-        chime_enabled = "No Chime Attached"
+        chime_enabled = False
         if self._device_type == DEVICE_TYPE_DOORBELL:
-            last_trip_time = self._device_data["last_ring"]
             if self._device_data["has_chime"]:
                 chime_enabled = self._device_data["chime_enabled"]
-        else:
-            last_trip_time = self._device_data["last_motion"]
 
         return {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
+            **super().extra_state_attributes,
             ATTR_UP_SINCE: self._device_data["up_since"],
-            ATTR_ONLINE: self._device_data["online"],
             ATTR_CAMERA_ID: self._device_id,
             ATTR_CHIME_ENABLED: chime_enabled,
             ATTR_CHIME_DURATION: self._device_data["chime_duration"],
-            ATTR_LAST_TRIP_TIME: last_trip_time,
             ATTR_IS_DARK: self._device_data["is_dark"],
             ATTR_MIC_SENSITIVITY: self._device_data["mic_volume"],
             ATTR_PRIVACY_MODE: self._device_data["privacy_on"],

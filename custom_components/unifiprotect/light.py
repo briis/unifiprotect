@@ -8,15 +8,12 @@ from homeassistant.components.light import (
     LightEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 
 from .const import (
-    ATTR_DEVICE_MODEL,
     ATTR_ONLINE,
     ATTR_UP_SINCE,
-    DEFAULT_ATTRIBUTION,
     DEVICE_TYPE_LIGHT,
     DOMAIN,
     LIGHT_SETTINGS_SCHEMA,
@@ -122,11 +119,10 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         await self.upv_object.set_light_on_off(self._device_id, False)
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the device state attributes."""
         return {
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_DEVICE_MODEL: self._model,
+            **super().extra_state_attributes,
             ATTR_ONLINE: self._device_data["online"],
             ATTR_UP_SINCE: self._device_data["up_since"],
         }

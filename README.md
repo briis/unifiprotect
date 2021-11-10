@@ -44,22 +44,18 @@ In general, stable/beta version of this integration mirror stable/beta versions 
 
 ## Hardware Support
 
-This Integration supports all Ubiquiti Hardware that can run UniFi Protect. Currently this includes:
+This Integration supports all UniFiOS Consoles that can run UniFi Protect. Currently this includes:
 
 * UniFi Protect Network Video Recorder (**UNVR**)
 * UniFi Protect Network Video Recorder Pro (**UNVRPRO**)
 * UniFi Dream Machine Pro (**UDMP**)
-* UniFi Cloud Key Gen2 Plus (**CKGP**)
-
-The first two devices run UniFi's own operating system called UniFiOS, and the CKGP with Firmware V2.0.18 or greater also runs UniFiOS. This is important to note, as you will need to know this during installation if your NVR Device runs UniFiOS or not.
+* UniFi Cloud Key Gen2 Plus (**CKGP**) firmware version v2.0.24+
 
 Ubiquity released V2.0.24 as an official firmware release for the CloudKey+, and it is recommended that people upgrade to this UniFiOS based firmware for their CloudKey+, as this gives a much better realtime experience.
 
-CKGP with Firmware V1.x **do NOT run UniFiOS**
+CKGP with Firmware V1.x **do NOT run UniFiOS**, you must upgrade to firmware v2.0.24 or newer.
 
-In the following we are refering to Devices that do run UniFiOS as *UniFiOS Devices* and devices that do NOT run UniFiOS as *NON UniFiOS Devices*
-
-**NOTE**: Ubiquiti has now officially launched the V2.0.24 FW for the ClodKey Gen2+ which is a UniFiOS FW. So as of V0.8.0 of this Integration, no more testing and development is done on NON UniFiOS Devices. What is already working will still be there, but there is no guarantee that new features will work on these devices.
+**NOTE**: If you are still running a version of UniFi Protect without a UniFiOS Console, you can use a V0.8.x as it is the last version fully supported by NON UniFiOS devices. However, please note NON UniFiOS devices are not supported by us anymore.
 
 ## Prerequisites
 

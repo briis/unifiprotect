@@ -171,7 +171,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @property
     def motion_detection_enabled(self):
         """Camera Motion Detection Status."""
-        return self._device_data["recording_mode"]
+        return self._device_data["recording_mode"] and super().available
 
     @property
     def brand(self):

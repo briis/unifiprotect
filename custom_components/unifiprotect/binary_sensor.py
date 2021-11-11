@@ -106,6 +106,7 @@ async def async_setup_entry(
                         name=DEVICE_TYPE_DOORBELL,
                         device_class=DEVICE_CLASS_OCCUPANCY,
                         icon="mdi:doorbell-video",
+                        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
                         ufp_device_type=DEVICE_TYPE_DOORBELL,
                     ),
                 )
@@ -126,6 +127,7 @@ async def async_setup_entry(
                         key=DEVICE_TYPE_MOTION,
                         name=DEVICE_TYPE_MOTION,
                         device_class=DEVICE_CLASS_MOTION,
+                        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
                         ufp_device_type=DEVICE_TYPE_MOTION,
                     ),
                 )
@@ -145,6 +147,7 @@ async def async_setup_entry(
                         key=DEVICE_TYPE_DARK,
                         name=DEVICE_TYPE_DARK,
                         icon="mdi:brightness-6",
+                        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
                         ufp_device_type=DEVICE_TYPE_DARK,
                     ),
                 )

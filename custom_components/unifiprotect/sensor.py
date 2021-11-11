@@ -145,7 +145,6 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self.entity_description = description
         self._name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._device_class = self.entity_description.device_class
         self._device_type = self.entity_description.ufp_device_type
 
     @property
@@ -160,15 +159,15 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
             return self._device_data["motion_mode"]
 
         if self._device_type == DEVICE_TYPE_SENSOR:
-            if self._device_class == DEVICE_CLASS_BATTERY:
+            if self.entity_description.device_class == DEVICE_CLASS_BATTERY:
                 return self._device_data["battery_status"]
-            if self._device_class == DEVICE_CLASS_HUMIDITY:
+            if self.entity_description.device_class == DEVICE_CLASS_HUMIDITY:
                 return self._device_data["humidity_value"]
-            if self._device_class == DEVICE_CLASS_ILLUMINANCE:
+            if self.entity_description.device_class == DEVICE_CLASS_ILLUMINANCE:
                 return self._device_data["light_value"]
-            if self._device_class == DEVICE_CLASS_SIGNAL_STRENGTH:
+            if self.entity_description.device_class == DEVICE_CLASS_SIGNAL_STRENGTH:
                 return self._device_data["bluetooth_signal"]
-            if self._device_class == DEVICE_CLASS_TEMPERATURE:
+            if self.entity_description.device_class == DEVICE_CLASS_TEMPERATURE:
                 return self._device_data["temperature_value"]
         return self._device_data["recording_mode"]
 

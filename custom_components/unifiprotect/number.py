@@ -130,12 +130,10 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self.entity_description = description
         self._name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._icon = self.entity_description.icon
         self._device_type = self.entity_description.ufp_device_type
         self._attr_max_value = self.entity_description.ufp_max
         self._attr_min_value = self.entity_description.ufp_min
         self._attr_step = self.entity_description.ufp_step
-        self._attr_entity_category = self.entity_description.entity_category
 
     @property
     def name(self):
@@ -152,11 +150,6 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
             return self._device_data["mic_volume"]
 
         return self._device_data["zoom_position"]
-
-    @property
-    def icon(self):
-        """Icon to use in the frontend, if any."""
-        return self._icon
 
     async def async_set_value(self, value: float) -> None:
         """Set new value."""

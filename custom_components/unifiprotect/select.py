@@ -166,9 +166,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self.entity_description = description
         self._select_entity = self.entity_description.key
         self._name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._icon = self.entity_description.icon
         self._device_type = self.entity_description.ufp_device_type
-        self._attr_entity_category = self.entity_description.entity_category
         self._liveviews = liveviews
 
         self._doorbell_texts = []
@@ -232,11 +230,6 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             attr[ATTR_VIEWS] = self._liveviews
 
         return attr
-
-    @property
-    def icon(self):
-        """Icon to use in the frontend, if any."""
-        return self._icon
 
     def get_view_name_from_id(self, view_id):
         """Returns the Liveview Name from the ID"""

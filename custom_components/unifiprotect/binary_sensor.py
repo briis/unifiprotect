@@ -59,18 +59,21 @@ SENSE_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
         key="motion",
         name="Motion",
         device_class=DEVICE_CLASS_MOTION,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
     ),
     UnifiProtectBinaryEntityDescription(
         key="door",
         name="Door",
         device_class=DEVICE_CLASS_DOOR,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
     ),
     UnifiProtectBinaryEntityDescription(
         key="battery_low",
         name="Battery low",
         device_class=DEVICE_CLASS_BATTERY,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
     ),
 )
@@ -188,9 +191,6 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self._name = (
             f"{self.entity_description.name.capitalize()} {self._device_data['name']}"
         )
-        self._attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
-        self._device_class = self.entity_description.device_class
-        self._icon = self.entity_description.icon
         self._sensor_type = self.entity_description.ufp_device_type
 
     @property
@@ -202,9 +202,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def is_on(self):
         """Return true if the binary sensor is on."""
         if self._sensor_type == DEVICE_TYPE_SENSOR:
-            if self._device_class == DEVICE_CLASS_DOOR:
+            if self.entity_description.device_class == DEVICE_CLASS_DOOR:
                 return self._device_data["event_open_on"]
-            if self._device_class == DEVICE_CLASS_BATTERY:
+            if self.entity_description.device_class == DEVICE_CLASS_BATTERY:
                 return self._device_data["battery_low"]
             return self._device_data["event_on"]
 
@@ -234,16 +234,6 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         return self._device_data["event_ring_on"]
 
     @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return self._device_class
-
-    @property
-    def icon(self):
-        """Select icon to display in Frontend."""
-        return self._icon
-
-    @property
     def extra_state_attributes(self):
         """Return the extra state attributes."""
         if self._sensor_type == DEVICE_TYPE_DOORBELL:
@@ -255,13 +245,16 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             attr = {
                 **super().extra_state_attributes,
             }
-            if self._device_class == DEVICE_CLASS_MOTION:
+            if self.entity_description.device_class == DEVICE_CLASS_MOTION:
                 attr[ATTR_LAST_TRIP_TIME] = self._device_data["last_motion"]
                 attr[ATTR_EVENT_LENGTH] = self._device_data["event_length"]
-            if self._device_class == DEVICE_CLASS_DOOR:
+            if self.entity_description.device_class == DEVICE_CLASS_DOOR:
                 attr[ATTR_LAST_TRIP_TIME] = self._device_data["last_openchange"]
                 attr[ATTR_EVENT_LENGTH] = self._device_data["event_length"]
             return attr
+
+        if self._sensor_type == DEVICE_TYPE_DARK:
+            return {**super().extra_state_attributes}
 
         if (
             self._device_data["event_object"] is not None

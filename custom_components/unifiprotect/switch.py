@@ -125,9 +125,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self.entity_description = description
         self._name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._icon = self.entity_description.icon
         self._switch_type = self.entity_description.key
-        self._attr_entity_category = self.entity_description.entity_category
 
     @property
     def name(self):
@@ -148,11 +146,6 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
             if "status_light" in self._device_data
             else True
         )
-
-    @property
-    def icon(self):
-        """Icon to use in the frontend, if any."""
-        return self._icon
 
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""

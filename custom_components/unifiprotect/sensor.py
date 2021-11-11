@@ -145,11 +145,8 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self.entity_description = description
         self._name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._units = self.entity_description.native_unit_of_measurement
-        self._icon = self.entity_description.icon
         self._device_class = self.entity_description.device_class
         self._device_type = self.entity_description.ufp_device_type
-        self._attr_entity_category = self.entity_description.entity_category
 
     @property
     def name(self):
@@ -174,21 +171,6 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
             if self._device_class == DEVICE_CLASS_TEMPERATURE:
                 return self._device_data["temperature_value"]
         return self._device_data["recording_mode"]
-
-    @property
-    def icon(self):
-        """Icon to use in the frontend, if any."""
-        return self._icon
-
-    @property
-    def native_unit_of_measurement(self):
-        """Return the units of measurement."""
-        return self._units
-
-    @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return self._device_class
 
     @property
     def extra_state_attributes(self):

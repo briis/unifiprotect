@@ -33,6 +33,7 @@ class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_device_type: str
+    ufp_value: str
 
 
 @dataclass
@@ -49,6 +50,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICES_WITH_CAMERA,
+        ufp_value="recording_mode",
     ),
     UnifiProtectSensorEntityDescription(
         key="light_turn_on",
@@ -56,6 +58,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         icon="mdi:leak",
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_LIGHT,
+        ufp_value="motion_mode",
     ),
     UnifiProtectSensorEntityDescription(
         key="battery_level",
@@ -64,6 +67,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_BATTERY,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_value="battery_status",
     ),
     UnifiProtectSensorEntityDescription(
         key="light_level",
@@ -72,6 +76,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_ILLUMINANCE,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_value="light_value",
     ),
     UnifiProtectSensorEntityDescription(
         key="humidity_level",
@@ -80,6 +85,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_HUMIDITY,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_value="humidity_value",
     ),
     UnifiProtectSensorEntityDescription(
         key="temperature_level",
@@ -88,6 +94,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_TEMPERATURE,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_value="temperature_value",
     ),
     UnifiProtectSensorEntityDescription(
         key="ble_signal",
@@ -96,6 +103,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_value="bluetooth_signal",
     ),
 )
 
@@ -155,21 +163,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        if self._device_type == DEVICE_TYPE_LIGHT:
-            return self._device_data["motion_mode"]
-
-        if self._device_type == DEVICE_TYPE_SENSOR:
-            if self.entity_description.device_class == DEVICE_CLASS_BATTERY:
-                return self._device_data["battery_status"]
-            if self.entity_description.device_class == DEVICE_CLASS_HUMIDITY:
-                return self._device_data["humidity_value"]
-            if self.entity_description.device_class == DEVICE_CLASS_ILLUMINANCE:
-                return self._device_data["light_value"]
-            if self.entity_description.device_class == DEVICE_CLASS_SIGNAL_STRENGTH:
-                return self._device_data["bluetooth_signal"]
-            if self.entity_description.device_class == DEVICE_CLASS_TEMPERATURE:
-                return self._device_data["temperature_value"]
-        return self._device_data["recording_mode"]
+        return self._device_data[self.entity_description.ufp_value]
 
     @property
     def extra_state_attributes(self):

@@ -51,7 +51,6 @@ async def async_setup_entry(
             )
 
     if not lights:
-        # No lights found
         return
 
     platform = entity_platform.async_get_current_platform()

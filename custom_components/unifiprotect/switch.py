@@ -21,6 +21,7 @@ class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_required_field: str
+    ufp_value: str
 
 
 @dataclass
@@ -42,6 +43,7 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
         icon="mdi:led-on",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_required_field="has_ledstatus",
+        ufp_value="status_light",
     ),
     UnifiProtectSwitchEntityDescription(
         key=_KEY_HDR_MODE,
@@ -49,6 +51,7 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
         icon="mdi:brightness-7",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_required_field="has_hdr",
+        ufp_value="hdr_mode",
     ),
     UnifiProtectSwitchEntityDescription(
         key=_KEY_HIGH_FPS,
@@ -56,6 +59,7 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
         icon="mdi:video-high-definition",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_required_field="has_highfps",
+        ufp_value="video_mode",
     ),
     UnifiProtectSwitchEntityDescription(
         key=_KEY_PRIVACY_MODE,
@@ -63,6 +67,7 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
         icon="mdi:eye-settings",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_required_field="privacy_on",
+        ufp_value="privacy_on",
     ),
 )
 
@@ -135,17 +140,12 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     @property
     def is_on(self):
         """Return true if device is on."""
-        if self._switch_type == _KEY_HDR_MODE:
-            return self._device_data["hdr_mode"] is True
         if self._switch_type == _KEY_HIGH_FPS:
-            return self._device_data["video_mode"] == TYPE_HIGH_FPS_ON
-        if self._switch_type == _KEY_PRIVACY_MODE:
-            return self._device_data["privacy_on"] is True
-        return (
-            self._device_data["status_light"] is True
-            if "status_light" in self._device_data
-            else True
-        )
+            return (
+                self._device_data[self.entity_description.ufp_value] == TYPE_HIGH_FPS_ON
+            )
+
+        return self._device_data[self.entity_description.ufp_value] is True
 
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""

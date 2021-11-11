@@ -28,6 +28,7 @@ class UnifiprotectRequiredKeysMixin:
     ufp_step: int
     ufp_device_type: str
     ufp_required_field: str
+    ufp_value: str
 
 
 @dataclass
@@ -48,6 +49,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_step=1,
         ufp_device_type=DEVICES_WITH_CAMERA,
         ufp_required_field=None,
+        ufp_value="wdr",
     ),
     UnifiProtectNumberEntityDescription(
         key=_ENTITY_MIC_LEVEL,
@@ -59,6 +61,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_step=1,
         ufp_device_type=DEVICES_WITH_CAMERA,
         ufp_required_field=None,
+        ufp_value="mic_volume",
     ),
     UnifiProtectNumberEntityDescription(
         key=_ENTITY_ZOOM_POS,
@@ -70,6 +73,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_step=1,
         ufp_device_type=DEVICES_WITH_CAMERA,
         ufp_required_field="has_opticalzoom",
+        ufp_value="zoom_position",
     ),
 )
 
@@ -143,13 +147,7 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self.entity_description.key == _ENTITY_WDR:
-            return self._device_data["wdr"]
-
-        if self.entity_description.key == _ENTITY_MIC_LEVEL:
-            return self._device_data["mic_volume"]
-
-        return self._device_data["zoom_position"]
+        return self._device_data[self.entity_description.ufp_value]
 
     async def async_set_value(self, value: float) -> None:
         """Set new value."""

@@ -112,7 +112,7 @@ async def async_setup_entry(
                 )
             )
             _LOGGER.debug(
-                "Adding Doorbel Binary Sensor entity for %s",
+                "Adding Doorbell Binary Sensor entity for %s",
                 device_data["name"],
             )
 

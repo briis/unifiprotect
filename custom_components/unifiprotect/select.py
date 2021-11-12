@@ -238,70 +238,50 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
     def get_view_name_from_id(self, view_id):
         """Returns the Liveview Name from the ID"""
-        _source = None
         for item in self._liveviews:
             if view_id == item["id"]:
-                _source = item["name"]
-                break
-        return _source
+                return item["name"]
+        return None
 
     def get_view_id_from_name(self, view_name):
         """Returns the Liveview ID from the Name"""
-        _id = None
         for item in self._liveviews:
             if view_name == item["name"]:
-                _id = item["id"]
-                break
-        return _id
+                return item["id"]
+        return None
 
     def viewport_view_names(self):
         """Returns an arrya with the view names"""
-        views = []
-        for item in self._liveviews:
-            views.append(item["name"])
-        return views
+        return [item["name"] for item in self._liveviews]
 
     def get_infrared_name_from_id(self):
         """Returns Select Option from Infrared setting"""
-        _value = None
         for item in INFRARED_MODES:
             if self._device_data["ir_mode"] == item["id"]:
-                _value = item["name"]
-                break
-        return _value
+                return item["name"]
+        return None
 
     def get_infrared_id_from_name(self, option):
         """Returns Infrared setting from Select Option"""
-        _value = None
         for item in INFRARED_MODES:
             if option == item["name"]:
-                _value = item["id"]
-                break
-        return _value
+                return item["id"]
+        return None
 
     def infrared_names(self):
         """Returns valid options array for Infrared"""
-        arr = []
-        for item in INFRARED_MODES:
-            arr.append(item["name"])
-        return arr
+        return [item["name"] for item in INFRARED_MODES]
 
     def get_doorbell_text_type_from_name(self, option):
         """Returns the Doorbell Text Type from the Option Text"""
-        _id = None
         for item in self._doorbell_texts:
             if option == item["value"]:
-                _id = item["id"]
-                break
-        return _id
+                return item["id"]
+        return None
 
     def doorbell_texts(self):
         """Returns a list of defined Doorbell Texts"""
-        arr = []
-        for item in self._doorbell_texts:
-            arr.append(item["value"])
-
-        return arr
+        return [item["value"] for item in self._doorbell_texts]
 
     async def async_select_option(self, option: str) -> None:
         """Change the Select Entity Option."""

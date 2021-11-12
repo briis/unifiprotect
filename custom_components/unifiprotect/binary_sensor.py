@@ -71,15 +71,15 @@ SENSE_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
     ),
 )
 
-DOORBELL_SENSORS: tuple[
-    UnifiProtectBinaryEntityDescription, ...
-] = UnifiProtectBinaryEntityDescription(
-    key="doorbell",
-    name="Doorbell",
-    device_class=DEVICE_CLASS_OCCUPANCY,
-    icon="mdi:doorbell-video",
-    ufp_device_type=DEVICE_TYPE_DOORBELL,
-    ufp_device_key="event_ring_on",
+DOORBELL_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
+    UnifiProtectBinaryEntityDescription(
+        key="doorbell",
+        name="Doorbell",
+        device_class=DEVICE_CLASS_OCCUPANCY,
+        icon="mdi:doorbell-video",
+        ufp_device_type=DEVICE_TYPE_DOORBELL,
+        ufp_device_key="event_ring_on",
+    ),
 )
 
 CAMERA_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
@@ -173,7 +173,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 f"{DOMAIN}_doorbell",
                 {
                     "ring": self._device_data["event_ring_on"],
-                    "entity_id": f"binary_sensor.{slugify(self._name)}",
+                    "entity_id": f"binary_sensor.{slugify(self._attr_name)}",
                 },
             )
         if key == DEVICE_TYPE_MOTION and self._device_data["event_on"]:
@@ -216,7 +216,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         ):
             detected_object = self._device_data["event_object"][0]
             _LOGGER.debug(
-                "OBJECTS: %s on %s", self._device_data["event_object"], self._name
+                "OBJECTS: %s on %s", self._device_data["event_object"], self._attr_name
             )
         else:
             detected_object = "None Identified"

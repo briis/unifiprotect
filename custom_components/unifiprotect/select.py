@@ -1,16 +1,18 @@
 """This component provides select entities for Unifi Protect."""
-import logging
 from dataclasses import dataclass
+import logging
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+
 from .const import (
     CUSTOM_MESSAGE,
-    DEVICES_WITH_CAMERA,
     DEVICE_TYPE_DOORBELL,
     DEVICE_TYPE_LIGHT,
     DEVICE_TYPE_VIEWPORT,
+    DEVICES_WITH_CAMERA,
+    DOMAIN,
     ENTITY_CATEGORY_CONFIG,
     TYPE_INFRARED_AUTO,
     TYPE_INFRARED_AUTOFILTER,
@@ -19,7 +21,6 @@ from .const import (
     TYPE_LIGHT_RECORD_MOTION,
     TYPE_RECORD_ALWAYS,
     TYPE_RECORD_OFF,
-    DOMAIN,
 )
 from .entity import UnifiProtectEntity
 

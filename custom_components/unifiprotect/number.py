@@ -1,15 +1,12 @@
 """This component provides number entities for Unifi Protect."""
-import logging
 from dataclasses import dataclass
+import logging
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from .const import (
-    DEVICES_WITH_CAMERA,
-    DOMAIN,
-    ENTITY_CATEGORY_CONFIG,
-)
+
+from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)

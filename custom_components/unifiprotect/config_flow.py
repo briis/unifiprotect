@@ -2,7 +2,6 @@
 import logging
 
 from aiohttp import CookieJar
-
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
@@ -18,8 +17,8 @@ from pyunifiprotect.const import SERVER_ID, SERVER_NAME
 import voluptuous as vol
 
 from .const import (
-    CONF_DOORBELL_TEXT,
     CONF_DISABLE_RTSP,
+    CONF_DOORBELL_TEXT,
     CONF_SNAPSHOT_DIRECT,
     DEFAULT_PORT,
     DOMAIN,

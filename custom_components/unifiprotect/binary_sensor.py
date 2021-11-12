@@ -129,6 +129,7 @@ async def async_setup_entry(
             for device_match, descriptions in DEVICE_TYPE_TO_DESCRIPTION.items()
             if device_type in device_match
         )
+
         for description in entity_descs:
             entities.append(
                 UnifiProtectBinarySensor(

@@ -1,13 +1,9 @@
 """Shared Entity definition for Unifi Protect Integration."""
-import homeassistant.helpers.device_registry as dr
-from homeassistant.helpers.entity import Entity, DeviceInfo
 from homeassistant.const import ATTR_ATTRIBUTION
-from .const import (
-    ATTR_DEVICE_MODEL,
-    DEFAULT_ATTRIBUTION,
-    DEFAULT_BRAND,
-    DOMAIN,
-)
+import homeassistant.helpers.device_registry as dr
+from homeassistant.helpers.entity import DeviceInfo, Entity
+
+from .const import ATTR_DEVICE_MODEL, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
 
 
 class UnifiProtectEntity(Entity):
@@ -16,7 +12,10 @@ class UnifiProtectEntity(Entity):
     def __init__(self, upv_object, protect_data, server_info, device_id, description):
         """Initialize the entity."""
         super().__init__()
-        self.entity_description = description
+
+        if description:
+            self.entity_description = description
+
         self.upv_object = upv_object
         self.protect_data = protect_data
         self._device_id = device_id

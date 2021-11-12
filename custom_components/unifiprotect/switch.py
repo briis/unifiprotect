@@ -1,16 +1,12 @@
 """This component provides Switches for Unifi Protect."""
-import logging
 from dataclasses import dataclass
+import logging
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from .const import (
-    DOMAIN,
-    ENTITY_CATEGORY_CONFIG,
-    TYPE_HIGH_FPS_ON,
-    TYPE_RECORD_NEVER,
-)
+
+from .const import DOMAIN, ENTITY_CATEGORY_CONFIG, TYPE_HIGH_FPS_ON, TYPE_RECORD_NEVER
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)

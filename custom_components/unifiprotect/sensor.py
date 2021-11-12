@@ -161,9 +161,9 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         """Return the device state attributes."""
-        attr = {
-            **super().extra_state_attributes,
-        }
         if self._device_type == DEVICE_TYPE_LIGHT:
-            attr[ATTR_ENABLED_AT] = self._device_data["motion_mode_enabled_at"]
-        return attr
+            return {
+                **super().extra_state_attributes,
+                ATTR_ENABLED_AT: self._device_data["motion_mode_enabled_at"],
+            }
+        return super().extra_state_attributes

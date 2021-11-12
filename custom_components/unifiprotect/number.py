@@ -7,6 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,7 +82,7 @@ async def async_setup_entry(
     """Set up Select entities for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
-    protect_data = entry_data["protect_data"]
+    protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
     if not protect_data.data:
         return
@@ -89,14 +90,11 @@ async def async_setup_entry(
     entities = []
 
     for description in NUMBER_TYPES:
-        for device_id in protect_data.data:
-            if (
-                protect_data.data[device_id].get("type")
-                not in description.ufp_device_type
-            ):
+        for device_id, device_data in protect_data.data.items():
+            if device_data.get("type") not in description.ufp_device_type:
                 continue
 
-            if description.ufp_required_field and not protect_data.data[device_id].get(
+            if description.ufp_required_field and not device_data.get(
                 description.ufp_required_field
             ):
                 continue
@@ -113,7 +111,7 @@ async def async_setup_entry(
             _LOGGER.debug(
                 "Adding number entity %s for %s",
                 description.name,
-                protect_data.data[device_id].get("name"),
+                device_data.get("name"),
             )
 
     if not entities:

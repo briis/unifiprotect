@@ -23,8 +23,8 @@ from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 from pyunifiprotect.const import SERVER_ID
 
 from .const import (
-    CONF_DOORBELL_TEXT,
     CONF_DISABLE_RTSP,
+    CONF_DOORBELL_TEXT,
     CONF_SNAPSHOT_DIRECT,
     CONFIG_OPTIONS,
     DEFAULT_BRAND,

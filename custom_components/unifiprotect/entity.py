@@ -1,25 +1,24 @@
 """Shared Entity definition for Unifi Protect Integration."""
-import homeassistant.helpers.device_registry as dr
-from homeassistant.helpers.entity import Entity, DeviceInfo
 from homeassistant.const import ATTR_ATTRIBUTION
-from .const import (
-    ATTR_DEVICE_MODEL,
-    DEFAULT_ATTRIBUTION,
-    DEFAULT_BRAND,
-    DOMAIN,
-)
+import homeassistant.helpers.device_registry as dr
+from homeassistant.helpers.entity import DeviceInfo, Entity
+
+from .const import ATTR_DEVICE_MODEL, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
 
 
 class UnifiProtectEntity(Entity):
     """Base class for unifi protect entities."""
 
-    def __init__(self, upv_object, protect_data, server_info, device_id, sensor_type):
+    def __init__(self, upv_object, protect_data, server_info, device_id, description):
         """Initialize the entity."""
         super().__init__()
+
+        if description:
+            self.entity_description = description
+
         self.upv_object = upv_object
         self.protect_data = protect_data
         self._device_id = device_id
-        self._sensor_type = sensor_type
 
         self._device_data = self.protect_data.data[self._device_id]
         self._device_name = self._device_data["name"]
@@ -29,10 +28,10 @@ class UnifiProtectEntity(Entity):
         self._server_ip = server_info["server_ip"]
         self._device_type = self._device_data["type"]
         self._model = self._device_data["model"]
-        if self._sensor_type is None:
+        if description is None:
             self._unique_id = f"{self._device_id}_{self._mac}"
         else:
-            self._unique_id = f"{self._sensor_type}_{self._mac}"
+            self._unique_id = f"{description.key}_{self._mac}"
 
     @property
     def should_poll(self):

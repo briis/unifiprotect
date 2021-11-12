@@ -128,14 +128,8 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     ):
         """Initialize an Unifi Protect Switch."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self.entity_description = description
-        self._name = f"{self.entity_description.name} {self._device_data['name']}"
+        self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
         self._switch_type = self.entity_description.key
-
-    @property
-    def name(self):
-        """Return the name of the device if any."""
-        return self._name
 
     @property
     def is_on(self):

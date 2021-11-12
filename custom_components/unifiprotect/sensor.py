@@ -151,14 +151,8 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
     ):
         """Initialize an Unifi Protect sensor."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self.entity_description = description
-        self._name = f"{self.entity_description.name} {self._device_data['name']}"
+        self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
         self._device_type = self.entity_description.ufp_device_type
-
-    @property
-    def name(self):
-        """Return name of the sensor."""
-        return self._name
 
     @property
     def native_value(self):

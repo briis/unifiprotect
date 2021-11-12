@@ -161,7 +161,6 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     ):
         """Initialize the Binary Sensor."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self.entity_description = description
         self._attr_name = f"{description.name.title()} {self._device_data['name']}"
 
     @property

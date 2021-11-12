@@ -19,6 +19,7 @@ from .const import (
     LIGHT_SETTINGS_SCHEMA,
     SERVICE_LIGHT_SETTINGS,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,23 +33,24 @@ async def async_setup_entry(
     """Set up lights for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
-    protect_data = entry_data["protect_data"]
+    protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
 
     if not protect_data.data:
         return
 
     lights = []
-    for light_id in protect_data.data:
-        if protect_data.data[light_id].get("type") == DEVICE_TYPE_LIGHT:
-            lights.append(
-                UnifiProtectLight(
-                    upv_object,
-                    protect_data,
-                    server_info,
-                    light_id,
-                )
+    for device_id, device_data in protect_data.data.items():
+        if device_data.get("type") != DEVICE_TYPE_LIGHT:
+            continue
+        lights.append(
+            UnifiProtectLight(
+                upv_object,
+                protect_data,
+                server_info,
+                device_id,
             )
+        )
 
     if not lights:
         return

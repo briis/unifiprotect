@@ -1,4 +1,6 @@
 """This component provides select entities for Unifi Protect."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 import logging
 
@@ -22,6 +24,7 @@ from .const import (
     TYPE_RECORD_ALWAYS,
     TYPE_RECORD_OFF,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 
 ATTR_VIEWS = "views"
@@ -58,7 +61,7 @@ RECORDING_MODES = ["Always", "Never", "Detections"]
 class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
-    ufp_device_type: str
+    ufp_device_types: set[str]
 
 
 @dataclass
@@ -74,34 +77,34 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         name="Recording Mode",
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_type=DEVICES_WITH_CAMERA,
+        ufp_device_types=DEVICES_WITH_CAMERA,
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_VIEWER,
         name="Viewer",
         icon="mdi:view-dashboard",
-        ufp_device_type=DEVICE_TYPE_VIEWPORT,
+        ufp_device_types={DEVICE_TYPE_VIEWPORT},
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_LIGHT_MOTION,
         name="Lightning",
         icon="mdi:spotlight",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_type=DEVICE_TYPE_LIGHT,
+        ufp_device_types={DEVICE_TYPE_LIGHT},
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_IR,
         name="Infrared",
         icon="mdi:circle-opacity",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_type=DEVICES_WITH_CAMERA,
+        ufp_device_types=DEVICES_WITH_CAMERA,
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_DOORBELL_TEXT,
         name="Doorbell Text",
         icon="mdi:card-text",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_type=DEVICE_TYPE_DOORBELL,
+        ufp_device_types={DEVICE_TYPE_DOORBELL},
     ),
 )
 
@@ -112,31 +115,22 @@ async def async_setup_entry(
     """Set up Select entities for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
-    protect_data = entry_data["protect_data"]
+    protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
     doorbell_text = entry_data["doorbell_text"]
-
-    if not protect_data.data:
-        return
 
     # Get Current Views
     liveviews = await upv_object.get_live_views()
 
     entities = []
     for description in SELECT_TYPES:
-        for device_id in protect_data.data:
-            if (
-                protect_data.data[device_id].get("type")
-                not in description.ufp_device_type
-            ):
-                continue
-
+        for device in protect_data.get_by_types(description.ufp_device_types):
             entities.append(
                 UnifiProtectSelects(
                     upv_object,
                     protect_data,
                     server_info,
-                    device_id,
+                    device.id,
                     description,
                     liveviews,
                     doorbell_text,
@@ -145,7 +139,7 @@ async def async_setup_entry(
             _LOGGER.debug(
                 "Adding select entity %s for %s",
                 description.name,
-                protect_data.data[device_id].get("name"),
+                device.data.get("name"),
             )
 
     if not entities:
@@ -171,7 +165,6 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._select_entity = self.entity_description.key
         self._name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._device_type = self.entity_description.ufp_device_type
         self._liveviews = liveviews
 
         self._doorbell_texts = []

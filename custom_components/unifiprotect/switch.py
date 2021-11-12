@@ -6,7 +6,14 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, ENTITY_CATEGORY_CONFIG, TYPE_HIGH_FPS_ON, TYPE_RECORD_NEVER
+from .const import (
+    DEVICES_WITH_CAMERA,
+    DOMAIN,
+    ENTITY_CATEGORY_CONFIG,
+    TYPE_HIGH_FPS_ON,
+    TYPE_RECORD_NEVER,
+)
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,10 +74,6 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
     ),
 )
 
-PRIVACY_OFF = [[0, 0], [0, 0], [0, 0], [0, 0]]
-PRIVACY_ON = [[0, 0], [1, 0], [1, 1], [0, 1]]
-ZONE_NAME = "hass zone"
-
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
@@ -78,35 +81,32 @@ async def async_setup_entry(
     """Set up switches for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
-    protect_data = entry_data["protect_data"]
+    protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
-
-    if not protect_data.data:
-        return
 
     switches = []
     for description in SWITCH_TYPES:
-        for device_id in protect_data.data:
+        for device in protect_data.get_by_types(DEVICES_WITH_CAMERA):
+            device_data = device.data
             if description.ufp_required_field and not isinstance(
-                protect_data.data[device_id].get(description.ufp_required_field), bool
+                device_data.get(description.ufp_required_field), bool
             ):
                 continue
 
-            if protect_data.data[device_id].get(description.ufp_required_field):
-                switches.append(
-                    UnifiProtectSwitch(
-                        upv_object,
-                        protect_data,
-                        server_info,
-                        device_id,
-                        description,
-                    )
+            switches.append(
+                UnifiProtectSwitch(
+                    upv_object,
+                    protect_data,
+                    server_info,
+                    device.id,
+                    description,
                 )
-                _LOGGER.debug(
-                    "Adding switch entity %s for %s",
-                    description.name,
-                    protect_data.data[device_id].get("name"),
-                )
+            )
+            _LOGGER.debug(
+                "Adding switch entity %s for %s",
+                description.name,
+                device_data.get("name"),
+            )
 
     async_add_entities(switches)
 

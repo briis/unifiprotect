@@ -118,12 +118,15 @@ async def async_setup_entry(
     upv_object: UpvServer = entry_data["upv"]
     protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
-    if not protect_data.data:
-        return
+
+    wanted_types = set()
+    for device_types in DEVICE_TYPE_TO_DESCRIPTION:
+        wanted_types |= set(device_types)
 
     entities = []
-    for device_id, device_data in protect_data.data.items():
-        device_type = device_data["type"]
+    for device in protect_data.get_by_types(wanted_types):
+        device_data = device.data
+        device_type = device.type
         entity_descs = itertools.chain.from_iterable(
             descriptions
             for device_match, descriptions in DEVICE_TYPE_TO_DESCRIPTION.items()
@@ -136,7 +139,7 @@ async def async_setup_entry(
                     upv_object,
                     protect_data,
                     server_info,
-                    device_id,
+                    device.id,
                     description,
                 )
             )

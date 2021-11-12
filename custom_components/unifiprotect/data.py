@@ -1,12 +1,21 @@
 """Base class for protect data."""
 
+from dataclasses import dataclass
 import logging
+from typing import Generator
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect.unifi_protect_server import NvrError
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class UnifiProtectDevice:
+    id: str
+    type: str
+    data: dict
 
 
 class UnifiProtectData:
@@ -23,6 +32,16 @@ class UnifiProtectData:
         self._unsub_interval = None
         self._unsub_websocket = None
         self.last_update_success = False
+
+    def get_by_types(self, device_types) -> Generator[UnifiProtectDevice, None, None]:
+        """Get all devices matching types."""
+        if not self.data:
+            return
+
+        for device_id, device_data in self.data.items():
+            device_type = device_data.get("type")
+            if device_type and device_type in device_types:
+                yield UnifiProtectDevice(device_id, device_type, device_data)
 
     async def async_setup(self):
         """Subscribe and do the refresh."""

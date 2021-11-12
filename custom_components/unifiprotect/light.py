@@ -1,4 +1,5 @@
 """This component provides Lights for Unifi Protect."""
+from __future__ import annotations
 
 import logging
 
@@ -36,23 +37,17 @@ async def async_setup_entry(
     protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
 
-    if not protect_data.data:
-        return
-
-    lights = []
-    for device_id, device_data in protect_data.data.items():
-        if device_data.get("type") != DEVICE_TYPE_LIGHT:
-            continue
-        lights.append(
-            UnifiProtectLight(
-                upv_object,
-                protect_data,
-                server_info,
-                device_id,
-            )
+    entities = [
+        UnifiProtectLight(
+            upv_object,
+            protect_data,
+            server_info,
+            device.id,
         )
+        for device in protect_data.get_by_types({DEVICE_TYPE_LIGHT})
+    ]
 
-    if not lights:
+    if not entities:
         return
 
     platform = entity_platform.async_get_current_platform()
@@ -60,7 +55,7 @@ async def async_setup_entry(
         SERVICE_LIGHT_SETTINGS, LIGHT_SETTINGS_SCHEMA, "async_light_settings"
     )
 
-    async_add_entities(lights)
+    async_add_entities(entities)
 
 
 def unifi_brightness_to_hass(value):

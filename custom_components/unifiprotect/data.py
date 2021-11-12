@@ -1,4 +1,5 @@
 """Base class for protect data."""
+from __future__ import annotations
 
 from dataclasses import dataclass
 import logging

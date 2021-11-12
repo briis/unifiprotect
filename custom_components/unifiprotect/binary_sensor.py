@@ -1,4 +1,6 @@
 """This component provides binary sensors for Unifi Protect."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 import itertools
 import logging

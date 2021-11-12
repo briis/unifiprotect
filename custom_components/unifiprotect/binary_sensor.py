@@ -124,7 +124,7 @@ async def async_setup_entry(
     entities = []
     for device_id, device_data in protect_data.data.items():
         device_type = device_data["type"]
-        entity_descs = itertools.chain(
+        entity_descs = itertools.chain.from_iterable(
             descriptions
             for device_match, descriptions in DEVICE_TYPE_TO_DESCRIPTION.items()
             if device_type in device_match

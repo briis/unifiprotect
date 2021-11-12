@@ -93,25 +93,31 @@ async def async_setup_entry(
 
     for description in NUMBER_TYPES:
         for device_id in protect_data.data:
-            if protect_data.data[device_id].get("type") in description.ufp_device_type:
-                if description.ufp_required_field and not protect_data.data[
-                    device_id
-                ].get(description.ufp_required_field):
-                    continue
-                entities.append(
-                    UnifiProtectNumbers(
-                        upv_object,
-                        protect_data,
-                        server_info,
-                        device_id,
-                        description,
-                    )
+            if (
+                protect_data.data[device_id].get("type")
+                not in description.ufp_device_type
+            ):
+                continue
+
+            if description.ufp_required_field and not protect_data.data[device_id].get(
+                description.ufp_required_field
+            ):
+                continue
+
+            entities.append(
+                UnifiProtectNumbers(
+                    upv_object,
+                    protect_data,
+                    server_info,
+                    device_id,
+                    description,
                 )
-                _LOGGER.debug(
-                    "Adding number entity %s for %s",
-                    description.name,
-                    protect_data.data[device_id].get("name"),
-                )
+            )
+            _LOGGER.debug(
+                "Adding number entity %s for %s",
+                description.name,
+                protect_data.data[device_id].get("name"),
+            )
 
     if not entities:
         return

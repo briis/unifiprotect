@@ -124,23 +124,28 @@ async def async_setup_entry(
     entities = []
     for description in SELECT_TYPES:
         for device_id in protect_data.data:
-            if protect_data.data[device_id].get("type") in description.ufp_device_type:
-                entities.append(
-                    UnifiProtectSelects(
-                        upv_object,
-                        protect_data,
-                        server_info,
-                        device_id,
-                        description,
-                        liveviews,
-                        doorbell_text,
-                    )
+            if (
+                protect_data.data[device_id].get("type")
+                not in description.ufp_device_type
+            ):
+                continue
+
+            entities.append(
+                UnifiProtectSelects(
+                    upv_object,
+                    protect_data,
+                    server_info,
+                    device_id,
+                    description,
+                    liveviews,
+                    doorbell_text,
                 )
-                _LOGGER.debug(
-                    "Adding select entity %s for %s",
-                    description.name,
-                    protect_data.data[device_id].get("name"),
-                )
+            )
+            _LOGGER.debug(
+                "Adding select entity %s for %s",
+                description.name,
+                protect_data.data[device_id].get("name"),
+            )
 
     if not entities:
         return

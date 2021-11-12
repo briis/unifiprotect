@@ -28,8 +28,7 @@
                     "username": "Gebruikersnaam",
                     "password": "Wachtwoord",
                     "disable_rtsp": "Schakel de RTSP-stream uit",
-                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
-                    "snapshot_direct": "Gebruik anonieme snapshots (moet op alle camera's worden ingeschakeld)"
+                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel"
                 }
             }
         }

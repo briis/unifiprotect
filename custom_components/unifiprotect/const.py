@@ -27,7 +27,6 @@ ATTR_WDR_VALUE = "wdr_value"
 ATTR_ZOOM_POSITION = "zoom_position"
 
 CONF_RECORDING_MODE = "recording_mode"
-CONF_SNAPSHOT_DIRECT = "snapshot_direct"
 CONF_CHIME_ON = "chime_on"
 CONF_CHIME_DURATION = "chime_duration"
 CONF_DOORBELL_TEXT = "doorbell_text"
@@ -48,7 +47,6 @@ CONF_SENSITIVITY = "sensitivity"
 CONF_VALUE = "value"
 
 CONFIG_OPTIONS = [
-    CONF_SNAPSHOT_DIRECT,
     CONF_DOORBELL_TEXT,
     CONF_DISABLE_RTSP,
 ]

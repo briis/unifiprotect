@@ -19,7 +19,6 @@ import voluptuous as vol
 from .const import (
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
-    CONF_SNAPSHOT_DIRECT,
     DEFAULT_PORT,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
@@ -92,7 +91,6 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             options={
                 CONF_DISABLE_RTSP: False,
                 CONF_DOORBELL_TEXT: "",
-                CONF_SNAPSHOT_DIRECT: False,
             },
         )
 
@@ -143,12 +141,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_DISABLE_RTSP,
                         default=self.config_entry.options.get(CONF_DISABLE_RTSP, False),
-                    ): bool,
-                    vol.Optional(
-                        CONF_SNAPSHOT_DIRECT,
-                        default=self.config_entry.options.get(
-                            CONF_SNAPSHOT_DIRECT, False
-                        ),
                     ): bool,
                 }
             ),

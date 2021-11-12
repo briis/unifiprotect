@@ -25,7 +25,6 @@ from pyunifiprotect.const import SERVER_ID
 from .const import (
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
-    CONF_SNAPSHOT_DIRECT,
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
@@ -104,7 +103,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "protect_data": protect_data,
         "upv": protectserver,
-        "snapshot_direct": entry.options.get(CONF_SNAPSHOT_DIRECT, False),
         "server_info": nvr_info,
         "disable_stream": entry.options.get(CONF_DISABLE_RTSP, False),
         "doorbell_text": entry.options.get(CONF_DOORBELL_TEXT, None),

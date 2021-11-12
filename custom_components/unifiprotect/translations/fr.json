@@ -28,8 +28,7 @@
                     "username": "Identifiant",
                     "password": "Mot de passe",
                     "disable_rtsp": "Désactiver le flux RTSP",
-                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
-                    "snapshot_direct": "Utiliser des clichés anonymes (doit être activé sur toutes les caméras)"
+                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel"
                 }
             }
         }

@@ -61,7 +61,6 @@ async def async_setup_entry(
     upv_object = entry_data["upv"]
     protect_data = entry_data["protect_data"]
     server_info = entry_data["server_info"]
-    snapshot_direct = entry_data["snapshot_direct"]
     disable_stream = entry_data["disable_stream"]
 
     if not protect_data.data:
@@ -76,7 +75,6 @@ async def async_setup_entry(
                     protect_data,
                     server_info,
                     camera_id,
-                    snapshot_direct,
                     disable_stream,
                 )
             )
@@ -146,12 +144,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         protect_data,
         server_info,
         camera_id,
-        snapshot_direct,
         disable_stream,
     ):
         """Initialize an Unifi camera."""
         super().__init__(upv_object, protect_data, server_info, camera_id, None)
-        self._snapshot_direct = snapshot_direct
         self._name = self._device_data["name"]
         self._disable_stream = disable_stream
         self._stream_source = None if disable_stream else self._device_data["rtsp"]
@@ -297,14 +293,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         self, width: Optional[int] = None, height: Optional[int] = None
     ):
         """Return the Camera Image."""
-        if self._snapshot_direct:
-            last_image = await self.upv_object.get_snapshot_image_direct(
-                self._device_id
-            )
-        else:
-            last_image = await self.upv_object.get_snapshot_image(
-                self._device_id, width, height
-            )
+        last_image = await self.upv_object.get_snapshot_image(
+            self._device_id, width, height
+        )
         self._last_image = last_image
         return self._last_image
 

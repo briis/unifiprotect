@@ -98,7 +98,7 @@ MOTION_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
         name="Motion",
         device_class=DEVICE_CLASS_MOTION,
         ufp_device_type=DEVICE_TYPE_MOTION,
-        ufp_device_key="is_on",
+        ufp_device_key="event_on",
     ),
 )
 

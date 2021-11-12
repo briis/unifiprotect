@@ -27,6 +27,7 @@ class UnifiprotectRequiredKeysMixin:
     ufp_device_type: str
     ufp_required_field: str
     ufp_value: str
+    ufp_set_function: str
 
 
 @dataclass
@@ -48,6 +49,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_device_type=DEVICES_WITH_CAMERA,
         ufp_required_field=None,
         ufp_value="wdr",
+        ufp_set_function="set_camera_wdr",
     ),
     UnifiProtectNumberEntityDescription(
         key=_ENTITY_MIC_LEVEL,
@@ -60,6 +62,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_device_type=DEVICES_WITH_CAMERA,
         ufp_required_field=None,
         ufp_value="mic_volume",
+        ufp_set_function="set_mic_volume",
     ),
     UnifiProtectNumberEntityDescription(
         key=_ENTITY_ZOOM_POS,
@@ -72,6 +75,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_device_type=DEVICES_WITH_CAMERA,
         ufp_required_field="has_opticalzoom",
         ufp_value="zoom_position",
+        ufp_set_function="set_camera_zoom_position",
     ),
 )
 
@@ -151,24 +155,11 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
 
     async def async_set_value(self, value: float) -> None:
         """Set new value."""
-        if self.entity_description.key == _ENTITY_WDR:
-            _LOGGER.debug(
-                "Setting WDR Value to %s for Camera %s",
-                value,
-                self._device_data["name"],
-            )
-            await self.upv_object.set_camera_wdr(self._device_id, value)
-        if self.entity_description.key == _ENTITY_MIC_LEVEL:
-            _LOGGER.debug(
-                "Setting Microphone Level to %s for Camera %s",
-                value,
-                self._device_data["name"],
-            )
-            await self.upv_object.set_mic_volume(self._device_id, value)
-        if self.entity_description.key == _ENTITY_ZOOM_POS:
-            _LOGGER.debug(
-                "Setting Zoom Position to %s for Camera %s",
-                value,
-                self._device_data["name"],
-            )
-            await self.upv_object.set_camera_zoom_position(self._device_id, value)
+        function = self.entity_description.ufp_set_function
+        _LOGGER.debug(
+            "Calling %s to set %s for Camera %s",
+            function,
+            value,
+            self._device_data["name"],
+        )
+        await getattr(self.upv_object, function)(self._device_id, value)

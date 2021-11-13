@@ -15,7 +15,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_LAST_TRIP_TIME
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.util import slugify
 from pyunifiprotect import UpvServer
 
@@ -168,29 +168,38 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         """Initialize the Binary Sensor."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._attr_name = f"{description.name.title()} {self._device_data['name']}"
+        self._attr_is_on = self._device_data[description.ufp_device_key]
 
-    @property
-    def is_on(self):
-        """Return true if the binary sensor is on."""
+    @callback
+    def _async_updated_event(self):
+        self._async_fire_events()
+        self._attr_is_on = self._device_data[self.entity_description.ufp_device_key]
+        super()._async_updated_event()
+
+    @callback
+    def _async_fire_events(self):
+        """Fire events on ring or motion.
+
+        Remove this before merging to core.
+        """
         key = self.entity_description.key
         if key == DEVICE_TYPE_DOORBELL and self._device_data["event_ring_on"]:
             self.hass.bus.async_fire(
                 f"{DOMAIN}_doorbell",
                 {
                     "ring": self._device_data["event_ring_on"],
-                    "entity_id": f"binary_sensor.{slugify(self._attr_name)}",
+                    "entity_id": self.entity_id,
                 },
             )
         if key == DEVICE_TYPE_MOTION and self._device_data["event_on"]:
             self.hass.bus.async_fire(
                 f"{DOMAIN}_motion",
                 {
-                    "entity_id": f"camera.{slugify(self._device_data['name'])}",
+                    "entity_id": self.entity_id,
                     "smart_detect": self._device_data["event_object"],
                     "motion_on": self._device_data["event_on"],
                 },
             )
-        return self._device_data[self.entity_description.ufp_device_key]
 
     @property
     def extra_state_attributes(self):

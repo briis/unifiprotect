@@ -22,14 +22,14 @@ Due to the many changes and entities that have been removed and replaced, we rec
 
 ### Changes in this release
 
-As there we still some changes we wanted to do before releasing this, we decided to do one more Beta, before freezing.
+As there were still some changes we wanted to do before releasing this, we decided to do one more Beta, before freezing.
 
 * `CHANGE`: The support for *Anonymous Snapshots* has been removed as of this release. This had always been a workaround in a time where this did not work as well as it does now. If you have this flag set, you don't have to do anything, as snapshots are automatically moved to the supported method.
 * `CHANGE`: Config Flow has been slimmed down so it will only ask for the minimum values we need during installation. If you would like to change this after that, you can use the Configure button on the Integration page.
-* `CHANGE`: It is now possible to change the UFP Device username and password without removing and reinstallating the Integration. On the Home Assistant Integration page, select CONFIGURE in the lower left corner of the UniFi Protect integration, and you will have the option to enter a new username and/or password.
+* `CHANGE`: It is now possible to change the UFP Device username and password without removing and reinstalling the Integration. On the Home Assistant Integration page, select CONFIGURE in the lower left corner of the UniFi Protect integration, and you will have the option to enter a new username and/or password.
 * `NEW`: For each Camera there will be a binary sensor called `binary_sensor.is_dark_CAMERANAME`. This sensor will be on if the camera is perceiving it is as so dark that the Infrared lights will turn on (If enabled).
 * `CHANGE`: A significant number of 'under the hood' changes have been made, to bring the Integration up to Home Assistant standards and to prepare for the integration in to HA Core. Thank you to @bdraco for all his advise, coding and review.
-* `CHANGE`: `pyunifiprotect` has been completely rewritten by @AngellusMortis, with the support of @bdraco and is now a much more structured an easier to maintain module. There has also been a few interresting additions to the module, which you will see the fruit of in a coming release. This version is not utilizing the new module yet, but stay tuned for the 0.11.0 release, which most likely also will be the last release before we try the move to HA Core.
+* `CHANGE`: `pyunifiprotect` has been completely rewritten by @AngellusMortis, with the support of @bdraco and is now a much more structured and easier to maintain module. There has also been a few interesting additions to the module, which you will see the fruit of in a coming release. This version is not utilizing the new module yet, but stay tuned for the 0.11.0 release, which most likely also will be the last release before we try the move to HA Core.
 
 ## 0.10.0 Beta 4
 

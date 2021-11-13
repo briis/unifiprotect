@@ -1,4 +1,6 @@
 """This component provides number entities for Unifi Protect."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 import logging
 
@@ -24,7 +26,7 @@ class UnifiprotectRequiredKeysMixin:
     ufp_max: int
     ufp_min: int
     ufp_step: int
-    ufp_device_type: str
+    ufp_device_types: set[str]
     ufp_required_field: str
     ufp_value: str
     ufp_set_function: str
@@ -46,7 +48,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_min=0,
         ufp_max=3,
         ufp_step=1,
-        ufp_device_type=DEVICES_WITH_CAMERA,
+        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field=None,
         ufp_value="wdr",
         ufp_set_function="set_camera_wdr",
@@ -59,7 +61,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_min=0,
         ufp_max=100,
         ufp_step=1,
-        ufp_device_type=DEVICES_WITH_CAMERA,
+        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field=None,
         ufp_value="mic_volume",
         ufp_set_function="set_mic_volume",
@@ -72,7 +74,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_min=0,
         ufp_max=100,
         ufp_step=1,
-        ufp_device_type=DEVICES_WITH_CAMERA,
+        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field="has_opticalzoom",
         ufp_value="zoom_position",
         ufp_set_function="set_camera_zoom_position",
@@ -88,16 +90,12 @@ async def async_setup_entry(
     upv_object = entry_data["upv"]
     protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
-    if not protect_data.data:
-        return
 
     entities = []
 
     for description in NUMBER_TYPES:
-        for device_id, device_data in protect_data.data.items():
-            if device_data.get("type") not in description.ufp_device_type:
-                continue
-
+        for device in protect_data.get_by_types(description.ufp_device_types):
+            device_data = device.data
             if description.ufp_required_field and not device_data.get(
                 description.ufp_required_field
             ):
@@ -108,7 +106,7 @@ async def async_setup_entry(
                     upv_object,
                     protect_data,
                     server_info,
-                    device_id,
+                    device.id,
                     description,
                 )
             )
@@ -138,7 +136,6 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         """Initialize the Number Entities."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._device_type = self.entity_description.ufp_device_type
         self._attr_max_value = self.entity_description.ufp_max
         self._attr_min_value = self.entity_description.ufp_min
         self._attr_step = self.entity_description.ufp_step

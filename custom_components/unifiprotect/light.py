@@ -1,4 +1,5 @@
 """This component provides Lights for Unifi Protect."""
+from __future__ import annotations
 
 import logging
 
@@ -19,6 +20,7 @@ from .const import (
     LIGHT_SETTINGS_SCHEMA,
     SERVICE_LIGHT_SETTINGS,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,25 +34,20 @@ async def async_setup_entry(
     """Set up lights for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
-    protect_data = entry_data["protect_data"]
+    protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
 
-    if not protect_data.data:
-        return
+    entities = [
+        UnifiProtectLight(
+            upv_object,
+            protect_data,
+            server_info,
+            device.id,
+        )
+        for device in protect_data.get_by_types({DEVICE_TYPE_LIGHT})
+    ]
 
-    lights = []
-    for light_id in protect_data.data:
-        if protect_data.data[light_id].get("type") == DEVICE_TYPE_LIGHT:
-            lights.append(
-                UnifiProtectLight(
-                    upv_object,
-                    protect_data,
-                    server_info,
-                    light_id,
-                )
-            )
-
-    if not lights:
+    if not entities:
         return
 
     platform = entity_platform.async_get_current_platform()
@@ -58,7 +55,7 @@ async def async_setup_entry(
         SERVICE_LIGHT_SETTINGS, LIGHT_SETTINGS_SCHEMA, "async_light_settings"
     )
 
-    async_add_entities(lights)
+    async_add_entities(entities)
 
 
 def unifi_brightness_to_hass(value):

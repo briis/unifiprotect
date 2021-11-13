@@ -48,6 +48,7 @@ from .const import (
     TYPE_RECORD_MOTION,
     TYPE_RECORD_NEVER,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -59,26 +60,22 @@ async def async_setup_entry(
     """Discover cameras on a Unifi Protect NVR."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
-    protect_data = entry_data["protect_data"]
+    protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
     disable_stream = entry_data["disable_stream"]
 
-    if not protect_data.data:
-        return
-
-    cameras = []
-    for camera_id in protect_data.data:
-        if protect_data.data[camera_id].get("type") in DEVICES_WITH_CAMERA:
-            cameras.append(
-                UnifiProtectCamera(
-                    upv_object,
-                    protect_data,
-                    server_info,
-                    camera_id,
-                    disable_stream,
-                )
+    async_add_entities(
+        [
+            UnifiProtectCamera(
+                upv_object,
+                protect_data,
+                server_info,
+                device.id,
+                disable_stream,
             )
-    async_add_entities(cameras)
+            for device in protect_data.get_by_types(DEVICES_WITH_CAMERA)
+        ]
+    )
 
     platform = entity_platform.async_get_current_platform()
 

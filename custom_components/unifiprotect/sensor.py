@@ -1,4 +1,6 @@
 """This component provides sensors for Unifi Protect."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 import logging
 
@@ -22,6 +24,7 @@ from .const import (
     DOMAIN,
     ENTITY_CATEGORY_DIAGNOSTIC,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,7 +34,7 @@ _LOGGER = logging.getLogger(__name__)
 class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
-    ufp_device_type: str
+    ufp_device_types: set[str]
     ufp_value: str
 
 
@@ -48,7 +51,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         name="Motion Recording",
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_type=DEVICES_WITH_CAMERA,
+        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_value="recording_mode",
     ),
     UnifiProtectSensorEntityDescription(
@@ -56,7 +59,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         name="Light Turn On",
         icon="mdi:leak",
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_type=DEVICE_TYPE_LIGHT,
+        ufp_device_types={DEVICE_TYPE_LIGHT},
         ufp_value="motion_mode",
     ),
     UnifiProtectSensorEntityDescription(
@@ -65,7 +68,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="%",
         device_class=DEVICE_CLASS_BATTERY,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_device_types={DEVICE_TYPE_SENSOR},
         ufp_value="battery_status",
     ),
     UnifiProtectSensorEntityDescription(
@@ -74,7 +77,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="lx",
         device_class=DEVICE_CLASS_ILLUMINANCE,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_device_types={DEVICE_TYPE_SENSOR},
         ufp_value="light_value",
     ),
     UnifiProtectSensorEntityDescription(
@@ -83,7 +86,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="%",
         device_class=DEVICE_CLASS_HUMIDITY,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_device_types={DEVICE_TYPE_SENSOR},
         ufp_value="humidity_value",
     ),
     UnifiProtectSensorEntityDescription(
@@ -92,7 +95,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=DEVICE_CLASS_TEMPERATURE,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_device_types={DEVICE_TYPE_SENSOR},
         ufp_value="temperature_value",
     ),
     UnifiProtectSensorEntityDescription(
@@ -101,7 +104,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="dB",
         device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_type=DEVICE_TYPE_SENSOR,
+        ufp_device_types={DEVICE_TYPE_SENSOR},
         ufp_value="bluetooth_signal",
     ),
 )
@@ -113,26 +116,22 @@ async def async_setup_entry(
     """Set up sensors for UniFi Protect integration."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
-    protect_data = entry_data["protect_data"]
+    protect_data: UnifiProtectData = entry_data["protect_data"]
     server_info = entry_data["server_info"]
-
-    if not protect_data.data:
-        return
 
     sensors = []
     for description in SENSOR_TYPES:
-        for device_id in protect_data.data:
-            if protect_data.data[device_id].get("type") in description.ufp_device_type:
-                sensors.append(
-                    UnifiProtectSensor(
-                        upv_object, protect_data, server_info, device_id, description
-                    )
+        for device in protect_data.get_by_types(description.ufp_device_types):
+            sensors.append(
+                UnifiProtectSensor(
+                    upv_object, protect_data, server_info, device.id, description
                 )
-                _LOGGER.debug(
-                    "Adding sensor entity %s for %s",
-                    description.name,
-                    protect_data.data[device_id].get("name"),
-                )
+            )
+            _LOGGER.debug(
+                "Adding sensor entity %s for %s",
+                description.name,
+                device.data.get("name"),
+            )
 
     async_add_entities(sensors)
 
@@ -151,7 +150,6 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         """Initialize an Unifi Protect sensor."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._device_type = self.entity_description.ufp_device_type
 
     @property
     def native_value(self):

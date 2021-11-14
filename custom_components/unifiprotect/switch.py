@@ -130,14 +130,12 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         self._switch_type = self.entity_description.key
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return true if device is on."""
+        ufp_value = self._device_data[self.entity_description.ufp_value]
         if self._switch_type == _KEY_HIGH_FPS:
-            return (
-                self._device_data[self.entity_description.ufp_value] == TYPE_HIGH_FPS_ON
-            )
-
-        return self._device_data[self.entity_description.ufp_value] is True
+            return ufp_value == TYPE_HIGH_FPS_ON
+        return ufp_value is True
 
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""

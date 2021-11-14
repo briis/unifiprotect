@@ -135,15 +135,10 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
     ):
         """Initialize the Number Entities."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self._name = f"{self.entity_description.name} {self._device_data['name']}"
+        self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
         self._attr_max_value = self.entity_description.ufp_max
         self._attr_min_value = self.entity_description.ufp_min
         self._attr_step = self.entity_description.ufp_step
-
-    @property
-    def name(self):
-        """Return name of the entity."""
-        return self._name
 
     @property
     def state(self):

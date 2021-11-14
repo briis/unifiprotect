@@ -1,4 +1,6 @@
 """Config Flow to configure Unifi Protect Integration."""
+from __future__ import annotations
+
 import logging
 
 from aiohttp import CookieJar

@@ -9,7 +9,7 @@ from homeassistant.components.light import (
     LightEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 
 from .const import (
@@ -75,31 +75,17 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         """Initialize an Unifi light."""
         super().__init__(upv_object, protect_data, server_info, light_id, None)
         self._name = self._device_data["name"]
+        self._attr_icon = "mdi:spotlight-beam"
+        self._attr_supported_features = SUPPORT_BRIGHTNESS
+        self._attr_is_on = self._device_data["is_on"] == ON_STATE
 
-    @property
-    def name(self):
-        """Return the name of the device if any."""
-        return self._name
-
-    @property
-    def is_on(self):
-        """If the light is currently on or off."""
-        return self._device_data["is_on"] == ON_STATE
-
-    @property
-    def icon(self):
-        """Return the Icon for this light."""
-        return "mdi:spotlight-beam"
-
-    @property
-    def brightness(self):
-        """Return the brightness of this light between 0..255."""
-        return unifi_brightness_to_hass(self._device_data["brightness"])
-
-    @property
-    def supported_features(self):
-        """Flag supported features."""
-        return SUPPORT_BRIGHTNESS
+    @callback
+    def _async_updated_event(self):
+        self._attr_is_on = self._device_data["is_on"] == ON_STATE
+        self._attr_brightness = unifi_brightness_to_hass(
+            self._device_data["brightness"]
+        )
+        super()._async_updated_event()
 
     async def async_turn_on(self, **kwargs):
         """Turn the light on."""

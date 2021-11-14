@@ -164,7 +164,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         """Initialize the Viewport Media Player."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._select_entity = self.entity_description.key
-        self._name = f"{self.entity_description.name} {self._device_data['name']}"
+        self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
         self._liveviews = liveviews
 
         self._doorbell_texts = []
@@ -188,11 +188,6 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             self._attr_options = self.doorbell_texts()
         if self._select_entity == _SELECT_ENTITY_REC_MODE:
             self._attr_options = RECORDING_MODES
-
-    @property
-    def name(self):
-        """Return name of the entity."""
-        return self._name
 
     @property
     def current_option(self) -> str:

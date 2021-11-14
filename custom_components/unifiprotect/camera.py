@@ -1,10 +1,12 @@
 """Support for Ubiquiti's Unifi Protect NVR."""
+from __future__ import annotations
+
 import logging
 from typing import Optional
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 
 from .const import (
@@ -149,17 +151,14 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         self._disable_stream = disable_stream
         self._stream_source = None if disable_stream else self._device_data["rtsp"]
         self._last_image = None
-        self._supported_features = SUPPORT_STREAM if self._stream_source else 0
+        self._attr_supported_features = SUPPORT_STREAM if self._stream_source else 0
 
-    @property
-    def name(self):
-        """Return the name of this camera."""
-        return self._name
-
-    @property
-    def supported_features(self):
-        """Return supported features for this camera."""
-        return self._supported_features
+    @callback
+    def _async_updated_event(self):
+        self._attr_available = (
+            self._device_data["online"] and self.protect_data.last_update_success
+        )
+        self.async_write_ha_state()
 
     @property
     def motion_detection_enabled(self):
@@ -183,11 +182,6 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             self._device_data["recording_mode"] != "never"
             and self._device_data["online"]
         )
-
-    @property
-    def available(self):
-        """Return if entity is available."""
-        return self._device_data["online"] and super().available
 
     @property
     def extra_state_attributes(self):

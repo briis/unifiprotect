@@ -1,5 +1,29 @@
 # // Changelog
 
+## 0.10.0 Relese Candidate 1
+
+Released: NOT RELEASED YET
+
+### Supported Versions
+
+This release requires the following minimum Software and Firmware version:
+
+* **Home Assistant**: `2021.09.0`
+* **UniFi Protect**: `1.20.0-beta.7`
+
+### Upgrade Instructions
+
+Due to the many changes and entities that have been removed and replaced, we recommend the following process to upgrade from an earlier Beta or from an earlier release:
+
+* Upgrade the Integration files, either through HACS (Recommended) or by copying the files manually to your `custom_components/unifiprotect` directory.
+* Restart Home Assistant
+* Remove the UniFi Protect Integration by going to the Integrations page, click the 3 dots in the lower right corner of the UniFi Protect Integration and select *Delete*
+* While still on this page, click the `+ ADD INTEGRATION` button in the lower right corner, search for UnFi Protect, and start the installation, supplying your credentials.
+
+### Changes in this release
+
+* `CHANGE`: @bdraco, made more clode clean-ups to support future inclusion in `core`.
+
 ## 0.10.0 Beta 5 Hotfix 1
 
 Released: November 13th, 2021

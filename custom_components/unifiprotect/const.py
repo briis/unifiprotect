@@ -108,12 +108,12 @@ TYPE_HIGH_FPS_OFF = "default"
 
 UNIFI_PROTECT_PLATFORMS = [
     "camera",
-    "binary_sensor",
-    "sensor",
-    "switch",
-    "light",
-    "select",
-    "number",
+    # "binary_sensor",
+    # "sensor",
+    # "switch",
+    # "light",
+    # "select",
+    # "number",
 ]
 VALID_INFRARED_MODES = [
     TYPE_INFRARED_AUTO,

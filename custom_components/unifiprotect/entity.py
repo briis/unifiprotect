@@ -12,7 +12,7 @@ from .const import ATTR_DEVICE_MODEL, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
 class UnifiProtectEntity(Entity):
     """Base class for unifi protect entities."""
 
-    def __init__(self, upv_object, protect_data, server_info, device_id, description):
+    def __init__(self, upv_object, protect_data, device_id, description):
         """Initialize the entity."""
         super().__init__()
         self._attr_should_poll = False
@@ -28,8 +28,8 @@ class UnifiProtectEntity(Entity):
         self._attr_name = self._device_name
         self._mac = self._device_data["mac"]
         self._firmware_version = self._device_data["firmware_version"]
-        self._server_id = server_info["server_id"]
-        self._server_ip = server_info["server_ip"]
+        self._server_id = self.protect_data.bootstrap.nvr.id
+        self._server_ip = self.protect_data.bootstrap.nvr.hosts[0]
         self._device_type = self._device_data["type"]
         self._model = self._device_data["model"]
         if description is None:

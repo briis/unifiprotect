@@ -63,7 +63,6 @@ async def async_setup_entry(
     entry_data = hass.data[DOMAIN][entry.entry_id]
     upv_object = entry_data["upv"]
     protect_data: UnifiProtectData = entry_data["protect_data"]
-    server_info = entry_data["server_info"]
     disable_stream = entry_data["disable_stream"]
 
     async_add_entities(
@@ -71,7 +70,6 @@ async def async_setup_entry(
             UnifiProtectCamera(
                 upv_object,
                 protect_data,
-                server_info,
                 device.id,
                 disable_stream,
             )
@@ -141,12 +139,11 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         self,
         upv_object,
         protect_data,
-        server_info,
         camera_id,
         disable_stream,
     ):
         """Initialize an Unifi camera."""
-        super().__init__(upv_object, protect_data, server_info, camera_id, None)
+        super().__init__(upv_object, protect_data, camera_id, None)
         self._name = self._device_data["name"]
         self._disable_stream = disable_stream
         self._stream_source = None if disable_stream else self._device_data["rtsp"]

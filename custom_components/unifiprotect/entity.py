@@ -29,7 +29,7 @@ class UnifiProtectEntity(Entity):
         self._mac = self._device_data["mac"]
         self._firmware_version = self._device_data["firmware_version"]
         self._server_id = self.protect_data.bootstrap.nvr.id
-        self._server_ip = self.protect_data.bootstrap.nvr.hosts[0]
+        self._server_ip = self.protect_data.bootstrap.nvr.host
         self._device_type = self._device_data["type"]
         self._model = self._device_data["model"]
         if description is None:

@@ -132,7 +132,7 @@ async def _async_get_or_create_nvr_device_in_registry(
         identifiers={(DOMAIN, protect.bootstrap.nvr.id)},
         manufacturer=DEFAULT_BRAND,
         name=entry.data[CONF_ID],
-        model=protect.bootstrap.nvr.hardware_platform,
+        model=protect.bootstrap.nvr.type,
         sw_version=protect.bootstrap.nvr.version,
     )
 

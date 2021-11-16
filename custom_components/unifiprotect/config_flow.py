@@ -14,8 +14,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
-from pyunifiprotect.const import SERVER_ID, SERVER_NAME
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 import voluptuous as vol
 
 from .const import (
@@ -51,17 +50,18 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.hass, cookie_jar=CookieJar(unsafe=True)
         )
 
-        unifiprotect = UpvServer(
-            session,
+        unifiprotect = ProtectApiClient(
             user_input[CONF_HOST],
             user_input[CONF_PORT],
             user_input[CONF_USERNAME],
             user_input[CONF_PASSWORD],
+            session=session,
+            verify_ssl=True,
         )
 
         try:
-            server_info = await unifiprotect.server_information()
-            if server_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+            await unifiprotect.update()
+            if unifiprotect.bootstrap.nvr.version < MIN_REQUIRED_PROTECT_V:
                 _LOGGER.debug("UniFi Protect Version not supported")
                 errors["base"] = "protect_version"
                 return await self._show_setup_form(errors)
@@ -75,16 +75,13 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = "nvr_error"
             return await self._show_setup_form(errors)
 
-        unique_id = server_info[SERVER_ID]
-        server_name = server_info[SERVER_NAME]
-
-        await self.async_set_unique_id(unique_id)
+        await self.async_set_unique_id(unifiprotect.bootstrap.nvr.id)
         self._abort_if_unique_id_configured()
 
         return self.async_create_entry(
-            title=server_name,
+            title=unifiprotect.bootstrap.nvr.name,
             data={
-                CONF_ID: server_name,
+                CONF_ID: unifiprotect.bootstrap.nvr.name,
                 CONF_HOST: user_input[CONF_HOST],
                 CONF_PORT: user_input[CONF_PORT],
                 CONF_USERNAME: user_input.get(CONF_USERNAME),

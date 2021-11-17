@@ -50,8 +50,8 @@ from .const import (
     TYPE_RECORD_MOTION,
     TYPE_RECORD_NEVER,
 )
-from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
+from .models import UnifiProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,11 +60,11 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Discover cameras on a Unifi Protect NVR."""
-    entry_data = hass.data[DOMAIN][entry.entry_id]
-    upv_object = entry_data["upv"]
-    protect_data: UnifiProtectData = entry_data["protect_data"]
-    server_info = entry_data["server_info"]
-    disable_stream = entry_data["disable_stream"]
+    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    upv_object = entry_data.upv
+    protect_data = entry_data.protect_data
+    server_info = entry_data.server_info
+    disable_stream = entry_data.disable_stream
 
     async_add_entities(
         [

@@ -31,15 +31,13 @@ from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
-ATTR_VIEWS = "views"
-
 _LOGGER = logging.getLogger(__name__)
 
-_SELECT_ENTITY_IR = "infrared"
-_SELECT_ENTITY_REC_MODE = "recording_mode"
-_SELECT_ENTITY_VIEWER = "viewer"
-_SELECT_ENTITY_LIGHT_MOTION = "light_motion"
-_SELECT_ENTITY_DOORBELL_TEXT = "doorbell_text"
+_KEY_IR = "infrared"
+_KEY_REC_MODE = "recording_mode"
+_KEY_VIEWER = "viewer"
+_KEY_LIGHT_MOTION = "light_motion"
+_KEY_DOORBELL_TEXT = "doorbell_text"
 
 
 DOORBELL_BASE_TEXT = [
@@ -99,7 +97,7 @@ class UnifiProtectSelectEntityDescription(
 
 SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_REC_MODE,
+        key=_KEY_REC_MODE,
         name="Recording Mode",
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_CONFIG,
@@ -109,7 +107,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_set_function="set_camera_recording",
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_VIEWER,
+        key=_KEY_VIEWER,
         name="Viewer",
         icon="mdi:view-dashboard",
         ufp_device_types={DEVICE_TYPE_VIEWPORT},
@@ -118,7 +116,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_set_function="set_viewport_view",
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_LIGHT_MOTION,
+        key=_KEY_LIGHT_MOTION,
         name="Lightning",
         icon="mdi:spotlight",
         entity_category=ENTITY_CATEGORY_CONFIG,
@@ -128,7 +126,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_set_function=None,
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_IR,
+        key=_KEY_IR,
         name="Infrared",
         icon="mdi:circle-opacity",
         entity_category=ENTITY_CATEGORY_CONFIG,
@@ -138,7 +136,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_set_function="set_camera_ir",
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_DOORBELL_TEXT,
+        key=_KEY_DOORBELL_TEXT,
         name="Doorbell Text",
         icon="mdi:card-text",
         entity_category=ENTITY_CATEGORY_CONFIG,
@@ -182,9 +180,9 @@ async def async_setup_entry(
     for description in SELECT_TYPES:
         for device in protect_data.get_by_types(description.ufp_device_types):
             options = description.ufp_options
-            if description.key == _SELECT_ENTITY_DOORBELL_TEXT:
+            if description.key == _KEY_DOORBELL_TEXT:
                 options = doorbell_options
-            if description.key == _SELECT_ENTITY_VIEWER:
+            if description.key == _KEY_VIEWER:
                 options = liveview_options
             entities.append(
                 UnifiProtectSelects(
@@ -226,7 +224,6 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
     ):
         """Initialize the Viewport Media Player."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self._select_entity = self.entity_description.key
         self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
         self._attr_options = list(options.values())
         self._data_key = data_key
@@ -247,7 +244,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                 f"Cannot set the value to {option}. Allowed values are: {self.options}"
             )
 
-        if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
+        if self.entity_description.key == _KEY_LIGHT_MOTION:
             lightmode, timing = LIGHT_MODE_TO_SETTINGS[option]
             _LOGGER.debug("Changing Light Mode to %s", option)
             await self.upv_object.light_settings(
@@ -256,13 +253,13 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             return
 
         unifi_value = self._hass_to_unifi_options[option]
-        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
+        if self.entity_description.key == _KEY_DOORBELL_TEXT:
             await self.upv_object.set_doorbell_lcd_text(
                 self._device_id, unifi_value, option
             )
             _LOGGER.debug("Changed Doorbell LCD Text to: %s", option)
             return
 
-        _LOGGER.debug("%s set to: %s", self._select_entity, option)
+        _LOGGER.debug("%s set to: %s", self.entity_description.key, option)
         coro = getattr(self.upv_object, self._set_function)
         await coro(self._device_id, unifi_value)

@@ -241,7 +241,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         """Change the Select Entity Option."""
         if option not in self.options:
             raise HomeAssistantError(
-                f"Cannot set the value to {option}. Allowed values are: {self.options}"
+                f"Cannot set the value to {option}; Allowed values are: {self.options}"
             )
 
         if self.entity_description.key == _KEY_LIGHT_MOTION:

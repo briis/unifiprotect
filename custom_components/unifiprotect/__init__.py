@@ -31,7 +31,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
-    UNIFI_PROTECT_PLATFORMS,
+    PLATFORMS,
 )
 from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
@@ -107,7 +107,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
-    hass.config_entries.async_setup_platforms(entry, UNIFI_PROTECT_PLATFORMS)
+    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(
@@ -140,13 +140,8 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Unifi Protect config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(
-        entry, UNIFI_PROTECT_PLATFORMS
-    )
-
-    if unload_ok:
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
         await data.protect_data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
-
     return unload_ok

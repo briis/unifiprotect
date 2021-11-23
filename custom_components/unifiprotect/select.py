@@ -24,8 +24,8 @@ from .const import (
     TYPE_RECORD_ALWAYS,
     TYPE_RECORD_OFF,
 )
-from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
+from .models import UnifiProtectEntryData
 
 ATTR_VIEWS = "views"
 
@@ -113,11 +113,11 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Set up Select entities for UniFi Protect integration."""
-    entry_data = hass.data[DOMAIN][entry.entry_id]
-    upv_object = entry_data["upv"]
-    protect_data: UnifiProtectData = entry_data["protect_data"]
-    server_info = entry_data["server_info"]
-    doorbell_text = entry_data["doorbell_text"]
+    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    upv_object = entry_data.upv
+    protect_data = entry_data.protect_data
+    server_info = entry_data.server_info
+    doorbell_text = entry_data.doorbell_text
 
     # Get Current Views
     liveviews = await upv_object.get_live_views()

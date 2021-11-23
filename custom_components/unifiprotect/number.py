@@ -9,8 +9,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
-from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
+from .models import UnifiProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,10 +86,10 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Set up Select entities for UniFi Protect integration."""
-    entry_data = hass.data[DOMAIN][entry.entry_id]
-    upv_object = entry_data["upv"]
-    protect_data: UnifiProtectData = entry_data["protect_data"]
-    server_info = entry_data["server_info"]
+    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    upv_object = entry_data.upv
+    protect_data = entry_data.protect_data
+    server_info = entry_data.server_info
 
     entities = []
 

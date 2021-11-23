@@ -21,7 +21,6 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.const import SERVER_ID
 
 from .const import (
     CONF_DISABLE_RTSP,
@@ -34,6 +33,7 @@ from .const import (
     UNIFI_PROTECT_PLATFORMS,
 )
 from .data import UnifiProtectData
+from .models import UnifiProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -103,12 +103,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not protect_data.last_update_success:
         raise ConfigEntryNotReady
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
-        "protect_data": protect_data,
-        "upv": protect,
-        "disable_stream": entry.options.get(CONF_DISABLE_RTSP, False),
-        "doorbell_text": entry.options.get(CONF_DOORBELL_TEXT, None),
-    }
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = UnifiProtectEntryData(
+        protect_data=protect_data,
+        upv=protect,
+        disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
+        doorbell_text=entry.options.get(CONF_DOORBELL_TEXT, None),
+    )
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, protect)
 
@@ -149,8 +149,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     if unload_ok:
-        data = hass.data[DOMAIN][entry.entry_id]
-        await data["protect_data"].async_stop()
+        data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+        await data.protect_data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok

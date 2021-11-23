@@ -24,8 +24,8 @@ from .const import (
     DOMAIN,
     ENTITY_CATEGORY_DIAGNOSTIC,
 )
-from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
+from .models import UnifiProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -114,10 +114,10 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
     """Set up sensors for UniFi Protect integration."""
-    entry_data = hass.data[DOMAIN][entry.entry_id]
-    upv_object = entry_data["upv"]
-    protect_data: UnifiProtectData = entry_data["protect_data"]
-    server_info = entry_data["server_info"]
+    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    upv_object = entry_data.upv
+    protect_data = entry_data.protect_data
+    server_info = entry_data.server_info
 
     sensors = []
     for description in SENSOR_TYPES:

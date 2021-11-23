@@ -42,7 +42,7 @@ async def async_setup_entry(
             upv_object,
             protect_data,
             server_info,
-            device.id,
+            device.device_id,
         )
         for device in protect_data.get_by_types({DEVICE_TYPE_LIGHT})
     ]

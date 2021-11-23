@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class UnifiProtectDevice:
-    id: str
+    device_id: str
     type: str
     data: dict
 

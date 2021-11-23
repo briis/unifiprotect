@@ -3,6 +3,12 @@ default_config:
 stream:
   ll_hls: True
 
+debugpy:
+  start: false
+
+http:
+  server_port: 9123
+
 logger:
   default: error
   logs:

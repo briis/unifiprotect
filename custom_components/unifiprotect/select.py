@@ -223,7 +223,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self._attr_options = options.values()
         self._data_key = data_key
         self._hass_to_unifi_options = options
-        self._unifi_to_hass_options = {v: k for k, v in options}
+        self._unifi_to_hass_options = {v: k for k, v in options.items()}
 
     @property
     def current_option(self) -> str:

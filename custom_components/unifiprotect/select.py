@@ -41,8 +41,8 @@ _KEY_DOORBELL_TEXT = "doorbell_text"
 
 
 DOORBELL_BASE_TEXT = [
-    {"id": "LEAVE_PACKAGE_AT_DOOR", "value": "LEAVE PACKAGE AT DOOR"},
-    {"id": "DO_NOT_DISTURB", "value": "DO NOT DISTURB"},
+    {"id": "LEAVE_PACKAGE_AT_DOOR", "name": "LEAVE PACKAGE AT DOOR"},
+    {"id": "DO_NOT_DISTURB", "name": "DO NOT DISTURB"},
 ]
 
 INFRARED_MODES = [
@@ -51,9 +51,6 @@ INFRARED_MODES = [
     {"id": TYPE_INFRARED_AUTOFILTER, "name": "Auto (Filter Only, no LED's)"},
     {"id": TYPE_INFRARED_OFF, "name": "Always Disable"},
 ]
-
-INFRARED_MODES_NAME_TO_ID = {row["name"]: row["id"] for row in INFRARED_MODES}
-INFRARED_MODES_ID_TO_NAME = {row["id"]: row["name"] for row in INFRARED_MODES}
 
 
 LIGHT_MODE_MOTION = "On Motion"
@@ -75,7 +72,9 @@ MOTION_MODE_TO_LIGHT_MODE = {
 
 RECORDING_MODES = ["Always", "Never", "Detections"]
 
-DEVICE_RECORDING_MODES = {mode.lower(): mode for mode in RECORDING_MODES}
+DEVICE_RECORDING_MODES = [
+    {"id": mode.lower(), "name": mode} for mode in RECORDING_MODES
+]
 
 
 @dataclass
@@ -83,7 +82,7 @@ class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_device_types: set[str]
-    ufp_options: dict[Any, Any]
+    ufp_options: list[dict[str, Any]]
     ufp_device_data_key: str
     ufp_set_function: str
 
@@ -131,7 +130,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         icon="mdi:circle-opacity",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_options=INFRARED_MODES_ID_TO_NAME,
+        ufp_options=INFRARED_MODES,
         ufp_device_data_key="ir_mode",
         ufp_set_function="set_camera_ir",
     ),
@@ -150,13 +149,13 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
 
 def _build_doorbell_texts(doorbell_text):
     """Create a list of available doorbell texts from the defaults and configured."""
-    texts = [{"id": item["id"], "value": item["value"]} for item in DOORBELL_BASE_TEXT]
+    texts = [{"id": item["id"], "name": item["name"]} for item in DOORBELL_BASE_TEXT]
     if doorbell_text is not None:
         _local_text = doorbell_text.split(",")
         for item in _local_text:
             if len(item.strip()) == 0:
                 continue
-            texts.append({"id": CUSTOM_MESSAGE, "value": item.strip()})
+            texts.append({"id": CUSTOM_MESSAGE, "name": item.strip()})
     return texts
 
 
@@ -170,20 +169,17 @@ async def async_setup_entry(
     server_info = entry_data.server_info
     doorbell_text = entry_data.doorbell_text
     doorbell_texts = _build_doorbell_texts(doorbell_text)
-    doorbell_options = {item["id"]: item["value"] for item in doorbell_texts}
-
     # Get Current Views
     liveviews = await upv_object.get_live_views()
-    liveview_options = {item["id"]: item["name"] for item in liveviews}
 
     entities = []
     for description in SELECT_TYPES:
         for device in protect_data.get_by_types(description.ufp_device_types):
             options = description.ufp_options
             if description.key == _KEY_DOORBELL_TEXT:
-                options = doorbell_options
+                options = doorbell_texts
             if description.key == _KEY_VIEWER:
-                options = liveview_options
+                options = liveviews
             entities.append(
                 UnifiProtectSelects(
                     upv_object,
@@ -218,17 +214,17 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         server_info: dict[str, Any],
         device_id: int,
         description: UnifiProtectSelectEntityDescription,
-        options: dict[Any, Any],
+        options: list[dict[str, Any]],
         data_key: str,
         set_function: str,
     ):
         """Initialize the Viewport Media Player."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._attr_options = list(options.values())
+        self._attr_options = [item["name"] for item in options]
         self._data_key = data_key
-        self._hass_to_unifi_options = {v: k for k, v in options.items()}
-        self._unifi_to_hass_options = options
+        self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
+        self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
         self._set_function = set_function
 
     @property

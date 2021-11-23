@@ -220,15 +220,16 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._select_entity = self.entity_description.key
         self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._attr_options = options.values()
+        self._attr_options = list(options.values())
         self._data_key = data_key
-        self._hass_to_unifi_options = options
-        self._unifi_to_hass_options = {v: k for k, v in options.items()}
+        self._hass_to_unifi_options = {v: k for k, v in options.items()}
+        self._unifi_to_hass_options = options
 
     @property
     def current_option(self) -> str:
         """Return the current selected option."""
-        return self._unifi_to_hass_options[self._device_data[self._data_key]]
+        unifi_value = self._device_data[self._data_key]
+        return self._unifi_to_hass_options[unifi_value]
 
     async def async_select_option(self, option: str) -> None:
         """Change the Select Entity Option."""

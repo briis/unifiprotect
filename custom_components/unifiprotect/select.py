@@ -87,6 +87,7 @@ class UnifiprotectRequiredKeysMixin:
     ufp_device_types: set[str]
     ufp_options: dict[Any, Any]
     ufp_device_data_key: str
+    ufp_set_function: str
 
 
 @dataclass
@@ -105,6 +106,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_options=DEVICE_RECORDING_MODES,
         ufp_device_data_key="recording_mode",
+        ufp_set_function="set_camera_recording",
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_VIEWER,
@@ -113,6 +115,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_device_types={DEVICE_TYPE_VIEWPORT},
         ufp_options=None,
         ufp_device_data_key="liveview",
+        ufp_set_function="set_viewport_view",
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_LIGHT_MOTION,
@@ -122,6 +125,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_device_types={DEVICE_TYPE_LIGHT},
         ufp_options=MOTION_MODE_TO_LIGHT_MODE,
         ufp_device_data_key="motion_mode",
+        ufp_set_function=None,
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_IR,
@@ -131,6 +135,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_options=INFRARED_MODES_ID_TO_NAME,
         ufp_device_data_key="ir_mode",
+        ufp_set_function="set_camera_ir",
     ),
     UnifiProtectSelectEntityDescription(
         key=_SELECT_ENTITY_DOORBELL_TEXT,
@@ -140,6 +145,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_device_types={DEVICE_TYPE_DOORBELL},
         ufp_options=None,
         ufp_device_data_key="doorbell_text",
+        ufp_set_function=None,
     ),
 )
 
@@ -189,6 +195,7 @@ async def async_setup_entry(
                     description,
                     options,
                     description.ufp_device_data_key,
+                    description.ufp_set_function,
                 )
             )
             _LOGGER.debug(
@@ -215,6 +222,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         description: UnifiProtectSelectEntityDescription,
         options: dict[Any, Any],
         data_key: str,
+        set_function: str,
     ):
         """Initialize the Viewport Media Player."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
@@ -224,6 +232,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self._data_key = data_key
         self._hass_to_unifi_options = {v: k for k, v in options.items()}
         self._unifi_to_hass_options = options
+        self._set_function = set_function
 
     @property
     def current_option(self) -> str:
@@ -247,16 +256,13 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             return
 
         unifi_value = self._hass_to_unifi_options[option]
-        if self._select_entity == _SELECT_ENTITY_VIEWER:
-            _LOGGER.debug("Viewport View set to: %s", option)
-            await self.upv_object.set_viewport_view(self._device_id, unifi_value)
-        elif self._select_entity == _SELECT_ENTITY_IR:
-            await self.upv_object.set_camera_ir(self._device_id, unifi_value)
-        elif self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
+        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
             await self.upv_object.set_doorbell_lcd_text(
                 self._device_id, unifi_value, option
             )
             _LOGGER.debug("Changed Doorbell LCD Text to: %s", option)
-        elif self._select_entity == _SELECT_ENTITY_REC_MODE:
-            _LOGGER.debug("Changing Recording Mode to %s", option)
-            await self.upv_object.set_camera_recording(self._device_id, unifi_value)
+            return
+
+        _LOGGER.debug("%s set to: %s", self._select_entity, option)
+        coro = getattr(self.upv_object, self._set_function)
+        await coro(self._device_id, unifi_value)

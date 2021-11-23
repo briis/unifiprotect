@@ -147,16 +147,16 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
 )
 
 
-def _build_doorbell_texts(doorbell_text):
+def _build_doorbell_texts(doorbell_text) -> list[dict[str, str]]:
     """Create a list of available doorbell texts from the defaults and configured."""
-    texts = [{"id": item["id"], "name": item["name"]} for item in DOORBELL_BASE_TEXT]
-    if doorbell_text is not None:
-        _local_text = doorbell_text.split(",")
-        for item in _local_text:
-            if len(item.strip()) == 0:
-                continue
-            texts.append({"id": CUSTOM_MESSAGE, "name": item.strip()})
-    return texts
+    return [
+        *DOORBELL_BASE_TEXT,
+        *(
+            {"id": CUSTOM_MESSAGE, "name": item.strip()}
+            for item in (doorbell_text or "").split(",")
+            if len(item.strip()) != 0
+        ),
+    ]
 
 
 async def async_setup_entry(
@@ -167,10 +167,8 @@ async def async_setup_entry(
     upv_object = entry_data.upv
     protect_data = entry_data.protect_data
     server_info = entry_data.server_info
-    doorbell_text = entry_data.doorbell_text
-    doorbell_texts = _build_doorbell_texts(doorbell_text)
-    # Get Current Views
-    liveviews = await upv_object.get_live_views()
+    doorbell_texts = _build_doorbell_texts(entry_data.doorbell_text)
+    liveviews: list[dict[str, Any]] = await upv_object.get_live_views()
 
     entities = []
     for description in SELECT_TYPES:
@@ -188,8 +186,6 @@ async def async_setup_entry(
                     device.device_id,
                     description,
                     options,
-                    description.ufp_device_data_key,
-                    description.ufp_set_function,
                 )
             )
             _LOGGER.debug(
@@ -215,17 +211,14 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         device_id: int,
         description: UnifiProtectSelectEntityDescription,
         options: list[dict[str, Any]],
-        data_key: str,
-        set_function: str,
     ):
         """Initialize the Viewport Media Player."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
         self._attr_options = [item["name"] for item in options]
-        self._data_key = data_key
+        self._data_key = description.ufp_device_data_key
         self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
         self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
-        self._set_function = set_function
 
     @property
     def current_option(self) -> str:
@@ -259,5 +252,5 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             return
 
         _LOGGER.debug("%s set to: %s", self.entity_description.key, option)
-        coro = getattr(self.upv_object, self._set_function)
+        coro = getattr(self.upv_object, self.entity_description.ufp_set_function)
         await coro(self._device_id, unifi_value)

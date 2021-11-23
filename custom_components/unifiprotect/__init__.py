@@ -134,6 +134,7 @@ async def _async_get_or_create_nvr_device_in_registry(
         name=entry.data[CONF_ID],
         model=nvr["server_model"],
         sw_version=nvr["server_version"],
+        configuration_url=f"https://{entry.data[CONF_HOST]}",
     )
 
 

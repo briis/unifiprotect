@@ -170,7 +170,7 @@ async def async_setup_entry(
 
     # Get Current Views
     liveviews = await upv_object.get_live_views()
-    liveview_options = {item["id"]: item["value"] for item in liveviews}
+    liveview_options = {item["id"]: item["name"] for item in liveviews}
 
     entities = []
     for description in SELECT_TYPES:

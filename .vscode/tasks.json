@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Home Assistant",
+			"type": "shell",
+			"command": "container start",
+			"problemMatcher": []
+		}
+		{
+			"label": "Set Home Assistant Version",
+			"type": "shell",
+			"command": "container set-version",
+			"problemMatcher": []
+		}
+	]
+}

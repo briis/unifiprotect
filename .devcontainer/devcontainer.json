@@ -17,7 +17,7 @@
 		"ms-python.vscode-pylance"
 	],
 	"mounts": [
-		"type=volume,target=/config"
+		"type=volume,target=/config,src=vsc-dev-unifiprotect-ha-config,volume-driver=local"
 	],
 	"settings": {
 		"files.eol": "\n",

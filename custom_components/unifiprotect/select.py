@@ -235,6 +235,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
     def current_option(self) -> str:
         """Return the current selected option."""
         unifi_value = self._device_data[self._data_key]
+        if self.entity_description.key == _KEY_DOORBELL_TEXT:
+            return unifi_value
         return self._unifi_to_hass_options[unifi_value]
 
     async def async_select_option(self, option: str) -> None:

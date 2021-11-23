@@ -178,6 +178,7 @@ async def async_setup_entry(
                 options = doorbell_texts
             if description.key == _KEY_VIEWER:
                 options = liveviews
+
             entities.append(
                 UnifiProtectSelects(
                     upv_object,
@@ -189,9 +190,10 @@ async def async_setup_entry(
                 )
             )
             _LOGGER.debug(
-                "Adding select entity %s for %s",
+                "Adding select entity %s for %s with options %s",
                 description.name,
                 device.data.get("name"),
+                options,
             )
 
     if not entities:
@@ -212,7 +214,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         description: UnifiProtectSelectEntityDescription,
         options: list[dict[str, Any]],
     ):
-        """Initialize the Viewport Media Player."""
+        """Initialize the unifi protect select entity."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
         self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
         self._attr_options = [item["name"] for item in options]

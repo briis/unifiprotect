@@ -70,23 +70,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     _LOGGER.debug("Connect to Unfi Protect")
-
-    events_update_interval = DEFAULT_SCAN_INTERVAL
-
-    protect_data = UnifiProtectData(
-        hass, protectserver, timedelta(seconds=events_update_interval)
-    )
+    protect_data = UnifiProtectData(hass, protectserver, SCAN_INTERVAL)
 
     try:
         nvr_info = await protectserver.server_information()
-        if nvr_info["server_version"] < MIN_REQUIRED_PROTECT_V:
-            _LOGGER.error(
-                "You are running V%s of UniFi Protect. Minimum required version is V%s. Please upgrade UniFi Protect and then retry",
-                nvr_info["server_version"],
-                MIN_REQUIRED_PROTECT_V,
-            )
-            return False
-
     except NotAuthorized:
         _LOGGER.error(
             "Could not Authorize against Unifi Protect. Please reinstall the Integration"
@@ -94,6 +81,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
     except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
+
+    if nvr_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+        _LOGGER.error(
+            "You are running V%s of UniFi Protect. Minimum required version is V%s. Please upgrade UniFi Protect and then retry",
+            nvr_info["server_version"],
+            MIN_REQUIRED_PROTECT_V,
+        )
+        return False
 
     if entry.unique_id is None:
         hass.config_entries.async_update_entry(entry, unique_id=nvr_info[SERVER_ID])

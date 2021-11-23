@@ -72,7 +72,7 @@ async def async_setup_entry(
                 upv_object,
                 protect_data,
                 server_info,
-                device.id,
+                device.device_id,
                 disable_stream,
             )
             for device in protect_data.get_by_types(DEVICES_WITH_CAMERA)

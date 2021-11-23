@@ -31,7 +31,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
-    UNIFI_PROTECT_PLATFORMS,
+    PLATFORMS,
 )
 from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
@@ -70,23 +70,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     _LOGGER.debug("Connect to Unfi Protect")
-
-    events_update_interval = DEFAULT_SCAN_INTERVAL
-
-    protect_data = UnifiProtectData(
-        hass, protectserver, timedelta(seconds=events_update_interval)
-    )
+    protect_data = UnifiProtectData(hass, protectserver, SCAN_INTERVAL)
 
     try:
         nvr_info = await protectserver.server_information()
-        if nvr_info["server_version"] < MIN_REQUIRED_PROTECT_V:
-            _LOGGER.error(
-                "You are running V%s of UniFi Protect. Minimum required version is V%s. Please upgrade UniFi Protect and then retry",
-                nvr_info["server_version"],
-                MIN_REQUIRED_PROTECT_V,
-            )
-            return False
-
     except NotAuthorized:
         _LOGGER.error(
             "Could not Authorize against Unifi Protect. Please reinstall the Integration"
@@ -94,6 +81,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
     except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
+
+    if nvr_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+        _LOGGER.error(
+            "You are running V%s of UniFi Protect. Minimum required version is V%s. Please upgrade UniFi Protect and then retry",
+            nvr_info["server_version"],
+            MIN_REQUIRED_PROTECT_V,
+        )
+        return False
 
     if entry.unique_id is None:
         hass.config_entries.async_update_entry(entry, unique_id=nvr_info[SERVER_ID])
@@ -112,7 +107,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
-    hass.config_entries.async_setup_platforms(entry, UNIFI_PROTECT_PLATFORMS)
+    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(
@@ -134,6 +129,7 @@ async def _async_get_or_create_nvr_device_in_registry(
         name=entry.data[CONF_ID],
         model=nvr["server_model"],
         sw_version=nvr["server_version"],
+        configuration_url=f"https://{entry.data[CONF_HOST]}",
     )
 
 
@@ -144,13 +140,8 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Unifi Protect config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(
-        entry, UNIFI_PROTECT_PLATFORMS
-    )
-
-    if unload_ok:
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
         await data.protect_data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
-
     return unload_ok

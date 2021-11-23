@@ -106,7 +106,7 @@ TYPE_INFRARED_ON = "on"
 TYPE_HIGH_FPS_ON = "highFps"
 TYPE_HIGH_FPS_OFF = "default"
 
-UNIFI_PROTECT_PLATFORMS = [
+PLATFORMS = [
     "camera",
     "binary_sensor",
     "sensor",

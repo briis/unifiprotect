@@ -3,11 +3,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+from typing import Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from pyunifiprotect import UpvServer
 
 from .const import (
     CUSTOM_MESSAGE,
@@ -25,23 +27,22 @@ from .const import (
     TYPE_RECORD_ALWAYS,
     TYPE_RECORD_OFF,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
-ATTR_VIEWS = "views"
-
 _LOGGER = logging.getLogger(__name__)
 
-_SELECT_ENTITY_IR = "infrared"
-_SELECT_ENTITY_REC_MODE = "recording_mode"
-_SELECT_ENTITY_VIEWER = "viewer"
-_SELECT_ENTITY_LIGHT_MOTION = "light_motion"
-_SELECT_ENTITY_DOORBELL_TEXT = "doorbell_text"
+_KEY_IR = "infrared"
+_KEY_REC_MODE = "recording_mode"
+_KEY_VIEWER = "viewer"
+_KEY_LIGHT_MOTION = "light_motion"
+_KEY_DOORBELL_TEXT = "doorbell_text"
 
 
 DOORBELL_BASE_TEXT = [
-    {"id": "LEAVE_PACKAGE_AT_DOOR", "value": "LEAVE PACKAGE AT DOOR"},
-    {"id": "DO_NOT_DISTURB", "value": "DO NOT DISTURB"},
+    {"id": "LEAVE_PACKAGE_AT_DOOR", "name": "LEAVE PACKAGE AT DOOR"},
+    {"id": "DO_NOT_DISTURB", "name": "DO NOT DISTURB"},
 ]
 
 INFRARED_MODES = [
@@ -63,13 +64,17 @@ LIGHT_MODE_TO_SETTINGS = {
     LIGHT_MODE_OFF: (TYPE_RECORD_OFF, None),
 }
 
-MOTION_MODE_TO_LIGHT_MODE = {
-    TYPE_LIGHT_RECORD_MOTION: LIGHT_MODE_MOTION,
-    TYPE_RECORD_ALWAYS: LIGHT_MODE_DARK,
-    TYPE_RECORD_OFF: LIGHT_MODE_OFF,
-}
+MOTION_MODE_TO_LIGHT_MODE = [
+    {"id": TYPE_LIGHT_RECORD_MOTION, "name": LIGHT_MODE_MOTION},
+    {"id": TYPE_RECORD_ALWAYS, "name": LIGHT_MODE_DARK},
+    {"id": TYPE_RECORD_OFF, "name": LIGHT_MODE_OFF},
+]
 
 RECORDING_MODES = ["Always", "Never", "Detections"]
+
+DEVICE_RECORDING_MODES = [
+    {"id": mode.lower(), "name": mode} for mode in RECORDING_MODES
+]
 
 
 @dataclass
@@ -77,6 +82,9 @@ class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_device_types: set[str]
+    ufp_options: list[dict[str, Any]]
+    ufp_device_data_key: str
+    ufp_set_function: str
 
 
 @dataclass
@@ -88,52 +96,67 @@ class UnifiProtectSelectEntityDescription(
 
 SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_REC_MODE,
+        key=_KEY_REC_MODE,
         name="Recording Mode",
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_device_types=DEVICES_WITH_CAMERA,
+        ufp_options=DEVICE_RECORDING_MODES,
+        ufp_device_data_key="recording_mode",
+        ufp_set_function="set_camera_recording",
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_VIEWER,
+        key=_KEY_VIEWER,
         name="Viewer",
         icon="mdi:view-dashboard",
         ufp_device_types={DEVICE_TYPE_VIEWPORT},
+        ufp_options=None,
+        ufp_device_data_key="liveview",
+        ufp_set_function="set_viewport_view",
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_LIGHT_MOTION,
+        key=_KEY_LIGHT_MOTION,
         name="Lightning",
         icon="mdi:spotlight",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_device_types={DEVICE_TYPE_LIGHT},
+        ufp_options=MOTION_MODE_TO_LIGHT_MODE,
+        ufp_device_data_key="motion_mode",
+        ufp_set_function=None,
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_IR,
+        key=_KEY_IR,
         name="Infrared",
         icon="mdi:circle-opacity",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_device_types=DEVICES_WITH_CAMERA,
+        ufp_options=INFRARED_MODES,
+        ufp_device_data_key="ir_mode",
+        ufp_set_function="set_camera_ir",
     ),
     UnifiProtectSelectEntityDescription(
-        key=_SELECT_ENTITY_DOORBELL_TEXT,
+        key=_KEY_DOORBELL_TEXT,
         name="Doorbell Text",
         icon="mdi:card-text",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_device_types={DEVICE_TYPE_DOORBELL},
+        ufp_options=None,
+        ufp_device_data_key="doorbell_text",
+        ufp_set_function=None,
     ),
 )
 
 
-def _build_doorbell_texts(doorbell_text):
+def _build_doorbell_texts(doorbell_text) -> list[dict[str, str]]:
     """Create a list of available doorbell texts from the defaults and configured."""
-    texts = [{"id": item["id"], "value": item["value"]} for item in DOORBELL_BASE_TEXT]
-    if doorbell_text is not None:
-        _local_text = doorbell_text.split(",")
-        for item in _local_text:
-            if len(item.strip()) == 0:
-                continue
-            texts.append({"id": CUSTOM_MESSAGE, "value": item.strip()})
-    return texts
+    return [
+        *DOORBELL_BASE_TEXT,
+        *(
+            {"id": CUSTOM_MESSAGE, "name": item.strip()}
+            for item in (doorbell_text or "").split(",")
+            if len(item.strip()) != 0
+        ),
+    ]
 
 
 async def async_setup_entry(
@@ -144,30 +167,33 @@ async def async_setup_entry(
     upv_object = entry_data.upv
     protect_data = entry_data.protect_data
     server_info = entry_data.server_info
-    doorbell_text = entry_data.doorbell_text
-    doorbell_texts = _build_doorbell_texts(doorbell_text)
-
-    # Get Current Views
-    liveviews = await upv_object.get_live_views()
+    doorbell_texts = _build_doorbell_texts(entry_data.doorbell_text)
+    liveviews: list[dict[str, Any]] = await upv_object.get_live_views()
 
     entities = []
     for description in SELECT_TYPES:
         for device in protect_data.get_by_types(description.ufp_device_types):
+            options = description.ufp_options
+            if description.key == _KEY_DOORBELL_TEXT:
+                options = doorbell_texts
+            if description.key == _KEY_VIEWER:
+                options = liveviews
+
             entities.append(
                 UnifiProtectSelects(
                     upv_object,
                     protect_data,
                     server_info,
-                    device.id,
+                    device.device_id,
                     description,
-                    liveviews,
-                    doorbell_texts,
+                    options,
                 )
             )
             _LOGGER.debug(
-                "Adding select entity %s for %s",
+                "Adding select entity %s for %s with options %s",
                 description.name,
                 device.data.get("name"),
+                options,
             )
 
     if not entities:
@@ -181,125 +207,52 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
     def __init__(
         self,
-        upv_object,
-        protect_data,
-        server_info,
-        device_id,
+        upv_object: UpvServer,
+        protect_data: UnifiProtectData,
+        server_info: dict[str, Any],
+        device_id: int,
         description: UnifiProtectSelectEntityDescription,
-        liveviews,
-        doorbell_texts,
+        options: list[dict[str, Any]],
     ):
-        """Initialize the Viewport Media Player."""
+        """Initialize the unifi protect select entity."""
         super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self._select_entity = self.entity_description.key
         self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
-        self._liveviews = liveviews
-        self._doorbell_texts = doorbell_texts
-
-        if self._select_entity == _SELECT_ENTITY_VIEWER:
-            self._attr_options = [item["name"] for item in self._liveviews]
-        if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
-            self._attr_options = LIGHT_MODES
-        if self._select_entity == _SELECT_ENTITY_IR:
-            self._attr_options = [item["name"] for item in INFRARED_MODES]
-        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
-            self._attr_options = [item["value"] for item in self._doorbell_texts]
-        if self._select_entity == _SELECT_ENTITY_REC_MODE:
-            self._attr_options = RECORDING_MODES
+        self._attr_options = [item["name"] for item in options]
+        self._data_key = description.ufp_device_data_key
+        self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
+        self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
 
     @property
     def current_option(self) -> str:
         """Return the current selected option."""
-        if self._select_entity == _SELECT_ENTITY_VIEWER:
-            return self._get_view_name_from_id(self._device_data["liveview"])
-
-        if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
-            return MOTION_MODE_TO_LIGHT_MODE[self._device_data["motion_mode"]]
-
-        if self._select_entity == _SELECT_ENTITY_IR:
-            return self._get_infrared_name_from_id()
-
-        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
-            return self._device_data["doorbell_text"]
-
-        return self._device_data["recording_mode"].capitalize()
-
-    @property
-    def extra_state_attributes(self):
-        """Return the device state attributes."""
-        attr = {
-            **super().extra_state_attributes,
-        }
-        if self._device_type == DEVICE_TYPE_VIEWPORT:
-            attr[ATTR_VIEWS] = self._liveviews
-
-        return attr
-
-    def _get_view_name_from_id(self, view_id):
-        """Returns the Liveview Name from the ID"""
-        for item in self._liveviews:
-            if view_id == item["id"]:
-                return item["name"]
-        return None
-
-    def _get_view_id_from_name(self, view_name):
-        """Returns the Liveview ID from the Name"""
-        for item in self._liveviews:
-            if view_name == item["name"]:
-                return item["id"]
-        return None
-
-    def _get_infrared_name_from_id(self):
-        """Returns Select Option from Infrared setting"""
-        for item in INFRARED_MODES:
-            if self._device_data["ir_mode"] == item["id"]:
-                return item["name"]
-        return None
-
-    def _get_infrared_id_from_name(self, option):
-        """Returns Infrared setting from Select Option"""
-        for item in INFRARED_MODES:
-            if option == item["name"]:
-                return item["id"]
-        return None
-
-    def _get_doorbell_text_type_from_name(self, option):
-        """Returns the Doorbell Text Type from the Option Text"""
-        for item in self._doorbell_texts:
-            if option == item["value"]:
-                return item["id"]
-        return None
+        unifi_value = self._device_data[self._data_key]
+        if self.entity_description.key == _KEY_DOORBELL_TEXT:
+            return unifi_value
+        return self._unifi_to_hass_options[unifi_value]
 
     async def async_select_option(self, option: str) -> None:
         """Change the Select Entity Option."""
         if option not in self.options:
             raise HomeAssistantError(
-                f"Cannot set the value to {option}. Allowed values are: {self.options}"
+                f"Cannot set the value to {option}; Allowed values are: {self.options}"
             )
 
-        if self._select_entity == _SELECT_ENTITY_VIEWER:
-            _LOGGER.debug("Viewport View set to: %s", option)
-            view_id = self._get_view_id_from_name(option)
-            await self.upv_object.set_viewport_view(self._device_id, view_id)
-
-        if self._select_entity == _SELECT_ENTITY_LIGHT_MOTION:
+        if self.entity_description.key == _KEY_LIGHT_MOTION:
             lightmode, timing = LIGHT_MODE_TO_SETTINGS[option]
             _LOGGER.debug("Changing Light Mode to %s", option)
             await self.upv_object.light_settings(
                 self._device_id, lightmode, enable_at=timing
             )
+            return
 
-        if self._select_entity == _SELECT_ENTITY_IR:
-            infrared_id = self._get_infrared_id_from_name(option)
-            await self.upv_object.set_camera_ir(self._device_id, infrared_id)
-
-        if self._select_entity == _SELECT_ENTITY_DOORBELL_TEXT:
-            text_type = self._get_doorbell_text_type_from_name(option)
+        unifi_value = self._hass_to_unifi_options[option]
+        if self.entity_description.key == _KEY_DOORBELL_TEXT:
             await self.upv_object.set_doorbell_lcd_text(
-                self._device_id, text_type, option
+                self._device_id, unifi_value, option
             )
             _LOGGER.debug("Changed Doorbell LCD Text to: %s", option)
+            return
 
-        if self._select_entity == _SELECT_ENTITY_REC_MODE:
-            _LOGGER.debug("Changing Recording Mode to %s", option)
-            await self.upv_object.set_camera_recording(self._device_id, option.lower())
+        _LOGGER.debug("%s set to: %s", self.entity_description.key, option)
+        coro = getattr(self.upv_object, self.entity_description.ufp_set_function)
+        await coro(self._device_id, unifi_value)

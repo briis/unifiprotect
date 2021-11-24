@@ -6,7 +6,7 @@ Released: 2021-11-24
 
 > **YOU MUST BE RUNNING V1.20.0 OF UNIFI PROTECT, TO USE THIS VERSION OF THE INTEGRATION. IF YOU ARE STILL ON 1.19.x STAY ON THE 0.9.2 RELEASE.
 
-As UniFi Protect V1.20.0 is now released, we will also ship the final release of 0.10.0. If you were not on the beta, please read these Release Notes Carefully, as there are many changes for this release, and many Breaking Changes.
+As UniFi Protect V1.20.0 is now released, we will also ship the final release of 0.10.0. If you were not on the beta, please read these Release Notes carefully, as there are many changes for this release, and many Breaking Changes.
 
 ### Supported Versions
 

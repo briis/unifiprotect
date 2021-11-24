@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Dict, Optional, Tuple
 
 from aiohttp import CookieJar
 from homeassistant import config_entries
@@ -14,6 +14,7 @@ from homeassistant.const import (
     CONF_USERNAME,
 )
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from pyunifiprotect import NotAuthorized, NvrError, UpvServer
 from pyunifiprotect.const import SERVER_ID, SERVER_NAME
@@ -29,6 +30,17 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+AUTH_SCHEMA = {
+    vol.Required(CONF_USERNAME): str,
+    vol.Required(CONF_PASSWORD): str,
+}
+
+SETUP_SCHEMA = {
+    vol.Required(CONF_HOST): str,
+    vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
+    **AUTH_SCHEMA,
+}
+
 
 class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a Unifi Protect config flow."""
@@ -37,41 +49,44 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
         return OptionsFlowHandler(config_entry)
 
-    async def async_step_reauth(self, user_input=None):
-        """Perform reauth upon an API authentication error."""
-        return await self._init_config_entry(user_input=user_input, reauth=True)
+    @callback
+    async def _async_create_entry(self, title: str, data: Dict[str, Any]):
+        return self.async_create_entry(
+            title=title,
+            data={**data, CONF_ID: title},
+            options={
+                CONF_DISABLE_RTSP: False,
+                CONF_DOORBELL_TEXT: "",
+            },
+        )
 
-    async def async_step_user(self, user_input=None):
-        """Handle a flow initiated by the user."""
-        return await self._init_config_entry(user_input=user_input)
-
-    def _get_form(self, reauth: bool):
-        form = self._show_setup_form
-        if reauth:
-            form = self._show_reauth_form
-
-        return form
-
-    async def _get_protect(self, user_input) -> Optional[UpvServer]:
+    @callback
+    async def _async_get_nvr_data(
+        self,
+        user_input: Dict[str, Any],
+        entry: Optional[config_entries.ConfigEntry] = None,
+    ) -> Tuple[Optional[Dict[str, Any]], Dict[str, str]]:
         session = async_create_clientsession(
             self.hass, cookie_jar=CookieJar(unsafe=True)
         )
 
-        if self.unique_id is not None:
-            entry = await self.async_set_unique_id(self.unique_id)
-            host = entry.data[CONF_HOST]
-            port = entry.data[CONF_PORT]
-        elif CONF_HOST in user_input and CONF_PORT in user_input:
+        if CONF_HOST in user_input:
             host = user_input[CONF_HOST]
-            port = user_input[CONF_PORT]
+            port = user_input.get(CONF_PORT, DEFAULT_PORT)
+        # reauth flow, pull host/port from existing settings
+        elif entry:
+            host = entry.data[CONF_HOST]
+            port = entry.data.get(CONF_PORT, DEFAULT_PORT)
         else:
-            return None
+            return None, {}
 
-        return UpvServer(
+        protect = UpvServer(
             session=session,
             host=host,
             port=port,
@@ -79,92 +94,78 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             password=user_input[CONF_PASSWORD],
         )
 
-    async def _reload_entry(self, unique_id, user_input):
-        entry = await self.async_set_unique_id(unique_id)
-
-        new_data = entry.data.copy()
-        new_data[CONF_USERNAME] = user_input[CONF_USERNAME]
-        new_data[CONF_PASSWORD] = user_input[CONF_PASSWORD]
-
-        self.hass.config_entries.async_update_entry(entry, data=new_data)
-        await self.hass.config_entries.async_reload(entry.entry_id)
-        return self.async_abort(reason="reauth_successful")
-
-    async def _init_config_entry(self, user_input=None, reauth=False):
-        """Common method to initalize config entry"""
-
-        form = self._get_form(reauth)
-        if user_input is None:
-            return await form(user_input)
-
         errors = {}
-        protect = await self._get_protect(user_input)
-
-        if protect is None:
-            return await form(errors)
-
+        nvr_data = None
         try:
-            server_info = await protect.server_information()
-            if server_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+            nvr_data = await protect.server_information()
+            if nvr_data["server_version"] < MIN_REQUIRED_PROTECT_V:
                 _LOGGER.debug("UniFi Protect Version not supported")
                 errors["base"] = "protect_version"
-                return await form(errors)
-
         except NotAuthorized as ex:
             _LOGGER.debug(ex)
             errors["base"] = "connection_error"
-            return await form(errors)
         except NvrError as ex:
             _LOGGER.debug(ex)
             errors["base"] = "nvr_error"
-            return await form(errors)
 
-        unique_id = server_info[SERVER_ID]
-        if reauth:
-            return await self._reload_entry(unique_id, user_input)
+        return nvr_data, errors
 
-        self._abort_if_unique_id_configured()
-        return self.async_create_entry(
-            title=server_info[SERVER_NAME],
-            data={
-                CONF_ID: server_info[SERVER_NAME],
-                CONF_HOST: user_input[CONF_HOST],
-                CONF_PORT: user_input[CONF_PORT],
-                CONF_USERNAME: user_input.get(CONF_USERNAME),
-                CONF_PASSWORD: user_input.get(CONF_PASSWORD),
-            },
-            options={
-                CONF_DISABLE_RTSP: False,
-                CONF_DOORBELL_TEXT: "",
-            },
-        )
+    @callback
+    def _get_config_entry(self) -> Optional[config_entries.ConfigEntry]:
+        if self.unique_id is None:
+            return None
 
-    async def _show_reauth_form(self, errors=None):
-        """Show the setup form to the user."""
+        for entry in self._async_current_entries(include_ignore=True):
+            if entry.unique_id == self.unique_id:
+                return entry
+
+        return None
+
+    async def async_step_reauth(self, user_input: Dict[str, Any] = None) -> FlowResult:
+        """Perform reauth upon an API authentication error."""
+
+        errors = {}
+        if user_input is not None:
+            entry = self._get_config_entry()
+            if not entry:
+                return await self.async_step_user()
+
+            # validate login data
+            nvr_data, errors = await self._async_get_nvr_data(user_input, entry=entry)
+
+            if nvr_data is not None:
+                new_data = {
+                    **entry.data,
+                    CONF_USERNAME: user_input[CONF_USERNAME],
+                    CONF_PASSWORD: user_input[CONF_PASSWORD],
+                }
+                self.hass.config_entries.async_update_entry(entry, data=new_data)
+                await self.hass.config_entries.async_reload(entry.entry_id)
+                return self.async_abort(reason="reauth_successful")
+
         return self.async_show_form(
             step_id="reauth",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_USERNAME): str,
-                    vol.Required(CONF_PASSWORD): str,
-                }
-            ),
-            errors=errors or {},
+            data_schema=vol.Schema(AUTH_SCHEMA),
+            errors=errors,
         )
 
-    async def _show_setup_form(self, errors=None):
-        """Show the setup form to the user."""
+    async def async_step_user(self, user_input: Dict[str, Any] = None) -> FlowResult:
+        """Handle a flow initiated by the user."""
+
+        errors = {}
+        if user_input is not None:
+            nvr_data, errors = await self._async_get_nvr_data(user_input)
+
+            if nvr_data is not None:
+                await self.async_set_unique_id(nvr_data[SERVER_ID])
+                self._abort_if_unique_id_configured()
+
+                return await self._async_create_entry(nvr_data[SERVER_NAME], user_input)
+
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_HOST): str,
-                    vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
-                    vol.Required(CONF_USERNAME): str,
-                    vol.Required(CONF_PASSWORD): str,
-                }
-            ),
-            errors=errors or {},
+            data_schema=vol.Schema(SETUP_SCHEMA),
+            errors=errors,
         )
 
 

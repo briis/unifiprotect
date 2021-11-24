@@ -14,7 +14,7 @@
                 "title": "Unifi Protect",
                 "data": {
                     "host": "Adresse IP de la Unifi Protect Server",
-                    "port": "Numéro de port (7443 NON UnifiOS, 443 UnifiOS)",
+                    "port": "Numéro de port",
                     "username": "Identifiant",
                     "password": "Mot de passe"
                 }

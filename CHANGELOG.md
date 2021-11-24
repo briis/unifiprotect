@@ -1,17 +1,23 @@
 # // Changelog
 
-## 0.10.0 Relese Candidate 1
+## 0.10.0
 
-Released: NOT RELEASED YET
+Released: 2021-11-24
+
+> **YOU MUST BE RUNNING V1.20.0 OF UNIFI PROTECT, TO USE THIS VERSION OF THE INTEGRATION. IF YOU ARE STILL ON 1.19.x STAY ON THE 0.9.2 RELEASE.
+
+As UniFi Protect V1.20.0 is now released, we will also ship the final release of 0.10.0. If you were not on the beta, please read these Release Notes Carefully, as there are many changes for this release, and many Breaking Changes.
 
 ### Supported Versions
 
 This release requires the following minimum Software and Firmware version:
 
 * **Home Assistant**: `2021.09.0`
-* **UniFi Protect**: `1.20.0-beta.7`
+* **UniFi Protect**: `1.20.0`
 
 ### Upgrade Instructions
+
+> If you are already running V0.10.0-beta.3 or higher of this release, there should not be any breaking changes, and you should be able to do a normal upgrade from HACS.
 
 Due to the many changes and entities that have been removed and replaced, we recommend the following process to upgrade from an earlier Beta or from an earlier release:
 
@@ -22,7 +28,84 @@ Due to the many changes and entities that have been removed and replaced, we rec
 
 ### Changes in this release
 
-* `CHANGE`: @bdraco, made more clode clean-ups to support future inclusion in `core`.
+* `CHANGE`: **BREAKING CHANGE** The support for *Anonymous Snapshots* has been removed as of this release. This has always been a workaround in a time where this did not work as well as it does now. If you have this flag set, you don't have to do anything, as snapshots are automatically moved to the supported method.
+
+* `NEW`: **BREAKING CHANGE** Also as part of Home Assistant 2021.11 a new [Entity Category](https://www.home-assistant.io/blog/2021/11/03/release-202111/#entity-categorization) is introduced. This makes it possible to classify an entity as either `config` or `diagnostic`. A `config` entity is used for entities that can change the configuration of a device and a `diagnostic` entity is used for devices that report status, but does not allow changes. These two entity categories have been applied to selected entities in this Integration. If you are not on HA 2021.11+ then this will not have any effect on your installation.
+
+* `CHANGE`: **BREAKING CHANGE** There has been a substansial rewite of the underlying IO API Module (`pyunifiprotect`) over the last few month. The structure is now much better and makes it easier to maintain going forward. It will take too long to list all the changes, but one important change is that we have removed the support for Non UnifiOS devices. These are CloudKey+ devices with a FW lower than 2.0.24. I want to give a big thank you to @AngellusMortis and @bdraco for making this happen.
+
+* `CHANGE`: **BREAKING CHANGE** As this release has removed the support for Non UnifiOS devices, we could also remove the Polling function for Events as this is served through Websockets. This also means that the Scan Interval is no longer present in the Configuration.
+
+* `CHANGE`: **BREAKING CHANGE** To future proof the Select entities, we had to change the the way the Unique ID is populated. The entity names are not changing, but the Unique ID's are If you have installed a previous beta of V0.10.0 you will get a duplicate of all Select entities, and the ones that were there before, will be marked as unavailable. You can either remove them manually from the Integration page, or even easier, just delete the UniFi Protect integration, and add it again. (The later is the recommended method)
+
+* `CHANGE`: **BREAKING CHANGE** All switches called `switch.ir_active_CAMERANAME` have been removed from the system. They are being migrated to a `Select Entity` which you can read more about below. If you have automations that turns these switches on and off, you will have to replace this with the `select.select_option` service, using the valid options described below for the `option` data.
+
+* `CHANGE`: **BREAKING CHANGE** The Service `unifiprotect.set_ir_mode` now supports the following values for ir_mode: `"auto, autoFilterOnly, on, off"`. This is a change from the previous valid options and if you have automations that uses this service you will need to make sure that you only use these supported modes.
+
+* `CHANGE`: **BREAKING CHANGE** The Service `unifiprotect.save_thumbnail_image` has been removed from the Integration. This service proved to be unreliable as the Thumbnail image very often was not available, when this service was called. Please use the service `camera.snapshot` instead.
+
+* `CHANGE`: **BREAKING CHANGE** All switches called `switch.record_smart_CAMERANAME` and `switch.record_motion_CAMERANAME` have been removed from the system. They are being migrated to a `Select Entity` which you can read more about below. If you have automations that turns these switches on and off, you will have to replace this with the `select.select_option` service, using the valid options described below for the `option` data.
+
+* `CHANGE`: **BREAKING CHANGE** All switches for the *Floodlight devices* have been removed from the system. They are being migrated to a `Select Entity` which you can read more about below. If you have automations that turns these switches on and off, you will have to replace this with the `select.select_option` service, using the valid options described below for the `option` data.
+
+* `CHANGE`: **BREAKING CHANGE** The Service `unifiprotect.set_recording_mode` now only supports the following values for recording_mode: `"never, detections, always"`. If you have automations that uses the recording_mode `smart` or `motion` you will have to change this to `detections`.
+
+* `CHANGE`: Config Flow has been slimmed down so it will only ask for the minimum values we need during installation. If you would like to change this after that, you can use the Configure button on the Integration page.
+
+* `CHANGE`: It is now possible to change the UFP Device username and password without removing and reinstalling the Integration. On the Home Assistant Integration page, select CONFIGURE in the lower left corner of the UniFi Protect integration, and you will have the option to enter a new username and/or password.
+
+* `CHANGE`: We will now use RTSPS for displaying video. This is to further enhance security, and to ensure that the system will continue running if Ubiquiti decides to remove RTSP completely. This does not require any changes from your side.
+
+* `NEW`: For each Camera there will be a binary sensor called `binary_sensor.is_dark_CAMERANAME`. This sensor will be on if the camera is perceiving it is as so dark that the Infrared lights will turn on (If enabled).
+
+* `CHANGE`: A significant number of 'under the hood' changes have been made by @bdraco, to bring the Integration up to Home Assistant standards and to prepare for the integration in to HA Core. Thank you to @bdraco for all his advise, coding and review.
+
+* `CHANGE`: `pyunifiprotect` is V1.0.4 and has been completely rewritten by @AngellusMortis, with the support of @bdraco and is now a much more structured and easier to maintain module. There has also been a few interesting additions to the module, which you will see the fruit of in a coming release. This version is not utilizing the new module yet, but stay tuned for the 0.11.0 release, which most likely also will be the last release before we try the move to HA Core.
+
+* `NEW`: Device Configuration URL's are introduced in Home Assistant 2021.11. In this release we add URL Link to allow the user to visit the device for configuration or diagnostics from the *Devices* page. If you are not on HA 2021.11+ then this will not have any effect on your installation.
+
+* `NEW`: A switch is being created to turn on and off the Privacy Mode for each Camera. This makes it possible to set the Privacy mode for a Camera directly from the UI. This is a supplement to the already existing service `unifiprotect.set_privacy_mode`
+
+* `NEW`: Restarted the work on implementing the UFP Sense device. We don't have physical access to this device, but @Madbeefer is kindly enough to do all the testing.
+  * The following new sensors will be created for each UFP Sense device: `Battery %`, `Ambient Light`, `Humidity`, `Temperature` and `BLE Signal Strength`.
+  * The following binary sensors will be created for each UFP Sense device: `Motion`, `Open/Close` and `Battery Low`. **Note** as of this release, these sensors are not working correctly, this is still work in progress.
+
+* `NEW`: For each Camera there will now be a `Select Entity` from where you can select the Infrared mode for each Camera. Valid options are `Auto, Always Enable, Auto (Filter Only, no LED's), Always Disable`. These are the same options you can use if you set this through the UniFi Protect App.
+
+* `NEW`: Added a new `Number` entity called `number.wide_dynamic_range_CAMERANAME`. You can now set the Wide Dynamic Range for a camera directly from the UI. This is a supplement to the already existing service `unifiprotect.set_wdr_value`.
+
+* `NEW`: Added `select.doorbell_text_DOORBELL_NAME` to be able to change the LCD Text on the Doorbell from the UI. In the configuration menu of the Integration there is now a field where you can type a list of Custom Texts that can be displayed on the Doorbell and then these options plus the two standard texts built-in to the Doorbell can now all be selected. The format of the custom text list has to ba a comma separated list, f.ex.: RING THE BELL, WE ARE SLEEPING, GO AWAY... etc.
+
+* `NEW`: Added a new `Number` entity called `number.microphone_level_CAMERANAME`. From here you can set the Microphone Sensitivity Level for a camera directly from the UI. This is a supplement to the already existing service `unifiprotect.set_mic_volume`.
+
+* `NEW`: Added a new `Number` entity called `number.zoom_position_CAMERANAME`. From here you can set the optical Zoom Position for a camera directly from the UI. This entity will only be added for Cameras that support optical zoom. This is a supplement to the already existing service `unifiprotect.set_zoom_position`.
+
+* `NEW`: For each Camera there will now be a `Select Entity` from where you can select the recording mode for each Camera. Valid options are `Always, Never, Detections`. Detections is what you use to enable motion detection. Whether they do People and Vehicle detection, depends on the Camera Type and the settings in the UniFi Protect App. We might later on implement a new Select Entity from where you can set the the Smart Detection options. Until then, this needs to be done from the UniFi Protect App. (as is the case today)
+
+* `NEW`: For each Floodlight there will now be a `Select Entity` from where you can select when the Light Turns on. This replaces the two switches that were in the earlier releases. Valid options are `On Motion, When Dark, Manual`.
+
+* `NEW`: Added a new event `unifiprotect_motion` that triggers on motion. You can use this instead of the Binary Sensor to watch for a motion event on any motion enabled device. The output from the event will look similar tom the below
+
+  ```json
+  {
+    "event_type": "unifiprotect_motion",
+    "data": {
+        "entity_id": "camera.outdoor",
+        "smart_detect": [
+            "person"
+        ],
+        "motion_on": true
+    },
+    "origin": "LOCAL",
+    "time_fired": "2021-10-18T10:55:36.134535+00:00",
+    "context": {
+        "id": "b3723102b4fb71a758a423d0f3a04ba6",
+        "parent_id": null,
+        "user_id": null
+    }
+  }
+  ```
+
 
 ## 0.10.0 Beta 5 Hotfix 1
 

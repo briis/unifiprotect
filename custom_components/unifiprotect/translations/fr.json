@@ -1,19 +1,19 @@
 {
     "config": {
         "abort": {
-            "server_exists": "Le server Unifi Protect est déjà configuré."
+            "server_exists": "Le server UniFi Protect est déjà configuré."
         },
         "error": {
             "connection_error": "Impossible de se connecter. Mauvaise IP ou identifiant/mot de passe.",
             "protect_version": "UniFi Protect Version is not supported by this Integration",
-            "nvr_error": "Erreur lors de la récupération de données sur Unifi Protect."
+            "nvr_error": "Erreur lors de la récupération de données sur UniFi Protect."
         },
         "step": {
             "user": {
-                "description": "Mettre en place Unifi Protect pour surveiller les caméras et les capteurs.",
-                "title": "Unifi Protect",
+                "description": "Mettre en place UniFi Protect pour surveiller les caméras et les capteurs.",
+                "title": "UniFi Protect",
                 "data": {
-                    "host": "Adresse IP de la Unifi Protect Server",
+                    "host": "Adresse IP de la UniFi Protect Server",
                     "port": "Numéro de port",
                     "username": "Identifiant",
                     "password": "Mot de passe"

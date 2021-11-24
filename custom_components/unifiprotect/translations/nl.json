@@ -1,19 +1,19 @@
 {
     "config": {
         "abort": {
-            "server_exists": "Unifi Protect Server is al geconfigureerd."
+            "server_exists": "UniFi Protect Server is al geconfigureerd."
         },
         "error": {
             "connection_error": "Kon niet verbinden. Verkeerd IP of gebruikersnaam/wachtwoord.",
             "protect_version": "UniFi Protect Version is not supported by this Integration",
-            "nvr_error": "Fout bij het ophalen van gegevens vanuit Unifi Protect."
+            "nvr_error": "Fout bij het ophalen van gegevens vanuit UniFi Protect."
         },
         "step": {
             "user": {
-                "description": "Stel Unifi Protect in om cameras and sensoren te gebruiken.",
-                "title": "Unifi Protect",
+                "description": "Stel UniFi Protect in om cameras and sensoren te gebruiken.",
+                "title": "UniFi Protect",
                 "data": {
-                    "host": "IP-Adres van de Unifi Protect Server",
+                    "host": "IP-Adres van de UniFi Protect Server",
                     "port": "Poort Nummer",
                     "username": "Gebruikersnaam",
                     "password": "Wachtwoord"

@@ -1,23 +1,33 @@
 {
     "config": {
         "abort": {
-            "server_exists": "Unifi Protect Server already configured."
+            "reauth_successful": "Re-authentication was successful",
+            "server_exists": "UniFi Protect Server already configured."
         },
         "error": {
             "connection_error": "Failed to connect. Wrong IP or Username/Password.",
-            "protect_version": "UniFi Protect Version is not supported by this Integration",
-            "nvr_error": "Error retrieving data from Unifi Protect."
+            "nvr_error": "Error retrieving data from UniFi Protect.",
+            "protect_version": "UniFi Protect Version is not supported by this Integration"
         },
         "step": {
-            "user": {
-                "description": "Set up Unifi Protect to monitor cameras and sensors.",
-                "title": "Unifi Protect",
+            "reauth": {
                 "data": {
-                    "host": "IP Address of Unifi Protect Server",
+                    "host": "IP Address of UniFi Protect Server",
+                    "password": "Password",
                     "port": "Port Number",
-                    "username": "Username",
-                    "password": "Password"
-                }
+                    "username": "Username"
+                },
+                "title": "UniFi Protect Reauth"
+            },
+            "user": {
+                "data": {
+                    "host": "IP Address of UniFi Protect Server",
+                    "password": "Password",
+                    "port": "Port Number",
+                    "username": "Username"
+                },
+                "description": "Set up UniFi Protect to monitor cameras and sensors.",
+                "title": "UniFi Protect Setup"
             }
         }
     },
@@ -25,11 +35,11 @@
         "step": {
             "init": {
                 "data": {
-                    "username": "Username",
-                    "password": "Password",
                     "disable_rtsp": "Disable the RTSP stream",
-                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel"
-                }
+                    "doorbell_text": "Custom Doorbell Texts"
+                },
+                "description": "Custom Doorbell Texts should be a comma separated list of texts that will usable in a select for your doorbell. These will be in addition to the ones provided by UniFi Protect",
+                "title": "UniFi Protect Options"
             }
         }
     }

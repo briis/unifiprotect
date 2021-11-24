@@ -1,19 +1,19 @@
 {
     "config": {
         "abort": {
-            "server_exists": "Unifi Protect Server bereits konfiguriert."
+            "server_exists": "UniFi Protect Server bereits konfiguriert."
         },
         "error": {
             "connection_error": "Verbindung fehlgeschlagen. Falsche IP oder Username/Password.",
             "protect_version": "UniFi Protect Version is not supported by this Integration",
-            "nvr_error": "Fehler beim Datenaustausch mit Unifi Protect."
+            "nvr_error": "Fehler beim Datenaustausch mit UniFi Protect."
         },
         "step": {
             "user": {
-                "description": "Set up Unifi Protect to monitor cameras and sensors.",
-                "title": "Unifi Protect",
+                "description": "Set up UniFi Protect to monitor cameras and sensors.",
+                "title": "UniFi Protect",
                 "data": {
-                    "host": "IP-Adresse des Unifi Protect Server",
+                    "host": "IP-Adresse des UniFi Protect Server",
                     "port": "Portnummer",
                     "username": "Username",
                     "password": "Password"

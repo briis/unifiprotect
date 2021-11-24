@@ -1,19 +1,19 @@
 {
     "config": {
         "abort": {
-            "server_exists": "Denne Unifi Protect Server er allerede konfigureret."
+            "server_exists": "Denne UniFi Protect Server er allerede konfigureret."
         },
         "error": {
             "connection_error": "Kan ikke forbinde. Forkert IP eller Brugernavn/Kodeord.",
             "protect_version": "UniFi Protect Version er ikke understøttet af denne version.",
-            "nvr_error": "Kan ikke hente data fra Unifi Protect."
+            "nvr_error": "Kan ikke hente data fra UniFi Protect."
         },
         "step": {
             "user": {
-                "description": "Konfigurer Unifi Protect for at monitorere kameraer og sensorer.",
-                "title": "Unifi Protect",
+                "description": "Konfigurer UniFi Protect for at monitorere kameraer og sensorer.",
+                "title": "UniFi Protect",
                 "data": {
-                    "host": "IP adresse på Unifi Protect Server",
+                    "host": "IP adresse på UniFi Protect Server",
                     "port": "Port nummer",
                     "username": "Brugernavn",
                     "password": "Kodeord"

@@ -17,7 +17,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
 )
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, UpvServer
@@ -56,7 +56,7 @@ def _async_import_options_from_data_if_missing(hass: HomeAssistant, entry: Confi
         hass.config_entries.async_update_entry(entry, data=data, options=options)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up the Unifi Protect config entries."""
     _async_import_options_from_data_if_missing(hass, entry)
 
@@ -74,11 +74,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         nvr_info = await protectserver.server_information()
-    except NotAuthorized:
-        _LOGGER.error(
-            "Could not Authorize against Unifi Protect. Please reinstall the Integration"
-        )
-        return False
+    except NotAuthorized as err:
+        raise ConfigEntryAuthFailed(err) from err
     except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
 

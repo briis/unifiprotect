@@ -35,7 +35,7 @@
         "step": {
             "init": {
                 "title": "UniFi Protect Options",
-                "description": "Custom Doorbell Texts should be a comma separated list of texts that will usable in a select for your doorbell. These will be in addition to the ones provided by UniFi Protect",
+                "description": "Custom Doorbell Texts should be a comma separated list of texts that will usable in a select for your doorbell. These will be in addition to the ones provided by UniFi Protect. Leave blank if you do not have a doorbell camera.",
                 "data": {
                     "disable_rtsp": "Disable the RTSP stream",
                     "doorbell_text": "Custom Doorbell Texts"

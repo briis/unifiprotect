@@ -1,6 +1,6 @@
 // See https://aka.ms/vscode-remote/devcontainer.json for format details.
 {
-	"name": "Home Assistant Unifi Protect Development",
+	"name": "HA unifiprotect",
 	"dockerFile": "Dockerfile",
 	"context": "..",
 	"appPort": [

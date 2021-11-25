@@ -14,9 +14,9 @@ from .models import UnifiProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
-_ENTITY_WDR = "wdr_value"
-_ENTITY_MIC_LEVEL = "mic_level"
-_ENTITY_ZOOM_POS = "zoom_position"
+_KEY_WDR = "wdr_value"
+_KEY_MIC_LEVEL = "mic_level"
+_KEY_ZOOM_POS = "zoom_position"
 
 
 @dataclass
@@ -41,7 +41,7 @@ class UnifiProtectNumberEntityDescription(
 
 NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
     UnifiProtectNumberEntityDescription(
-        key=_ENTITY_WDR,
+        key=_KEY_WDR,
         name="Wide Dynamic Range",
         icon="mdi:state-machine",
         entity_category=ENTITY_CATEGORY_CONFIG,
@@ -54,7 +54,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_set_function="set_camera_wdr",
     ),
     UnifiProtectNumberEntityDescription(
-        key=_ENTITY_MIC_LEVEL,
+        key=_KEY_MIC_LEVEL,
         name="Microphone Level",
         icon="mdi:microphone",
         entity_category=ENTITY_CATEGORY_CONFIG,
@@ -67,7 +67,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_set_function="set_mic_volume",
     ),
     UnifiProtectNumberEntityDescription(
-        key=_ENTITY_ZOOM_POS,
+        key=_KEY_ZOOM_POS,
         name="Zoom Position",
         icon="mdi:magnify-plus-outline",
         entity_category=ENTITY_CATEGORY_CONFIG,
@@ -106,7 +106,7 @@ async def async_setup_entry(
                     upv_object,
                     protect_data,
                     server_info,
-                    device.id,
+                    device.device_id,
                     description,
                 )
             )

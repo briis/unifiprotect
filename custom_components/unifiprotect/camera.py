@@ -158,6 +158,11 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         self.async_write_ha_state()
 
     @property
+    def supported_features(self):
+        """Return supported features for this camera."""
+        return self._attr_supported_features
+
+    @property
     def motion_detection_enabled(self):
         """Camera Motion Detection Status."""
         return self._device_data["recording_mode"] and super().available

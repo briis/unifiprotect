@@ -1,34 +1,45 @@
 {
     "config": {
-        "step": {
-            "user": {
-                "title": "Unifi Protect",
-                "description": "Set up Unifi Protect to monitor cameras and sensors.",
-                "data": {
-                    "host": "IP Address of Unifi Protect Server",
-                    "port": "Port Number: (7443 NON UnifiOS, 443 UnifiOS)",
-                    "username": "Username",
-                    "password": "Password"
-                }
-            }
+        "abort": {
+            "server_exists": "UniFi Protect Server already configured.",
+            "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]"
         },
         "error": {
-            "connection_error": "Failed to connect. Wrong IP or Username/Password.",
+            "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
             "protect_version": "UniFi Protect Version is not supported by this Integration",
-            "nvr_error": "Error retrieving data from Unifi Protect."
+            "nvr_error": "Error retrieving data from UniFi Protect."
         },
-        "abort": {
-            "server_exists": "Unifi Protect Server already configured."
+        "step": {
+            "user": {
+                "title": "UniFi Protect Setup",
+                "description": "Set up UniFi Protect to monitor cameras and sensors.",
+                "data": {
+                    "host": "IP/Host of UniFi Protect Server",
+                    "port": "[%key:common::config_flow::data::port%]",
+                    "verify_ssl": "[%key:common::config_flow::data::verify_ssl%]",
+                    "username": "[%key:common::config_flow::data::username%]",
+                    "password": "[%key:common::config_flow::data::password%]"
+                }
+            },
+            "reauth": {
+                "title": "UniFi Protect Reauth",
+                "data": {
+                    "host": "IP/Host of UniFi Protect Server",
+                    "port": "[%key:common::config_flow::data::port%]",
+                    "username": "[%key:common::config_flow::data::username%]",
+                    "password": "[%key:common::config_flow::data::password%]"
+                }
+            }
         }
     },
     "options": {
         "step": {
             "init": {
+                "title": "UniFi Protect Options",
+                "description": "Custom Doorbell Texts should be a comma separated list of texts that will usable in a select for your doorbell. These will be in addition to the ones provided by UniFi Protect. Leave blank if you do not have a doorbell camera.",
                 "data": {
-                    "username": "Username",
-                    "password": "Password",
                     "disable_rtsp": "Disable the RTSP stream",
-                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel"
+                    "doorbell_text": "Custom Doorbell Texts"
                 }
             }
         }

@@ -124,7 +124,7 @@ async def async_setup_entry(
         for device in protect_data.get_by_types(description.ufp_device_types):
             sensors.append(
                 UnifiProtectSensor(
-                    upv_object, protect_data, server_info, device.id, description
+                    upv_object, protect_data, server_info, device.device_id, description
                 )
             )
             _LOGGER.debug(

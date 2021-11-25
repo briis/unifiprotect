@@ -12,6 +12,21 @@
 			"type": "shell",
 			"command": "container set-version",
 			"problemMatcher": []
+		},
+		{
+			"label": "Install Development Home Assistant Version",
+			"type": "shell",
+			"command": "container install",
+			"problemMatcher": []
+		}
+		{
+			"label": "Update Translations",
+			"type": "shell",
+			"command": "echo 'unifiprotect\n' | python3 -m script.translations develop",
+			"options": {
+				"cwd": "/opt/hass",
+			},
+			"problemMatcher": []
 		}
 	]
 }

@@ -2,19 +2,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 import logging
 from typing import Generator
+from homeassistant.config_entries import ConfigEntry
 
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
-from pyunifiprotect.unifi_protect_server import NvrError
+from pyunifiprotect import ProtectApiClient
+from pyunifiprotect.exceptions import NotAuthorized, NvrError
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
 class UnifiProtectDevice:
-    id: str
+    device_id: str
     type: str
     data: dict
 
@@ -22,16 +25,25 @@ class UnifiProtectDevice:
 class UnifiProtectData:
     """Coordinate updates."""
 
-    def __init__(self, hass, protectserver, update_interval):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        protect: ProtectApiClient,
+        update_interval: timedelta,
+        entry: ConfigEntry,
+    ):
         """Initialize an subscriber."""
         super().__init__()
         self._hass = hass
-        self._protectserver = protectserver
-        self.data = {}
+        self._protect = protect
+        self._entry = entry
+        self._hass = hass
         self._update_interval = update_interval
         self._subscriptions = {}
         self._unsub_interval = None
         self._unsub_websocket = None
+
+        self.data = {}
         self.last_update_success = False
 
     def get_by_types(self, device_types) -> Generator[UnifiProtectDevice, None, None]:
@@ -46,7 +58,7 @@ class UnifiProtectData:
 
     async def async_setup(self):
         """Subscribe and do the refresh."""
-        self._unsub_websocket = self._protectserver.subscribe_websocket(
+        self._unsub_websocket = self._protect.subscribe_websocket(
             self._async_process_updates
         )
         await self.async_refresh()
@@ -59,20 +71,23 @@ class UnifiProtectData:
         if self._unsub_interval:
             self._unsub_interval()
             self._unsub_interval = None
-        await self._protectserver.async_disconnect_ws()
+        await self._protect.async_disconnect_ws()
 
     async def async_refresh(self, *_, force_camera_update=False):
         """Update the data."""
         try:
             self._async_process_updates(
-                await self._protectserver.update(
-                    force_camera_update=force_camera_update
-                )
+                await self._protect.update(force_camera_update=force_camera_update)
             )
             self.last_update_success = True
         except NvrError:
             if self.last_update_success:
                 _LOGGER.exception("Error while updating")
+            self.last_update_success = False
+        except NotAuthorized:
+            await self.async_stop()
+            _LOGGER.exception("Reauthentication required")
+            self._entry.async_start_reauth(self._hass)
             self.last_update_success = False
 
     @callback

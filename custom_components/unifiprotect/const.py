@@ -3,6 +3,7 @@
 # from typing_extensions import Required
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.helpers import config_validation as cv
+from packaging.version import parse
 import voluptuous as vol
 
 DOMAIN = "unifiprotect"
@@ -77,7 +78,7 @@ ENTITY_CATEGORY_DIAGNOSTIC = (
     "diagnostic"  # Replace with value from HA Core when more people are on 2021.11
 )
 
-MIN_REQUIRED_PROTECT_V = "1.20.0"
+MIN_REQUIRED_PROTECT_V = parse("1.20.0")
 
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
@@ -106,7 +107,7 @@ TYPE_INFRARED_ON = "on"
 TYPE_HIGH_FPS_ON = "highFps"
 TYPE_HIGH_FPS_OFF = "default"
 
-UNIFI_PROTECT_PLATFORMS = [
+PLATFORMS = [
     "camera",
     # "binary_sensor",
     # "sensor",

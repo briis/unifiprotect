@@ -1,7 +1,9 @@
 default_config:
 
 stream:
-  ll_hls: True
+  ll_hls: true
+  part_duration: 0.75
+  segment_duration: 2
 
 debugpy:
   start: false
@@ -10,6 +12,7 @@ http:
   server_port: 9123
 
 logger:
-  default: error
+  default: warning
   logs:
+    pyunifiprotect: debug
     custom_components.unifiprotect: debug

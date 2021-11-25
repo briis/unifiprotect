@@ -1,5 +1,13 @@
 # // Changelog
 
+## 0.11.0-dev (master)
+
+* `CHANGE`: Overhaul Config Flow
+    * Adds Reauthentication support
+    * Adds "Verify SSL"
+    * Updates Setup / Reauth / Options flows to pre-populate forms from existing settings
+    * Removes changing username/password as part of the options flow as it is redunant with Reauthentication support
+
 ## 0.10.0
 
 Released: 2021-11-24

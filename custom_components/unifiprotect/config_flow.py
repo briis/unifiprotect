@@ -34,9 +34,12 @@ _LOGGER = logging.getLogger(__name__)
 class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a Unifi Protect config flow."""
 
-    entry: Optional[config_entries.ConfigEntry] = None
-
     VERSION = 1
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.entry: Optional[config_entries.ConfigEntry] = None
 
     @staticmethod
     @callback
@@ -100,10 +103,12 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_reauth(self, user_input: Dict[str, Any]) -> FlowResult:
         """Perform reauth upon an API authentication error."""
 
-        if "entry_id" in self.context:
-            self.entry = self.hass.config_entries.async_get_entry(
-                self.context["entry_id"]
-            )
+        self.entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
 
         errors = {}
         if self.entry is None:
@@ -122,7 +127,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_abort(reason="reauth_successful")
 
         return self.async_show_form(
-            step_id="reauth",
+            step_id="reauth_confirm",
             data_schema=vol.Schema(
                 {
                     vol.Required(
@@ -134,7 +139,9 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_user(self, user_input: Dict[str, Any] = None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle a flow initiated by the user."""
 
         errors = {}

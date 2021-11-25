@@ -10,7 +10,7 @@
             "protect_version": "UniFi Protect Version is not supported by this Integration"
         },
         "step": {
-            "reauth": {
+            "reauth_confirm": {
                 "data": {
                     "host": "IP Address of UniFi Protect Server",
                     "password": "Password",

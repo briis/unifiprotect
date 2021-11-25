@@ -20,7 +20,7 @@
                     "password": "Password"
                 }
             },
-            "reauth": {
+            "reauth_confirm": {
                 "title": "UniFi Protect Reauth",
                 "data": {
                     "host": "IP Address of UniFi Protect Server",

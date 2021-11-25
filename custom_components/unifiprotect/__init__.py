@@ -66,7 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         port=entry.data[CONF_PORT],
         username=entry.data[CONF_USERNAME],
         password=entry.data[CONF_PASSWORD],
-        verify_ssl=True,
+        verify_ssl=entry.data[CONF_VERIFY_SSL],
         session=session,
     )
     await protect.update()

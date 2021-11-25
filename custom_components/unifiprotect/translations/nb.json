@@ -1,19 +1,19 @@
 {
     "config": {
         "abort": {
-            "server_exists": "Unifi Protect Server er allerede konfigurert."
+            "server_exists": "UniFi Protect Server er allerede konfigurert."
         },
         "error": {
             "connection_error": "Tilkobling mislyktes. Feil IP eller brukernavn / passord.",
             "protect_version": "UniFi Protect Version is not supported by this Integration",
-            "nvr_error": "Feil ved henting av data fra Unifi Protect."
+            "nvr_error": "Feil ved henting av data fra UniFi Protect."
         },
         "step": {
             "user": {
-                "description": "Sett opp Unifi Protect for å overvåke kameraer og sensorer.",
-                "title": "Unifi Protect",
+                "description": "Sett opp UniFi Protect for å overvåke kameraer og sensorer.",
+                "title": "UniFi Protect",
                 "data": {
-                    "host": "IP-adresse til Unifi Protect Server",
+                    "host": "IP-adresse til UniFi Protect Server",
                     "port": "Portnummer",
                     "username": "Brukenavn",
                     "password": "Passord"

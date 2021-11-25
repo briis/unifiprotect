@@ -17,7 +17,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
 )
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, UpvServer
@@ -70,15 +70,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     _LOGGER.debug("Connect to Unfi Protect")
-    protect_data = UnifiProtectData(hass, protectserver, SCAN_INTERVAL)
+    protect_data = UnifiProtectData(hass, protectserver, SCAN_INTERVAL, entry)
 
     try:
         nvr_info = await protectserver.server_information()
-    except NotAuthorized:
-        _LOGGER.error(
-            "Could not Authorize against Unifi Protect. Please reinstall the Integration"
-        )
-        return False
+    except NotAuthorized as err:
+        raise ConfigEntryAuthFailed(err) from err
     except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
 

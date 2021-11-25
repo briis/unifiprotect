@@ -63,11 +63,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
     protectserver = UpvServer(
-        session,
-        entry.data[CONF_HOST],
-        entry.data[CONF_PORT],
-        entry.data[CONF_USERNAME],
-        entry.data[CONF_PASSWORD],
+        session=session,
+        host=entry.data[CONF_HOST],
+        port=entry.data[CONF_PORT],
+        username=entry.data[CONF_USERNAME],
+        password=entry.data[CONF_PASSWORD],
+        verify_ssl=entry.data[CONF_VERIFY_SSL],
     )
 
     _LOGGER.debug("Connect to Unfi Protect")

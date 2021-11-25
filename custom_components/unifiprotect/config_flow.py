@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from aiohttp import CookieJar
 from homeassistant import config_entries
@@ -39,7 +39,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.entry: Optional[config_entries.ConfigEntry] = None
+        self.entry: config_entries.ConfigEntry | None = None
 
     @staticmethod
     @callback
@@ -50,7 +50,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
     @callback
-    async def _async_create_entry(self, title: str, data: Dict[str, Any]):
+    async def _async_create_entry(self, title: str, data: dict[str, Any]):
         return self.async_create_entry(
             title=title,
             data={**data, CONF_ID: title},
@@ -63,8 +63,8 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     async def _async_get_nvr_data(
         self,
-        user_input: Dict[str, Any],
-    ) -> Tuple[Optional[Dict[str, Any]], Dict[str, str]]:
+        user_input: dict[str, Any],
+    ) -> tuple[dict[str, Any] | None, dict[str, str]]:
         session = async_create_clientsession(
             self.hass, cookie_jar=CookieJar(unsafe=True)
         )
@@ -100,7 +100,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return nvr_data, errors
 
-    async def async_step_reauth(self, user_input: Dict[str, Any]) -> FlowResult:
+    async def async_step_reauth(self, user_input: dict[str, Any]) -> FlowResult:
         """Perform reauth upon an API authentication error."""
 
         self.entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
@@ -140,7 +140,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_user(
-        self, user_input: Dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle a flow initiated by the user."""
 

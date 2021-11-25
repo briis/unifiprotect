@@ -6,7 +6,7 @@
                 "description": "Set up Unifi Protect to monitor cameras and sensors.",
                 "data": {
                     "host": "IP Address of Unifi Protect Server",
-                    "port": "Port Number: (7443 NON UnifiOS, 443 UnifiOS)",
+                    "port": "Port Number",
                     "username": "Username",
                     "password": "Password"
                 }

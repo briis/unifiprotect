@@ -120,7 +120,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             # validate login data
             nvr_data, errors = await self._async_get_nvr_data(form_data)
-            if nvr_data is not None:
+            if not errors:
                 self.hass.config_entries.async_update_entry(self.entry, data=form_data)
                 await self.hass.config_entries.async_reload(self.entry.entry_id)
                 return self.async_abort(reason="reauth_successful")
@@ -147,7 +147,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             nvr_data, errors = await self._async_get_nvr_data(user_input)
 
-            if nvr_data is not None:
+            if not errors:
                 await self.async_set_unique_id(nvr_data[SERVER_ID])
                 self._abort_if_unique_id_configured()
 

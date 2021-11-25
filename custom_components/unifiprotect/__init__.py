@@ -80,10 +80,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
 
-    if nvr_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+    if nvr_info.version < MIN_REQUIRED_PROTECT_V:
         _LOGGER.error(
-            "You are running V%s of UniFi Protect. Minimum required version is V%s. Please upgrade UniFi Protect and then retry",
-            nvr_info["server_version"],
+            "You are running v%s of UniFi Protect. Minimum required version is v%s. Please upgrade UniFi Protect and then retry",
+            nvr_info.version,
             MIN_REQUIRED_PROTECT_V,
         )
         return False

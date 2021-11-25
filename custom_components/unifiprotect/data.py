@@ -4,22 +4,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 import logging
-from typing import Generator
-from homeassistant.config_entries import ConfigEntry
+from typing import Generator, Iterable
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import ProtectApiClient
+from pyunifiprotect.data import ProtectModel, ModelType
 from pyunifiprotect.exceptions import NotAuthorized, NvrError
 
 _LOGGER = logging.getLogger(__name__)
-
-
-@dataclass
-class UnifiProtectDevice:
-    device_id: str
-    type: str
-    data: dict
 
 
 class UnifiProtectData:
@@ -43,18 +37,19 @@ class UnifiProtectData:
         self._unsub_interval = None
         self._unsub_websocket = None
 
-        self.data = {}
         self.last_update_success = False
 
-    def get_by_types(self, device_types) -> Generator[UnifiProtectDevice, None, None]:
+    def get_by_types(
+        self, device_types: Iterable[ModelType]
+    ) -> Generator[ProtectModel, None, None]:
         """Get all devices matching types."""
-        if not self.data:
-            return
 
-        for device_id, device_data in self.data.items():
-            device_type = device_data.get("type")
-            if device_type and device_type in device_types:
-                yield UnifiProtectDevice(device_id, device_type, device_data)
+        attrs = [f"{m.value}s" for m in device_types]
+
+        for attr in attrs:
+            devices: dict[str, ProtectModel] = getattr(self._protect.bootstrap, attr)
+            for device in devices.values():
+                yield device
 
     async def async_setup(self):
         """Subscribe and do the refresh."""
@@ -73,12 +68,10 @@ class UnifiProtectData:
             self._unsub_interval = None
         await self._protect.async_disconnect_ws()
 
-    async def async_refresh(self, *_, force_camera_update=False):
+    async def async_refresh(self, *_, force=False):
         """Update the data."""
         try:
-            self._async_process_updates(
-                await self._protect.update(force_camera_update=force_camera_update)
-            )
+            self._async_process_updates(await self._protect.update(force=force))
             self.last_update_success = True
         except NvrError:
             if self.last_update_success:
@@ -93,9 +86,9 @@ class UnifiProtectData:
     @callback
     def _async_process_updates(self, updates):
         """Process update from the protect data."""
-        for device_id, data in updates.items():
-            self.data[device_id] = data
-            self.async_signal_device_id_update(device_id)
+        # for device_id, data in updates.items():
+        #     self.data[device_id] = data
+        #     self.async_signal_device_id_update(device_id)
 
     @callback
     def async_subscribe_device_id(self, device_id, update_callback):

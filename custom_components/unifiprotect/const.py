@@ -3,7 +3,7 @@
 # from typing_extensions import Required
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.helpers import config_validation as cv
-from packaging.version import parse
+from pyunifiprotect.data.types import ModelType, Version
 import voluptuous as vol
 
 DOMAIN = "unifiprotect"
@@ -67,7 +67,7 @@ DEVICE_TYPE_SENSOR = "sensor"
 DEVICE_TYPE_DARK = "is dark"
 
 DEVICES_WITH_DOORBELL = (DEVICE_TYPE_DOORBELL,)
-DEVICES_WITH_CAMERA = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL)
+DEVICES_WITH_CAMERA = (ModelType.CAMERA,)
 DEVICES_WITH_SENSE = (DEVICE_TYPE_SENSOR,)
 DEVICES_WITH_MOTION = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL, DEVICE_TYPE_SENSOR)
 
@@ -78,7 +78,7 @@ ENTITY_CATEGORY_DIAGNOSTIC = (
     "diagnostic"  # Replace with value from HA Core when more people are on 2021.11
 )
 
-MIN_REQUIRED_PROTECT_V = parse("1.20.0")
+MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"

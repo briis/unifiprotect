@@ -70,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     _LOGGER.debug("Connect to Unfi Protect")
-    protect_data = UnifiProtectData(hass, protectserver, SCAN_INTERVAL)
+    protect_data = UnifiProtectData(hass, protectserver, SCAN_INTERVAL, entry)
 
     try:
         nvr_info = await protectserver.server_information()

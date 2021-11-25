@@ -5,7 +5,7 @@
             "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]"
         },
         "error": {
-            "connection_error": "Failed to connect. Wrong IP or Username/Password.",
+            "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
             "protect_version": "UniFi Protect Version is not supported by this Integration",
             "nvr_error": "Error retrieving data from UniFi Protect."
         },

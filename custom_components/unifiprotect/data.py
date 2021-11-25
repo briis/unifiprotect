@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 import logging
 from typing import Generator
+from homeassistant.config_entries import ConfigEntry
 
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
-from pyunifiprotect.unifi_protect_server import NvrError
+from pyunifiprotect.exceptions import NotAuthorized
+from pyunifiprotect.unifi_protect_server import NvrError, UpvServer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,16 +25,25 @@ class UnifiProtectDevice:
 class UnifiProtectData:
     """Coordinate updates."""
 
-    def __init__(self, hass, protectserver, update_interval):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        protectserver: UpvServer,
+        update_interval: timedelta,
+        entry: ConfigEntry,
+    ):
         """Initialize an subscriber."""
         super().__init__()
         self._hass = hass
         self._protectserver = protectserver
-        self.data = {}
+        self._entry = entry
+        self._hass = hass
         self._update_interval = update_interval
         self._subscriptions = {}
         self._unsub_interval = None
         self._unsub_websocket = None
+
+        self.data = {}
         self.last_update_success = False
 
     def get_by_types(self, device_types) -> Generator[UnifiProtectDevice, None, None]:
@@ -73,6 +85,11 @@ class UnifiProtectData:
         except NvrError:
             if self.last_update_success:
                 _LOGGER.exception("Error while updating")
+            self.last_update_success = False
+        except NotAuthorized:
+            await self.async_stop()
+            _LOGGER.exception("Reauthentication required")
+            self._entry.async_start_reauth(self._hass)
             self.last_update_success = False
 
     @callback

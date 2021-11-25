@@ -5,7 +5,7 @@
             "server_exists": "UniFi Protect Server already configured."
         },
         "error": {
-            "connection_error": "Failed to connect. Wrong IP or Username/Password.",
+            "invalid_auth": "Invalid authentication",
             "nvr_error": "Error retrieving data from UniFi Protect.",
             "protect_version": "UniFi Protect Version is not supported by this Integration"
         },

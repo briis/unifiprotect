@@ -34,6 +34,8 @@ _LOGGER = logging.getLogger(__name__)
 class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a Unifi Protect config flow."""
 
+    entry: Optional[config_entries.ConfigEntry] = None
+
     VERSION = 1
 
     @staticmethod
@@ -95,25 +97,28 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return nvr_data, errors
 
-    async def async_step_reauth(self, user_input: Dict[str, Any] = None) -> FlowResult:
+    async def async_step_reauth(self, user_input: Dict[str, Any]) -> FlowResult:
         """Perform reauth upon an API authentication error."""
 
-        errors = {}
+        if "entry_id" in self.context:
+            self.entry = self.hass.config_entries.async_get_entry(
+                self.context["entry_id"]
+            )
 
-        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
-        if entry is None:
+        errors = {}
+        if self.entry is None:
             return await self.async_step_user()
 
         # prepopulate fields
-        form_data = {**entry.data}
+        form_data = {**self.entry.data}
         if user_input is not None:
             form_data.update(user_input)
 
             # validate login data
             nvr_data, errors = await self._async_get_nvr_data(form_data)
             if nvr_data is not None:
-                self.hass.config_entries.async_update_entry(entry, data=form_data)
-                await self.hass.config_entries.async_reload(entry.entry_id)
+                self.hass.config_entries.async_update_entry(self.entry, data=form_data)
+                await self.hass.config_entries.async_reload(self.entry.entry_id)
                 return self.async_abort(reason="reauth_successful")
 
         return self.async_show_form(

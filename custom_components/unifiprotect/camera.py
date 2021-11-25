@@ -174,20 +174,33 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
         self.device: UnifiCamera = camera
         self.channel = channel
-        if not self.channel.is_rtsp_enabled:
-            disable_stream = False
-
         self._disable_stream = disable_stream
-        self._stream_source = None if disable_stream else self.channel.rtsps_url
         self._last_image = None
-        self._attr_supported_features = SUPPORT_STREAM if self._stream_source else 0
+        self._async_set_stream_source()
         self._attr_unique_id = f"{self.device.id}_{self.device.mac}_{self.channel.id}"
         # only the default (first) channel is enabled by default
         self._attr_entity_registry_enabled_default = is_default
         self._attr_name = f"{self.device.name} {self.channel.name}"
 
     @callback
+    def _async_set_stream_source(self):
+        disable_stream = self._disable_stream
+        if not self.channel.is_rtsp_enabled:
+            disable_stream = False
+
+        self._stream_source = None if disable_stream else self.channel.rtsps_url
+        self._attr_supported_features = SUPPORT_STREAM if self._stream_source else 0
+
+    @callback
     def _async_updated_event(self):
+        if self.protect_data.last_update_success:
+            self.device = self.protect.bootstrap.cameras[self.device.id]
+            for channel in self.device.channels:
+                if channel.id == self.channel.id:
+                    self.channel = channel
+                    break
+            self._async_set_stream_source()
+
         self._attr_available = (
             self.device.is_connected and self.protect_data.last_update_success
         )

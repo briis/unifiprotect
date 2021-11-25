@@ -1,7 +1,6 @@
 """Base class for protect data."""
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import timedelta
 import logging
 from typing import Generator, Iterable
@@ -10,8 +9,15 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import ProtectApiClient
-from pyunifiprotect.data import ProtectModel, ModelType
+from pyunifiprotect.data import (
+    Bootstrap,
+    ModelType,
+    ProtectModel,
+    WSSubscriptionMessage,
+)
 from pyunifiprotect.exceptions import NotAuthorized, NvrError
+
+from .const import DEVICES_WITH_ENTITIES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,7 +60,7 @@ class UnifiProtectData:
     async def async_setup(self):
         """Subscribe and do the refresh."""
         self._unsub_websocket = self._protect.subscribe_websocket(
-            self._async_process_updates
+            self._async_process_ws_message
         )
         await self.async_refresh()
 
@@ -84,11 +90,23 @@ class UnifiProtectData:
             self.last_update_success = False
 
     @callback
-    def _async_process_updates(self, updates):
+    def _async_process_ws_message(self, message: WSSubscriptionMessage):
+        if message.new_obj.model in DEVICES_WITH_ENTITIES:
+            self.async_signal_device_id_update(message.new_obj.id)
+
+    @callback
+    def _async_process_updates(self, updates: Bootstrap | None):
         """Process update from the protect data."""
-        # for device_id, data in updates.items():
-        #     self.data[device_id] = data
-        #     self.async_signal_device_id_update(device_id)
+
+        # Websocket connected, use data from it
+        if updates is None:
+            return
+
+        attrs = [f"{m.value}s" for m in DEVICES_WITH_ENTITIES]
+        for attr in attrs:
+            devices: dict[str, ProtectModel] = getattr(self._protect.bootstrap, attr)
+            for device_id in devices.keys():
+                self.async_signal_device_id_update(device_id)
 
     @callback
     def async_subscribe_device_id(self, device_id, update_callback):

@@ -64,6 +64,11 @@ class UnifiProtectEntity(Entity):
     @callback
     def _async_updated_event(self):
         self._attr_available = self.protect_data.last_update_success
+
+        if self._attr_available:
+            devices = getattr(self.protect.bootstrap, f"{self.device.model.value}s")
+            self.device = devices[self.device.id]
+
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):

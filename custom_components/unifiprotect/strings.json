@@ -21,7 +21,7 @@
                     "password": "[%key:common::config_flow::data::password%]"
                 }
             },
-            "reauth": {
+            "reauth_confirm": {
                 "title": "UniFi Protect Reauth",
                 "data": {
                     "host": "IP/Host of UniFi Protect Server",

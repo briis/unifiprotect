@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from aiohttp import CookieJar
 from homeassistant import config_entries
@@ -37,6 +37,11 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 2
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.entry: config_entries.ConfigEntry | None = None
+
     @staticmethod
     @callback
     def async_get_options_flow(
@@ -46,7 +51,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
     @callback
-    async def _async_create_entry(self, title: str, data: Dict[str, Any]):
+    async def _async_create_entry(self, title: str, data: dict[str, Any]):
         return self.async_create_entry(
             title=title,
             data={**data, CONF_ID: title},
@@ -59,8 +64,8 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     async def _async_get_nvr_data(
         self,
-        user_input: Dict[str, Any],
-    ) -> Tuple[Optional[NVR], Dict[str, str]]:
+        user_input: dict[str, Any],
+    ) -> tuple[dict[str, Any] | None, dict[str, str]]:
         session = async_create_clientsession(
             self.hass, cookie_jar=CookieJar(unsafe=True)
         )
@@ -98,29 +103,33 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return nvr_data, errors
 
-    async def async_step_reauth(self, user_input: Dict[str, Any] = None) -> FlowResult:
+    async def async_step_reauth(self, user_input: dict[str, Any]) -> FlowResult:
         """Perform reauth upon an API authentication error."""
 
-        errors = {}
+        self.entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        return await self.async_step_reauth_confirm()
 
-        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
-        if entry is None:
-            return await self.async_step_user()
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+
+        errors = {}
+        assert self.entry is not None
 
         # prepopulate fields
-        form_data = {**entry.data}
+        form_data = {**self.entry.data}
         if user_input is not None:
             form_data.update(user_input)
 
             # validate login data
             nvr_data, errors = await self._async_get_nvr_data(form_data)
             if nvr_data is not None:
-                self.hass.config_entries.async_update_entry(entry, data=form_data)
-                await self.hass.config_entries.async_reload(entry.entry_id)
+                self.hass.config_entries.async_update_entry(self.entry, data=form_data)
+                await self.hass.config_entries.async_reload(self.entry.entry_id)
                 return self.async_abort(reason="reauth_successful")
 
         return self.async_show_form(
-            step_id="reauth",
+            step_id="reauth_confirm",
             data_schema=vol.Schema(
                 {
                     vol.Required(
@@ -132,7 +141,9 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_user(self, user_input: Dict[str, Any] = None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle a flow initiated by the user."""
 
         errors = {}

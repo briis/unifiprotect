@@ -12,6 +12,7 @@ from homeassistant.const import (
     CONF_PASSWORD,
     CONF_PORT,
     CONF_USERNAME,
+    CONF_VERIFY_SSL,
 )
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
@@ -34,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a Unifi Protect config flow."""
 
-    VERSION = 1
+    VERSION = 2
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -72,6 +73,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if CONF_HOST in user_input:
             host = user_input[CONF_HOST]
             port = user_input.get(CONF_PORT, DEFAULT_PORT)
+            verify_ssl = user_input.get(CONF_VERIFY_SSL, True)
         else:
             return None, {}
 
@@ -81,6 +83,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             port=port,
             username=user_input[CONF_USERNAME],
             password=user_input[CONF_PASSWORD],
+            verify_ssl=verify_ssl,
         )
 
         errors = {}
@@ -162,6 +165,9 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_PORT, default=user_input.get(CONF_PORT, DEFAULT_PORT)
                     ): int,
+                    vol.Required(
+                        CONF_VERIFY_SSL, default=user_input.get(CONF_VERIFY_SSL, True)
+                    ): bool,
                     vol.Required(
                         CONF_USERNAME, default=user_input.get(CONF_USERNAME)
                     ): str,

@@ -12,19 +12,20 @@
         "step": {
             "reauth_confirm": {
                 "data": {
-                    "host": "IP Address of UniFi Protect Server",
+                    "host": "IP/Host of UniFi Protect Server",
                     "password": "Password",
-                    "port": "Port Number",
+                    "port": "Port",
                     "username": "Username"
                 },
                 "title": "UniFi Protect Reauth"
             },
             "user": {
                 "data": {
-                    "host": "IP Address of UniFi Protect Server",
+                    "host": "IP/Host of UniFi Protect Server",
                     "password": "Password",
-                    "port": "Port Number",
-                    "username": "Username"
+                    "port": "Port",
+                    "username": "Username",
+                    "verify_ssl": "Verify SSL certificate"
                 },
                 "description": "Set up UniFi Protect to monitor cameras and sensors.",
                 "title": "UniFi Protect Setup"

@@ -5,19 +5,19 @@
         },
         "error": {
             "connection_error": "Failed to connect. Wrong IP or Username/Password.",
-            "protect_version": "UniFi Protect Version is not supported by this Integration",
-            "nvr_error": "Error retrieving data from Unifi Protect."
+            "nvr_error": "Error retrieving data from Unifi Protect.",
+            "protect_version": "UniFi Protect Version is not supported by this Integration"
         },
         "step": {
             "user": {
-                "description": "Set up Unifi Protect to monitor cameras and sensors.",
-                "title": "Unifi Protect",
                 "data": {
                     "host": "IP Address of Unifi Protect Server",
+                    "password": "Password",
                     "port": "Port Number",
-                    "username": "Username",
-                    "password": "Password"
-                }
+                    "username": "Username"
+                },
+                "description": "Set up Unifi Protect to monitor cameras and sensors.",
+                "title": "Unifi Protect"
             }
         }
     },
@@ -25,10 +25,10 @@
         "step": {
             "init": {
                 "data": {
-                    "username": "Username",
-                    "password": "Password",
                     "disable_rtsp": "Disable the RTSP stream",
-                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel"
+                    "doorbell_text": "Add a comma separated list of Custom Texts for the doorbell. Leave blank if no Doorbel",
+                    "password": "Password",
+                    "username": "Username"
                 }
             }
         }

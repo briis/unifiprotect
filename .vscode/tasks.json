@@ -19,5 +19,14 @@
 			"command": "container install",
 			"problemMatcher": []
 		}
+		{
+			"label": "Update Translations",
+			"type": "shell",
+			"command": "echo 'unifiprotect\n' | python3 -m script.translations develop",
+			"options": {
+				"cwd": "/workspaces/hass",
+			},
+			"problemMatcher": []
+		}
 	]
 }

@@ -24,7 +24,7 @@
 			"type": "shell",
 			"command": "echo 'unifiprotect\n' | python3 -m script.translations develop",
 			"options": {
-				"cwd": "/workspaces/hass",
+				"cwd": "/opt/hass",
 			},
 			"problemMatcher": []
 		}

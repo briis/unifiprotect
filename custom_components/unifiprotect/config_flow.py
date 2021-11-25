@@ -111,8 +111,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
 
         errors = {}
-        if self.entry is None:
-            return await self.async_step_user()
+        assert self.entry is not None
 
         # prepopulate fields
         form_data = {**self.entry.data}

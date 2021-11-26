@@ -7,7 +7,6 @@
 * `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR
 * `CHANGE`: **BREAKING CHANGE** `event_length` attr has been removed from the motion and door binary sensors. The value was previously calculated in memory and not relaible between restarts.
 * `CHANGE`: Migrates `UpvServer` to `ProtectApiClient`
-    * Migration still WIP, _only_ the following domains have **not** been migrated yet: `select`
     * This should lead to a number of behind-the-scenes reliability improvements
       * Should fix/close the following issues: #341, #317, #297, #255, and #248
 * `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.

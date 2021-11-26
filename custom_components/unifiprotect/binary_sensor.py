@@ -23,7 +23,7 @@ from pyunifiprotect.data.devices import Camera, Light, Sensor
 from pyunifiprotect.data.types import ModelType
 from pyunifiprotect.utils import to_js_time, utc_now
 
-from custom_components.unifiprotect.utils import get_nested_attr
+from .utils import get_nested_attr
 
 from .const import (
     ATTR_EVENT_OBJECT,

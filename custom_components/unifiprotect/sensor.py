@@ -17,7 +17,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from pyunifiprotect.data import Light, ModelType
 
-from custom_components.unifiprotect.utils import get_nested_attr
+from .utils import get_nested_attr
 
 from .const import (
     ATTR_ENABLED_AT,

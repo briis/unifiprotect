@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 import logging
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
@@ -15,15 +16,9 @@ from homeassistant.const import (
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
+from pyunifiprotect.data import Light, ModelType
 
-from .const import (
-    ATTR_ENABLED_AT,
-    DEVICE_TYPE_LIGHT,
-    DEVICE_TYPE_SENSOR,
-    DEVICES_WITH_CAMERA,
-    DOMAIN,
-    ENTITY_CATEGORY_DIAGNOSTIC,
-)
+from .const import ATTR_ENABLED_AT, DOMAIN, ENTITY_CATEGORY_DIAGNOSTIC
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
@@ -51,16 +46,16 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         name="Motion Recording",
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_value="recording_mode",
+        ufp_device_types={ModelType.CAMERA},
+        ufp_value="recording_settings.mode",
     ),
     UnifiProtectSensorEntityDescription(
         key="light_turn_on",
         name="Light Turn On",
         icon="mdi:leak",
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types={DEVICE_TYPE_LIGHT},
-        ufp_value="motion_mode",
+        ufp_device_types={ModelType.LIGHT},
+        ufp_value="light_mode_settings.mode",
     ),
     UnifiProtectSensorEntityDescription(
         key="battery_level",
@@ -68,7 +63,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="%",
         device_class=DEVICE_CLASS_BATTERY,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types={DEVICE_TYPE_SENSOR},
+        ufp_device_types={ModelType.SENSOR},
         ufp_value="battery_status",
     ),
     UnifiProtectSensorEntityDescription(
@@ -77,8 +72,8 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="lx",
         device_class=DEVICE_CLASS_ILLUMINANCE,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types={DEVICE_TYPE_SENSOR},
-        ufp_value="light_value",
+        ufp_device_types={ModelType.SENSOR},
+        ufp_value="stats.light.value",
     ),
     UnifiProtectSensorEntityDescription(
         key="humidity_level",
@@ -86,8 +81,8 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="%",
         device_class=DEVICE_CLASS_HUMIDITY,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types={DEVICE_TYPE_SENSOR},
-        ufp_value="humidity_value",
+        ufp_device_types={ModelType.SENSOR},
+        ufp_value="stats.humidity.value",
     ),
     UnifiProtectSensorEntityDescription(
         key="temperature_level",
@@ -95,8 +90,8 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=DEVICE_CLASS_TEMPERATURE,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types={DEVICE_TYPE_SENSOR},
-        ufp_value="temperature_value",
+        ufp_device_types={ModelType.SENSOR},
+        ufp_value="stats.temperature.value",
     ),
     UnifiProtectSensorEntityDescription(
         key="ble_signal",
@@ -104,8 +99,8 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         native_unit_of_measurement="dB",
         device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types={DEVICE_TYPE_SENSOR},
-        ufp_value="bluetooth_signal",
+        ufp_device_types={ModelType.SENSOR},
+        ufp_value="bluetooth_connection_state.signal_strength",
     ),
 )
 
@@ -115,22 +110,19 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensors for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    upv_object = entry_data.upv
+    protect = entry_data.protect
     protect_data = entry_data.protect_data
-    server_info = entry_data.server_info
 
     sensors = []
     for description in SENSOR_TYPES:
         for device in protect_data.get_by_types(description.ufp_device_types):
             sensors.append(
-                UnifiProtectSensor(
-                    upv_object, protect_data, server_info, device.device_id, description
-                )
+                UnifiProtectSensor(protect, protect_data, device, description)
             )
             _LOGGER.debug(
                 "Adding sensor entity %s for %s",
                 description.name,
-                device.data.get("name"),
+                device.name,
             )
 
     async_add_entities(sensors)
@@ -141,27 +133,35 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
 
     def __init__(
         self,
-        upv_object,
+        protect,
         protect_data,
-        server_info,
-        device_id,
+        device,
         description: UnifiProtectSensorEntityDescription,
     ):
         """Initialize an Unifi Protect sensor."""
-        super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
+        super().__init__(protect, protect_data, device, description)
+        self._attr_name = f"{self.entity_description.name} {self.device.name}"
 
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        return self._device_data[self.entity_description.ufp_value]
+        attrs = self.entity_description.ufp_value.split(".")
+
+        value = self.device
+        for attr in attrs:
+            value = getattr(value, attr)
+
+        if isinstance(value, Enum):
+            value = value.value
+
+        return value
 
     @property
     def extra_state_attributes(self):
         """Return the device state attributes."""
-        if self._device_type == DEVICE_TYPE_LIGHT:
+        if isinstance(self.device, Light):
             return {
                 **super().extra_state_attributes,
-                ATTR_ENABLED_AT: self._device_data["motion_mode_enabled_at"],
+                ATTR_ENABLED_AT: self.device.light_mode_settings.enable_at.value,
             }
         return super().extra_state_attributes

@@ -12,9 +12,9 @@ from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import (
     Bootstrap,
     ModelType,
-    ProtectModel,
     WSSubscriptionMessage,
 )
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.exceptions import NotAuthorized, NvrError
 
 from .const import DEVICES_WITH_ENTITIES
@@ -47,13 +47,15 @@ class UnifiProtectData:
 
     def get_by_types(
         self, device_types: Iterable[ModelType]
-    ) -> Generator[ProtectModel, None, None]:
+    ) -> Generator[ProtectAdoptableDeviceModel, None, None]:
         """Get all devices matching types."""
 
         attrs = [f"{m.value}s" for m in device_types]
 
         for attr in attrs:
-            devices: dict[str, ProtectModel] = getattr(self._protect.bootstrap, attr)
+            devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
+                self._protect.bootstrap, attr
+            )
             for device in devices.values():
                 yield device
 
@@ -104,7 +106,9 @@ class UnifiProtectData:
 
         attrs = [f"{m.value}s" for m in DEVICES_WITH_ENTITIES]
         for attr in attrs:
-            devices: dict[str, ProtectModel] = getattr(self._protect.bootstrap, attr)
+            devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
+                self._protect.bootstrap, attr
+            )
             for device_id in devices.keys():
                 self.async_signal_device_id_update(device_id)
 

@@ -29,7 +29,7 @@ class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_device_types: set[ModelType]
-    ufp_required_field: str
+    ufp_required_field: str | None
     ufp_value: str
 
 
@@ -140,7 +140,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         """Initialize an Unifi Protect Switch."""
         super().__init__(protect, protect_data, device, description)
         self.device: Camera | Light = device
-        self._attr_name = f"{self.entity_description.name} {self.device.name}"
+        self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._switch_type = self.entity_description.key
         if isinstance(self.device, Camera):
             if self.device.is_privacy_on:

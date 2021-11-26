@@ -1,6 +1,7 @@
 """Constant definitions for Unifi Protect Integration."""
 
 # from typing_extensions import Required
+from datetime import timedelta
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.helpers import config_validation as cv
 from pyunifiprotect.data.types import ModelType, Version
@@ -63,6 +64,8 @@ DEFAULT_ATTRIBUTION = "Powered by UniFi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_SCAN_INTERVAL = 2
 
+RING_INTERVAL = timedelta(seconds=3)
+
 DEVICE_TYPE_CAMERA = "camera"
 DEVICE_TYPE_LIGHT = "light"
 DEVICE_TYPE_DOORBELL = "doorbell"
@@ -74,8 +77,6 @@ DEVICE_TYPE_DARK = "is dark"
 DEVICES_WITH_CAMERA = {ModelType.CAMERA}
 DEVICES_WITH_STATUS_LIGHT = {ModelType.CAMERA, ModelType.LIGHT}
 DEVICES_WITH_SENSOR = {ModelType.CAMERA, ModelType.LIGHT, ModelType.SENSOR}
-DEVICES_WITH_SENSE = (DEVICE_TYPE_SENSOR,)
-DEVICES_WITH_MOTION = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL, DEVICE_TYPE_SENSOR)
 DEVICES_WITH_ENTITIES = (
     DEVICES_WITH_CAMERA | DEVICES_WITH_STATUS_LIGHT | DEVICES_WITH_SENSOR
 )
@@ -118,7 +119,7 @@ TYPE_HIGH_FPS_OFF = "default"
 
 PLATFORMS = [
     "camera",
-    # "binary_sensor",
+    "binary_sensor",
     "sensor",
     "switch",
     "light",

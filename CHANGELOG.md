@@ -5,13 +5,15 @@
 * `NEW`: **BREAKING CHANGE** Adds all enabled UFP Camera channels as different camera entities, only the highest resolution one is enabled by default. This will change the unique ID of your default Camera so your old Camera entity will become orphaned
 * `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the switch have been changed. Make sure you turn off all of your privacy zone switches before upgrading
 * `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR
+* `CHANGE`: **BREAKING CHANGE** `event_length` attr has been removed from the motion and door binary sensors. The value was previously calculated in memory and not relaible between restarts.
 * `CHANGE`: Migrates `UpvServer` to `ProtectApiClient`
-    * Migration still WIP, _only_ the following domains have been migrated: `camera`, `sensor`, `switch`, `light`, `number`
+    * Migration still WIP, _only_ the following domains have **not** been migrated yet: `select`
     * This should lead to a number of behind-the-scenes reliability improvements
       * Should fix/close the following issues: #341, #317, #297, #255, and #248
 * `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
   * Closes #337
 * `CHANGE`: Configuration URLs for UFP devices will not take you directly to the device in the UFP Web UI
+* `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
 * `NEW`: Added the following attributes to Camera entity: `width`, `height`, `fps`, `bitrate` and `channel_id`
 * `NEW`: Added status light switch for Flood Light devices
 * `CHANGE`: Overhaul Config Flow

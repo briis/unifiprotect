@@ -30,7 +30,7 @@ class UnifiprotectRequiredKeysMixin:
     ufp_min: int
     ufp_step: int
     ufp_device_types: set[ModelType]
-    ufp_required_field: str
+    ufp_required_field: str | None
     ufp_value: str
     ufp_set_function: str
 
@@ -134,7 +134,7 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
     ):
         """Initialize the Number Entities."""
         super().__init__(protect, protect_data, device, description)
-        self._attr_name = f"{self.entity_description.name} {self.device.name}"
+        self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._attr_max_value = self.entity_description.ufp_max
         self._attr_min_value = self.entity_description.ufp_min
         self._attr_step = self.entity_description.ufp_step

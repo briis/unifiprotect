@@ -72,10 +72,13 @@ DEVICE_TYPE_SENSOR = "sensor"
 DEVICE_TYPE_DARK = "is dark"
 
 DEVICES_WITH_CAMERA = {ModelType.CAMERA}
+DEVICES_WITH_STATUS_LIGHT = {ModelType.CAMERA, ModelType.LIGHT}
 DEVICES_WITH_SENSOR = {ModelType.CAMERA, ModelType.LIGHT, ModelType.SENSOR}
 DEVICES_WITH_SENSE = (DEVICE_TYPE_SENSOR,)
 DEVICES_WITH_MOTION = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL, DEVICE_TYPE_SENSOR)
-DEVICES_WITH_ENTITIES = DEVICES_WITH_CAMERA | DEVICES_WITH_SENSOR
+DEVICES_WITH_ENTITIES = (
+    DEVICES_WITH_CAMERA | DEVICES_WITH_STATUS_LIGHT | DEVICES_WITH_SENSOR
+)
 
 ENTITY_CATEGORY_CONFIG = (
     "config"  # Replace with value from HA Core when more people are on 2021.11
@@ -117,7 +120,7 @@ PLATFORMS = [
     "camera",
     # "binary_sensor",
     "sensor",
-    # "switch",
+    "switch",
     "light",
     # "select",
     "number",

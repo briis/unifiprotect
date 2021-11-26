@@ -243,7 +243,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_CHIME_DURATION: self.device.chime_duration,
             ATTR_IS_DARK: self.device.is_dark,
             ATTR_MIC_SENSITIVITY: self.device.mic_volume,
-            ATTR_PRIVACY_MODE: self.device.get_privacy_zone() is not None,
+            ATTR_PRIVACY_MODE: self.device.is_privacy_on,
             ATTR_WDR_VALUE: self.device.isp_settings.wdr,
             ATTR_ZOOM_POSITION: self.device.isp_settings.zoom_position,
             ATTR_WIDTH: self.channel.width,

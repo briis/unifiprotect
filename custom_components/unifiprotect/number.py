@@ -52,7 +52,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_max=3,
         ufp_step=1,
         ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_required_field=None,
+        ufp_required_field="feature_flags.has_wdr",
         ufp_value="isp_settings.wdr",
         ufp_set_function="set_wdr_level",
     ),

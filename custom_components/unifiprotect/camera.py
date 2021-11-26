@@ -61,6 +61,7 @@ from .const import (
     SET_STATUS_LIGHT_SCHEMA,
     SET_WDR_VALUE_SCHEMA,
     SET_ZOOM_POSITION_SCHEMA,
+    TYPE_RECORD_NOTSET,
 )
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -197,19 +198,13 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         self._attr_supported_features = SUPPORT_STREAM if self._stream_source else 0
 
     @callback
-    def _async_updated_event(self):
-        if self.protect_data.last_update_success:
-            self.device = self.protect.bootstrap.cameras[self.device.id]
-            for channel in self.device.channels:
-                if channel.id == self.channel.id:
-                    self.channel = channel
-                    break
-            self._async_set_stream_source()
-
-        self._attr_available = (
-            self.device.is_connected and self.protect_data.last_update_success
-        )
-        self.async_write_ha_state()
+    def _async_update_device_from_protect(self):
+        super()._async_update_device_from_protect()
+        for channel in self.device.channels:
+            if channel.id == self.channel.id:
+                self.channel = channel
+                break
+        self._async_set_stream_source()
 
     @property
     def supported_features(self):
@@ -303,8 +298,16 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         self, privacy_mode: bool, mic_level: int, recording_mode: str
     ) -> None:
         """Set camera Privacy mode."""
+
+        kwargs = {}
+        if mic_level >= 0:
+            kwargs["mic_level"] = mic_level
+        if recording_mode != TYPE_RECORD_NOTSET:
+            kwargs["recording_mode"] = RecordingMode(recording_mode)
+
         await self.device.set_privacy(
-            privacy_mode, mic_level, RecordingMode(recording_mode)
+            privacy_mode,
+            **kwargs,
         )
 
     async def async_set_wdr_value(self, value: int) -> None:

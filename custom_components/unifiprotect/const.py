@@ -118,7 +118,7 @@ PLATFORMS = [
     # "binary_sensor",
     "sensor",
     # "switch",
-    # "light",
+    "light",
     # "select",
     # "number",
 ]

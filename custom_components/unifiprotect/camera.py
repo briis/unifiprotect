@@ -23,14 +23,19 @@ from pyunifiprotect.utils import to_js_time, utc_now
 from custom_components.unifiprotect.data import UnifiProtectData
 
 from .const import (
+    ATTR_BITRATE,
     ATTR_CAMERA_ID,
+    ATTR_CHANNEL_ID,
     ATTR_CHIME_DURATION,
     ATTR_CHIME_ENABLED,
+    ATTR_FPS,
+    ATTR_HEIGHT,
     ATTR_IS_DARK,
     ATTR_MIC_SENSITIVITY,
     ATTR_PRIVACY_MODE,
     ATTR_UP_SINCE,
     ATTR_WDR_VALUE,
+    ATTR_WIDTH,
     ATTR_ZOOM_POSITION,
     DEFAULT_BRAND,
     DOMAIN,
@@ -243,9 +248,14 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             ATTR_CHIME_DURATION: self.device.chime_duration,
             ATTR_IS_DARK: self.device.is_dark,
             ATTR_MIC_SENSITIVITY: self.device.mic_volume,
-            ATTR_PRIVACY_MODE: self.device.get_privacy_zone() != None,
+            ATTR_PRIVACY_MODE: self.device.get_privacy_zone() is not None,
             ATTR_WDR_VALUE: self.device.isp_settings.wdr,
             ATTR_ZOOM_POSITION: self.device.isp_settings.zoom_position,
+            ATTR_WIDTH: self.channel.width,
+            ATTR_HEIGHT: self.channel.height,
+            ATTR_FPS: self.channel.fps,
+            ATTR_BITRATE: self.channel.bitrate,
+            ATTR_CHANNEL_ID: self.channel.id,
         }
 
     async def async_set_recording_mode(self, recording_mode: str) -> None:

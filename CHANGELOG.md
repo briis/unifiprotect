@@ -10,6 +10,7 @@
       * Should fix/close the following issues: #341, #317, #297, #255, and #248
 * `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
   * Closes #337
+* `NEW`: Added the following attributes to Camera entity: `width`, `height`, `fps`, `bitrate` and `channel_id`
 * `CHANGE`: Overhaul Config Flow
     * Adds Reauthentication support
     * Adds "Verify SSL"

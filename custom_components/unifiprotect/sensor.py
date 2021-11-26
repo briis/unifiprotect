@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
 import logging
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
@@ -18,7 +17,14 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from pyunifiprotect.data import Light, ModelType
 
-from .const import ATTR_ENABLED_AT, DOMAIN, ENTITY_CATEGORY_DIAGNOSTIC
+from custom_components.unifiprotect.utils import get_nested_attr
+
+from .const import (
+    ATTR_ENABLED_AT,
+    DEVICES_WITH_CAMERA,
+    DOMAIN,
+    ENTITY_CATEGORY_DIAGNOSTIC,
+)
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
@@ -29,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
-    ufp_device_types: set[str]
+    ufp_device_types: set[ModelType]
     ufp_value: str
 
 
@@ -46,7 +52,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         name="Motion Recording",
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_device_types={ModelType.CAMERA},
+        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_value="recording_settings.mode",
     ),
     UnifiProtectSensorEntityDescription(
@@ -64,7 +70,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_BATTERY,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.SENSOR},
-        ufp_value="battery_status",
+        ufp_value="battery_status.percentage",
     ),
     UnifiProtectSensorEntityDescription(
         key="light_level",
@@ -145,16 +151,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        attrs = self.entity_description.ufp_value.split(".")
-
-        value = self.device
-        for attr in attrs:
-            value = getattr(value, attr)
-
-        if isinstance(value, Enum):
-            value = value.value
-
-        return value
+        return get_nested_attr(self.device, self.entity_description.ufp_value)
 
     @property
     def extra_state_attributes(self):

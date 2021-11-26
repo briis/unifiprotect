@@ -120,7 +120,7 @@ PLATFORMS = [
     # "switch",
     "light",
     # "select",
-    # "number",
+    "number",
 ]
 VALID_INFRARED_MODES = [
     TYPE_INFRARED_AUTO,

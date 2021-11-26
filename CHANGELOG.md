@@ -5,7 +5,7 @@
 * `NEW`: **BREAKING CHANGE** Adds all enabled UFP Camera channels as different camera entities, only the highest resolution one is enabled by default. This will change the unique ID of your default Camera so your old Camera entity will become orphaned
 * `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the switch have been changed. Make sure you turn off all of your privacy zone switches before upgrading
 * `CHANGE`: Migrates `UpvServer` to `ProtectApiClient`
-    * Migration still WIP, _only_ the following domains have been migrated: `camera`, `sensor`, `light`
+    * Migration still WIP, _only_ the following domains have been migrated: `camera`, `sensor`, `light`, `number`
     * This should lead to a number of behind-the-scenes reliability improvements
       * Should fix/close the following issues: #341, #317, #297, #255, and #248
 * `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.

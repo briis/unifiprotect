@@ -15,7 +15,7 @@
             "pathMappings": [
                 {
                     "localRoot": "/workspaces/unifiprotect",
-                    "remoteRoot": "."
+                    "remoteRoot": "/config"
                 }
             ]
         }

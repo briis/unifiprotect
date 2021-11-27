@@ -53,6 +53,8 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * `CHANGE`: **BREAKING CHANGE** the `event_object` attribute for binary motion sensors has changed the value for no object detected from "None Identified" (string) to "None" (NoneType/null)
 
+* `CHANGE`: **BREAKING CHANGE** The Doorbell Text select entity for Doorbells has been overhauled. The Config Flow option for Doorbell Messages has been removed. You now can use the the  `unifiprotect.add_doorbell_text` and `unifiprotect.remove_doorbell_text` services to add/remove Doorbell messages. This will persist the messages in UniFi Protect and the choices will now be the same ones that appear in the UniFi Protect iOS/Android app.
+
 * `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
     * This should lead to a number of behind-the-scenes reliability improvements.
       * Should fix/close the following issues: #248, #255, #297, #317, #341, and #360 (TODO: Verify)
@@ -77,6 +79,14 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `NEW`: Added "Chime Duration" number entity for Doorbells
 
 * `NEW`: Added "Uptime" sensor entity for all UniFi Protect adoptable devices. This is disabled by default.
+
+* `NEW`: Added `unifiprotect.set_default_doorbell_text` service to allow you to set your default Doorbell message text.
+
+* `NEW`: Added "SSH Enabled" switch for all adoptable UniFi Protect devices. This switch is disabled by default.
+
+* `NEW`: (requires 2021.12+) Added "Reboot Device" button for all adoptable UniFi Protect devices. This button is disabled by default. Use with caution as there is no confirm. "Pressing" it instantly reboots your device.
+
+* `NEW`: Added media player entity for cameras with speaker. Speaker will accept any ffmpeg playable audio file URI (URI must be accessible from _Home Assistant_, not your Camera). TTS works great!
 
 * `CHANGE`: Overhaul Config Flow
     * Adds Reauthentication support

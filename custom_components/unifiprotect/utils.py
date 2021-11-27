@@ -10,6 +10,7 @@ import time
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.utils import print_ws_stat_summary
 
@@ -69,3 +70,11 @@ async def profile_ws_messages(
         title="UniFi Protect WS Profile Completed",
         notification_id=f"ufp_ws_profiler_{start_time}",
     )
+
+
+def above_ha_version(major, minor) -> bool:
+    if MAJOR_VERSION > major:
+        return True
+    elif MAJOR_VERSION < major:
+        return False
+    return MINOR_VERSION >= minor

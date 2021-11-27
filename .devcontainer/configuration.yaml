@@ -1,5 +1,8 @@
 default_config:
 
+tts:
+  - platform: google_translate
+
 stream:
   ll_hls: true
   part_duration: 0.75

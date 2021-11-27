@@ -98,6 +98,9 @@ ENTITY_CATEGORY_DIAGNOSTIC = (
 MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 
 SERVICE_PROFILE_WS = "profile_ws_messages"
+SERVICE_ADD_DOORBELL_TEXT = "add_doorbell_text"
+SERVICE_REMOVE_DOORBELL_TEXT = "remove_doorbell_text"
+SERVICE_SET_DEFAULT_DOORBELL_TEXT = "set_default_doorbell_text"
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"
@@ -134,6 +137,10 @@ PLATFORMS = [
     "light",
     "select",
     "number",
+    "media_player",
+]
+PLATFORMS_NEXT = PLATFORMS + [
+    "button",
 ]
 VALID_INFRARED_MODES = [
     TYPE_INFRARED_AUTO,
@@ -157,6 +164,12 @@ LIGHT_SETTINGS_SCHEMA = vol.Schema(
         vol.Optional(CONF_ENABLE_AT): cv.string,
         vol.Optional(CONF_DURATION): vol.Coerce(int),
         vol.Optional(CONF_SENSITIVITY): vol.Coerce(int),
+    }
+)
+
+DOORBELL_TEXT_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_MESSAGE): cv.string,
     }
 )
 

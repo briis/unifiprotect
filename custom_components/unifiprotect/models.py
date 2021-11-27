@@ -15,4 +15,3 @@ class UnifiProtectEntryData:
     protect_data: UnifiProtectData
     protect: ProtectApiClient
     disable_stream: bool
-    doorbell_text: str | None

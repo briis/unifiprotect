@@ -14,6 +14,8 @@ from homeassistant.const import (
     DEVICE_CLASS_SIGNAL_STRENGTH,
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_TIMESTAMP,
+    MAJOR_VERSION,
+    MINOR_VERSION,
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
@@ -28,7 +30,7 @@ from .const import (
 )
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
-from .utils import get_nested_attr
+from .utils import above_ha_version, get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -165,7 +167,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         """Return the state of the sensor."""
         value = get_nested_attr(self.device, self.entity_description.ufp_value)
 
-        if isinstance(value, datetime):
+        if isinstance(value, datetime) and not above_ha_version(2021, 12):
             return value.replace(microsecond=0).isoformat()
 
         return value

@@ -24,21 +24,27 @@ import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 from pyunifiprotect.data.nvr import NVR
 
-from custom_components.unifiprotect.utils import profile_ws_messages
+from custom_components.unifiprotect.utils import profile_ws_messages, above_ha_version
 
 from .const import (
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
     CONF_DURATION,
+    CONF_MESSAGE,
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
     DEVICES_FOR_SUBSCRIBE,
     DOMAIN,
+    DOORBELL_TEXT_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
     PLATFORMS,
+    PLATFORMS_NEXT,
     PROFILE_WS_SCHEMA,
+    SERVICE_ADD_DOORBELL_TEXT,
     SERVICE_PROFILE_WS,
+    SERVICE_REMOVE_DOORBELL_TEXT,
+    SERVICE_SET_DEFAULT_DOORBELL_TEXT,
 )
 from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
@@ -110,17 +116,46 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         protect_data=protect_data,
         protect=protect,
         disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
-        doorbell_text=entry.options.get(CONF_DOORBELL_TEXT, None),
     )
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    if above_ha_version(2021, 12):
+        hass.config_entries.async_setup_platforms(entry, PLATFORMS_NEXT)
+    else:
+        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+
+    async def add_doorbell_text(call: ServiceCall):
+        message: str = call.data[CONF_MESSAGE]
+        await protect.bootstrap.nvr.add_custom_doorbell_message(message)
+
+    async def remove_doorbell_text(call: ServiceCall):
+        message: str = call.data[CONF_MESSAGE]
+        await protect.bootstrap.nvr.remove_custom_doorbell_message(message)
+
+    async def set_default_doorbell_text(call: ServiceCall):
+        message: str = call.data[CONF_MESSAGE]
+        await protect.bootstrap.nvr.set_default_doorbell_message(message)
 
     async def profile_ws(call: ServiceCall):
         duration: int = call.data[CONF_DURATION]
         await profile_ws_messages(hass, protect, duration)
 
+    hass.services.async_register(
+        DOMAIN, SERVICE_ADD_DOORBELL_TEXT, add_doorbell_text, DOORBELL_TEXT_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_REMOVE_DOORBELL_TEXT,
+        remove_doorbell_text,
+        DOORBELL_TEXT_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_DEFAULT_DOORBELL_TEXT,
+        set_default_doorbell_text,
+        DOORBELL_TEXT_SCHEMA,
+    )
     hass.services.async_register(
         DOMAIN,
         SERVICE_PROFILE_WS,
@@ -174,6 +209,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         new = {**config_entry.data}
         # keep verify SSL false for anyone migrating to maintain backwards compatibility
         new[CONF_VERIFY_SSL] = False
+        del new[CONF_DOORBELL_TEXT]
 
         config_entry.version = 2
         hass.config_entries.async_update_entry(config_entry, data=new)

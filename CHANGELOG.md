@@ -15,6 +15,7 @@
 * `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
 * `NEW`: Added the following attributes to Camera entity: `width`, `height`, `fps`, `bitrate` and `channel_id`
 * `NEW`: Added status light switch for Flood Light devices
+* `NEW`: Added "On Motion - When Dark" option for Flood Light Lightning switch
 * `CHANGE`: Overhaul Config Flow
     * Adds Reauthentication support
     * Adds "Verify SSL"

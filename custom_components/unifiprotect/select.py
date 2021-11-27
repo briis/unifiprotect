@@ -21,6 +21,7 @@ from pyunifiprotect.data import (
     ModelType,
     RecordingMode,
 )
+from pyunifiprotect.data import devices
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, LCDMessage, Light, Viewer
 from pyunifiprotect.data.nvr import Liveview
@@ -61,19 +62,25 @@ INFRARED_MODES = [
 ]
 
 
-LIGHT_MODE_MOTION = "On Motion"
+LIGHT_MODE_MOTION = "On Motion - Always"
+LIGHT_MODE_MOTION_DARK = "On Motion - When Dark"
 LIGHT_MODE_DARK = "When Dark"
 LIGHT_MODE_OFF = "Manual"
 LIGHT_MODES = [LIGHT_MODE_MOTION, LIGHT_MODE_DARK, LIGHT_MODE_OFF]
 
 LIGHT_MODE_TO_SETTINGS = {
     LIGHT_MODE_MOTION: (LightModeType.MOTION.value, LightModeEnableType.ALWAYS.value),
+    LIGHT_MODE_MOTION_DARK: (
+        LightModeType.MOTION.value,
+        LightModeEnableType.DARK.value,
+    ),
     LIGHT_MODE_DARK: (LightModeType.WHEN_DARK.value, LightModeEnableType.DARK.value),
     LIGHT_MODE_OFF: (LightModeType.MANUAL.value, None),
 }
 
 MOTION_MODE_TO_LIGHT_MODE = [
     {"id": LightModeType.MOTION.value, "name": LIGHT_MODE_MOTION},
+    {"id": f"{LightModeType.MOTION.value}Dark", "name": LIGHT_MODE_MOTION_DARK},
     {"id": LightModeType.WHEN_DARK.value, "name": LIGHT_MODE_DARK},
     {"id": LightModeType.MANUAL.value, "name": LIGHT_MODE_OFF},
 ]
@@ -165,23 +172,16 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
 )
 
 
-def _custom_doorbell_text_id(message: str) -> str:
-    return f"{DoorbellMessageType.CUSTOM_MESSAGE.value}:{message.replace(' ', '_').upper()}"
-
-
-def _build_doorbell_texts(doorbell_text: str) -> list[dict[str, str]]:
+def _build_doorbell_texts(doorbell_text) -> list[dict[str, str]]:
     """Create a list of available doorbell texts from the defaults and configured."""
-
-    custom_items = []
-    for item in (doorbell_text or "").split(","):
-        item = item.strip()
-        if len(item) == 0:
-            continue
-
-        item_id = _custom_doorbell_text_id(item)
-        custom_items.append({"id": item_id, "name": item})
-
-    return [*DOORBELL_BASE_TEXT, *custom_items]
+    return [
+        *DOORBELL_BASE_TEXT,
+        *(
+            {"id": DoorbellMessageType.CUSTOM_MESSAGE.value, "name": item.strip()}
+            for item in (doorbell_text or "").split(",")
+            if len(item.strip()) != 0
+        ),
+    ]
 
 
 def _build_liveviews_options(liveviews: list[Liveview]) -> list[dict[str, str]]:
@@ -251,7 +251,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         """Initialize the unifi protect select entity."""
         super().__init__(protect, protect_data, device, description)
         self.device: Camera | Viewer | Light = device
-        self._attr_name = f"{self.entity_description.name} {self.device.name}"
+        self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._attr_options = [item["name"] for item in options]
         self._data_key = description.ufp_value
         self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
@@ -264,15 +264,24 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
         if isinstance(unifi_value, Enum):
             unifi_value = unifi_value.value
-        elif isinstance(unifi_value, Liveview):
+
+        if isinstance(unifi_value, Liveview):
             unifi_value = unifi_value.id
+        elif self.entity_description.key == _KEY_LIGHT_MOTION:
+            assert isinstance(self.device, Light)
+
+            # a bit of extra to allow On Motion Always/Dark
+            if (
+                self.device.light_mode_settings.mode == LightModeType.MOTION
+                and self.device.light_mode_settings.enable_at
+                == LightModeEnableType.DARK
+            ):
+                unifi_value = f"{LightModeType.MOTION.value}Dark"
         elif self.entity_description.key == _KEY_DOORBELL_TEXT:
             if unifi_value is None:
                 unifi_value = ""
-            elif unifi_value.type != DoorbellMessageType.CUSTOM_MESSAGE:
-                unifi_value = unifi_value.type
             else:
-                unifi_value = _custom_doorbell_text_id(unifi_value.text)
+                return unifi_value.text
         return self._unifi_to_hass_options[unifi_value]
 
     async def async_select_option(self, option: str) -> None:

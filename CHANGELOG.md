@@ -2,26 +2,79 @@
 
 ## 0.11.0-dev (master)
 
+### Deprecations
+
+0.11 is last major release planned before we merge the `unifiprotect` integration into core. As a result, a number of features are being removed when we merged into core.
+
+The following services will be removed in the next version:
+
+* `unifiprotect.set_recording_mode` -- use the select introduced in 0.10 instead
+* `unifiprotect.set_ir_mode` -- use the select entity introduced in 0.10 instead
+* `unifiprotect.set_status_light` -- use the switch entity on the camera device instead
+* `unifiprotect.set_hdr_mode` -- use the switch entity on the camera device instead
+* `unifiprotect.set_highfps_video_mode` -- use the switch entity on the camera device instead
+* `unifiprotect.set_doorbell_lcd_message` -- use the select entity introduced in 0.10 instead
+* `unifiprotect.set_mic_volume` -- use the number entity introduced in 0.10 instead
+* `unifiprotect.set_privacy_mode` -- use the switch entity introduced in 0.10 instead
+* `unifiprotect.set_zoom_position` -- use the number entity introduced in 0.10 instead
+* `unifiprotect.set_wdr_value` -- use the number entity introduced in 0.10 instead
+* `unifiprotect.light_settings` -- use the select entity introduced in 0.10 instead
+* `unifiprotect.set_viewport_view` -- use the select entity introduced in 0.10 instead
+
+The following events will be removed in the next version:
+
+* `unifiprotect_doorbell` -- use a State Changed event on "Doorbell" binary sensor on the device instead
+* `unifiprotect_motion` -- use a State Changed event on the "Motion" binary sensor on the device instead
+
+All of following attributes should be duplicated data that can be gotten from other devices/entities and as such, they will be removed in the next version.
+
+* `device_model` will be removed from all entities
+* `last_tripped_time` will be removed from binary sensor entities
+* `up_since` will be removed from camera and light entities
+* `enabled_at` will be removed from light entities
+* `camera_id`, `chime_duration`, `is_dark`, `mic_sensitivity`, `privacy_mode`, `wdr_value`, and `zoom_position`  will be removed from camera entities
+
+
+### Changes in this release
+
 * `NEW`: **BREAKING CHANGE** Adds all enabled UFP Camera channels as different camera entities; only the highest resolution one is enabled by default. This will change the unique ID of your default Camera so your old Camera entities will become orphaned.
+
 * `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading.
+
 * `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR.
-* `CHANGE`: **BREAKING CHANGE** `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not relaible between restarts.
+
+* `CHANGE`: **BREAKING CHANGE** `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not reliable between restarts.
+
 * `CHANGE`: **BREAKING CHANGE** the `event_object` attribute for binary motion sensors has changed the value for no object detected from "None Identified" (string) to "None" (NoneType/null)
+
 * `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
     * This should lead to a number of behind-the-scenes reliability improvements.
       * Should fix/close the following issues: #341, #317, #297, #255, and #248 (TODO: Verify)
+
 * `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
   * Closes #337
+
 * `CHANGE`: Configuration URLs for UFP devices will now take you directly to the device in the UFP Web UI.
+
 * `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
+
 * `NEW`: Added the following attributes to Camera entity: `width`, `height`, `fps`, `bitrate` and `channel_id`
+
 * `NEW`: Added status light switch for Flood Light devices
+
 * `NEW`: Added "On Motion - When Dark" option for Flood Light Lightning switch
+
+* `NEW`: Added "Auto-Shutoff Timer" number entity for Flood Lights
+
+* `NEW`: Added "Motion Sensitivity" number entity for Flood Lights
+
+* `NEW`: Added "Chime Duration" number entity for Doorbells
+
 * `CHANGE`: Overhaul Config Flow
     * Adds Reauthentication support
     * Adds "Verify SSL"
     * Updates Setup / Reauth / Options flows to pre-populate forms from existing settings
-    * Removes changing username/password as part of the options flow as it is redunant with Reauthentication support
+    * Removes changing username/password as part of the options flow as it is redundant with Reauthentication support
 
 ## 0.10.0
 

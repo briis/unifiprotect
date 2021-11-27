@@ -135,7 +135,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
     ),
     UnifiProtectSelectEntityDescription(
         key=_KEY_LIGHT_MOTION,
-        name="Lightning",
+        name="Lighting",
         icon="mdi:spotlight",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_required_field=None,

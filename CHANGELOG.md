@@ -62,7 +62,7 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * `NEW`: Added status light switch for Flood Light devices
 
-* `NEW`: Added "On Motion - When Dark" option for Flood Light Lightning switch
+* `NEW`: Added "On Motion - When Dark" option for Flood Light Lighting switch
 
 * `NEW`: Added "Auto-Shutoff Timer" number entity for Flood Lights
 

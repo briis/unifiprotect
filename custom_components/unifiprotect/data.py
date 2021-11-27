@@ -9,11 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import ProtectApiClient
-from pyunifiprotect.data import (
-    Bootstrap,
-    ModelType,
-    WSSubscriptionMessage,
-)
+from pyunifiprotect.data import Bootstrap, ModelType, WSSubscriptionMessage, Event
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.exceptions import NotAuthorized, NvrError
 
@@ -95,6 +91,8 @@ class UnifiProtectData:
     def _async_process_ws_message(self, message: WSSubscriptionMessage):
         if message.new_obj.model in DEVICES_WITH_ENTITIES:
             self.async_signal_device_id_update(message.new_obj.id)
+        elif isinstance(message.new_obj, Event) and message.new_obj.camera is not None:
+            self.async_signal_device_id_update(message.new_obj.camera.id)
 
     @callback
     def _async_process_updates(self, updates: Bootstrap | None):

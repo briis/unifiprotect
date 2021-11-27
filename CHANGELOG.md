@@ -6,6 +6,7 @@
 * `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading.
 * `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR.
 * `CHANGE`: **BREAKING CHANGE** `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not relaible between restarts.
+* `CHANGE`: **BREAKING CHANGE** the `event_object` attribute for binary motion sensors has changed the value for no object detected from "None Identified" (string) to "None" (NoneType/null)
 * `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
     * This should lead to a number of behind-the-scenes reliability improvements.
       * Should fix/close the following issues: #341, #317, #297, #255, and #248 (TODO: Verify)

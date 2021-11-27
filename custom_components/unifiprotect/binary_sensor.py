@@ -344,7 +344,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 and self.device.last_motion_event is not None
             ):
                 score = self.device.last_motion_event.score
-            detected_object = "None Identified"
+            detected_object = None
 
         attr.update(
             {

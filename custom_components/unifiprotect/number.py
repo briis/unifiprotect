@@ -20,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 _KEY_WDR = "wdr_value"
 _KEY_MIC_LEVEL = "mic_level"
 _KEY_ZOOM_POS = "zoom_position"
-_KEY_SENSITIVITY = "semsitivity"
+_KEY_SENSITIVITY = "sensitivity"
 _KEY_DURATION = "duration"
 _KEY_CHIME = "chime_duration"
 

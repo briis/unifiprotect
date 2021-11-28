@@ -64,6 +64,7 @@ DEFAULT_PORT = 443
 DEFAULT_ATTRIBUTION = "Powered by UniFi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_SCAN_INTERVAL = 2
+DEFAULT_VERIFY_SSL = False
 
 RING_INTERVAL = timedelta(seconds=3)
 

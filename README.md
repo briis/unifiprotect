@@ -160,20 +160,6 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UniFiOS
   *(string)Optional*<br>
   If a Doorbell is attached to UniFi Protect, you can use this field to write a list of Custom Texts that can be displayed on the Doorbell LCD Screen. The list must be comma separated and will be truncated to 30 characters per item. Example: `RING THE BELL, WE ARE SLEEPING, GO AWAY`
 
-**anonymous_snapshots**:<br>
-  *(bool)(Optional)*<br>
-  If you need to save a Snapshot more often than every 10 seconds, enable this function. See below for prerequisites.<br>
-  *Default value*: `False`
-
-#### ANONYMOUS SNAPSHOTS
-
-To use the Anonymous Snapshot, you must ensure that each Camera is configured to allow this. This cannot be done in UniFi Protect, but has to be done on each individual Camera.
-
-1. Login to each of your Cameras by going to http://CAMERA_IP. The Username is *ubnt* and the Camera Password can be found in UniFi Protect under *Settings*.
-2. If you have never logged in to the Camera before, it might take you through a Setup procedure - just make sure to keep it in *UniFi Video* mode, so that it is managed by UniFi Protect.
-3. Once you are logged in, you will see an option on the Front page for enabling Anonymous Snapshots. Make sure this is checked, and then press the *Save Changes* button.
-4. Repeat step 3 for each of your Cameras.
-
 ## Special UniFi Protect Services
 
 The Integration adds specific *UniFi Protect* services and supports the standard camera services. Below is a list of the *UniFi Protect* specific services:

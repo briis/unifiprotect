@@ -24,6 +24,7 @@ from .const import (
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
     DEFAULT_PORT,
+    DEFAULT_VERIFY_SSL,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
 )
@@ -72,7 +73,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if CONF_HOST in user_input:
             host = user_input[CONF_HOST]
             port = user_input.get(CONF_PORT, DEFAULT_PORT)
-            verify_ssl = user_input.get(CONF_VERIFY_SSL, True)
+            verify_ssl = user_input.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL)
         else:
             return None, {}
 
@@ -165,7 +166,8 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PORT, default=user_input.get(CONF_PORT, DEFAULT_PORT)
                     ): int,
                     vol.Required(
-                        CONF_VERIFY_SSL, default=user_input.get(CONF_VERIFY_SSL, True)
+                        CONF_VERIFY_SSL,
+                        default=user_input.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL),
                     ): bool,
                     vol.Required(
                         CONF_USERNAME, default=user_input.get(CONF_USERNAME)

@@ -94,19 +94,45 @@ async def async_setup_entry(
     protect_data = entry_data.protect_data
     disable_stream = entry_data.disable_stream
 
-    async_add_entities(
-        [
-            UnifiProtectCamera(
-                protect,
-                protect_data,
-                camera,
-                channel,
-                is_default,
-                disable_stream,
+    items = []
+    for camera, channel, is_default in get_camera_channels(protect):
+        if channel.is_rtsp_enabled:
+            items.append(
+                UnifiProtectCamera(
+                    protect,
+                    protect_data,
+                    camera,
+                    channel,
+                    is_default,
+                    True,
+                    disable_stream,
+                )
             )
-            for camera, channel, is_default in get_camera_channels(protect)
-        ]
-    )
+            items.append(
+                UnifiProtectCamera(
+                    protect,
+                    protect_data,
+                    camera,
+                    channel,
+                    is_default,
+                    False,
+                    disable_stream,
+                )
+            )
+        else:
+            items.append(
+                UnifiProtectCamera(
+                    protect,
+                    protect_data,
+                    camera,
+                    channel,
+                    is_default,
+                    True,
+                    disable_stream,
+                )
+            )
+
+    async_add_entities(items)
 
     platform = entity_platform.async_get_current_platform()
 
@@ -173,6 +199,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         camera: UnifiCamera,
         channel: CameraChannel,
         is_default: bool,
+        secure: bool,
         disable_stream: bool,
     ):
         """Initialize an Unifi camera."""
@@ -180,13 +207,24 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
         self.device: UnifiCamera = camera
         self.channel = channel
+        self._secure = secure
         self._disable_stream = disable_stream
         self._last_image = None
         self._async_set_stream_source()
-        self._attr_unique_id = f"{self.device.id}_{self.device.mac}_{self.channel.id}"
+        if self._secure:
+            self._attr_unique_id = (
+                f"{self.device.id}_{self.device.mac}_{self.channel.id}"
+            )
+        else:
+            self._attr_unique_id = (
+                f"{self.device.id}_{self.device.mac}_{self.channel.id}_insecure"
+            )
         # only the default (first) channel is enabled by default
-        self._attr_entity_registry_enabled_default = is_default
-        self._attr_name = f"{self.device.name} {self.channel.name}"
+        self._attr_entity_registry_enabled_default = is_default and secure
+        if self._secure:
+            self._attr_name = f"{self.device.name} {self.channel.name}"
+        else:
+            self._attr_name = f"{self.device.name} {self.channel.name} Insecure"
 
     @callback
     def _async_set_stream_source(self):
@@ -194,7 +232,11 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         if not self.channel.is_rtsp_enabled:
             disable_stream = False
 
-        self._stream_source = None if disable_stream else self.channel.rtsps_url
+        rtsp_url = self.channel.rtsp_url
+        if self._secure:
+            rtsp_url = self.channel.rtsps_url
+
+        self._stream_source = None if disable_stream else rtsp_url
         self._attr_supported_features = SUPPORT_STREAM if self._stream_source else 0
 
     @callback

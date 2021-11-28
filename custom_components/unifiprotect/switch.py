@@ -58,14 +58,14 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
         ufp_required_field="has_hdr",
         ufp_value="hdr_mode",
     ),
-    UnifiProtectSwitchEntityDescription(
-        key=_KEY_HIGH_FPS,
-        name="High FPS",
-        icon="mdi:video-high-definition",
-        entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_required_field="has_highfps",
-        ufp_value="video_mode",
-    ),
+    # UnifiProtectSwitchEntityDescription(
+    #     key=_KEY_HIGH_FPS,
+    #     name="High FPS",
+    #     icon="mdi:video-high-definition",
+    #     entity_category=ENTITY_CATEGORY_CONFIG,
+    #     ufp_required_field="has_highfps",
+    #     ufp_value="video_mode",
+    # ),
     UnifiProtectSwitchEntityDescription(
         key=_KEY_PRIVACY_MODE,
         name="Privacy Mode",

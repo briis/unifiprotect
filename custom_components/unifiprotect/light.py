@@ -1,7 +1,7 @@
 """This component provides Lights for Unifi Protect."""
 from __future__ import annotations
-from datetime import timedelta
 
+from datetime import timedelta
 import logging
 
 from homeassistant.components.light import (

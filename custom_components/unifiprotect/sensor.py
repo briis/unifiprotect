@@ -17,8 +17,6 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from pyunifiprotect.data import Light, ModelType
 
-from .utils import get_nested_attr
-
 from .const import (
     ATTR_ENABLED_AT,
     DEVICES_WITH_CAMERA,
@@ -27,6 +25,7 @@ from .const import (
 )
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
+from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 

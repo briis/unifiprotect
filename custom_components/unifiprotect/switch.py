@@ -6,20 +6,14 @@ import logging
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
-from pyunifiprotect.data import Camera, VideoMode, Light, ModelType
+from homeassistant.core import HomeAssistant
+from pyunifiprotect.data import Camera, Light, ModelType, VideoMode
 from pyunifiprotect.data.types import RecordingMode
 
-from .utils import get_nested_attr
-
-from .const import (
-    DEVICES_WITH_CAMERA,
-    DEVICES_WITH_STATUS_LIGHT,
-    DOMAIN,
-    ENTITY_CATEGORY_CONFIG,
-)
+from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
+from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 

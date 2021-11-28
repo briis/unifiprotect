@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import ProtectApiClient
-from pyunifiprotect.data import Bootstrap, ModelType, WSSubscriptionMessage, Event
+from pyunifiprotect.data import Bootstrap, Event, ModelType, WSSubscriptionMessage
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.exceptions import NotAuthorized, NvrError
 

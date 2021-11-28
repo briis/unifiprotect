@@ -23,8 +23,6 @@ from pyunifiprotect.data.devices import Camera, Light, Sensor
 from pyunifiprotect.data.types import ModelType
 from pyunifiprotect.utils import to_js_time, utc_now
 
-from .utils import get_nested_attr
-
 from .const import (
     ATTR_EVENT_OBJECT,
     ATTR_EVENT_SCORE,
@@ -34,6 +32,7 @@ from .const import (
 )
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
+from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 

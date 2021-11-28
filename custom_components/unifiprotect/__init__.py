@@ -17,7 +17,7 @@ from homeassistant.const import (
     CONF_VERIFY_SSL,
     EVENT_HOMEASSISTANT_STOP,
 )
-from homeassistant.core import Config, HomeAssistant, callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
@@ -82,7 +82,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if nvr_info.version < MIN_REQUIRED_PROTECT_V:
         _LOGGER.error(
-            "You are running v%s of UniFi Protect. Minimum required version is v%s. Please upgrade UniFi Protect and then retry",
+            (
+                "You are running v%s of UniFi Protect. Minimum required version is v%s. "
+                "Please upgrade UniFi Protect and then retry"
+            ),
             nvr_info.version,
             MIN_REQUIRED_PROTECT_V,
         )

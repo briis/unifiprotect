@@ -5,13 +5,11 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 from typing import Any, Type
-from homeassistant.async_timeout_backcompat import enable
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.config_validation import time
 from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import (
     DoorbellMessageType,
@@ -21,11 +19,9 @@ from pyunifiprotect.data import (
     ModelType,
     RecordingMode,
 )
-from pyunifiprotect.data import devices
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Camera, LCDMessage, Light, Viewer
+from pyunifiprotect.data.devices import Camera, Light, Viewer
 from pyunifiprotect.data.nvr import Liveview
-from voluptuous.error import UrlInvalid
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
 from .data import UnifiProtectData

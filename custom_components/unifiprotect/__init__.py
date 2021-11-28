@@ -22,6 +22,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data.nvr import NVR
 
 from .const import (
     CONF_DISABLE_RTSP,
@@ -69,8 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         verify_ssl=entry.data[CONF_VERIFY_SSL],
         session=session,
     )
-    await protect.update()
-    _LOGGER.debug("Connect to Unfi Protect")
+    _LOGGER.debug("Connect to UniFi Protect")
     protect_data = UnifiProtectData(hass, protect, SCAN_INTERVAL, entry)
 
     try:
@@ -92,9 +92,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     if entry.unique_id is None:
-        hass.config_entries.async_update_entry(
-            entry, unique_id=protect.bootstrap.nvr.id
-        )
+        hass.config_entries.async_update_entry(entry, unique_id=nvr_info.mac)
 
     await protect_data.async_setup()
     if not protect_data.last_update_success:
@@ -107,7 +105,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         doorbell_text=entry.options.get(CONF_DOORBELL_TEXT, None),
     )
 
-    await _async_get_or_create_nvr_device_in_registry(hass, entry, protect)
+    await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
@@ -120,18 +118,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def _async_get_or_create_nvr_device_in_registry(
-    hass: HomeAssistant, entry: ConfigEntry, protect: ProtectApiClient
+    hass: HomeAssistant, entry: ConfigEntry, nvr: NVR
 ) -> None:
     device_registry = await dr.async_get_registry(hass)
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
-        connections={(dr.CONNECTION_NETWORK_MAC, protect.bootstrap.nvr.id)},
-        identifiers={(DOMAIN, protect.bootstrap.nvr.id)},
+        connections={(dr.CONNECTION_NETWORK_MAC, nvr.mac)},
+        identifiers={(DOMAIN, nvr.mac)},
         manufacturer=DEFAULT_BRAND,
         name=entry.data[CONF_ID],
-        model=protect.bootstrap.nvr.type,
-        sw_version=str(protect.bootstrap.nvr.version),
-        configuration_url=protect.base_url,
+        model=nvr.type,
+        sw_version=str(nvr.version),
+        configuration_url=nvr.api.base_url,
     )
 
 

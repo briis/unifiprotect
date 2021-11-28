@@ -37,7 +37,7 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 ### Changes in this release
 
-* `NEW`: **BREAKING CHANGE** Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. This will change the unique ID of your default Camera so your old Camera entities will become orphaned. If you need RTSP camera entities, you can disable one of the given insecure camera entities.
+* `NEW`: **BREAKING CHANGE** Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. This will change the unique ID of your default Camera so your old Camera entities will become orphaned. If you need RTSP camera entities, you can enable one of the given insecure camera entities.
 
 * `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading.
 

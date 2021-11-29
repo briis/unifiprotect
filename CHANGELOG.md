@@ -33,11 +33,12 @@ The following entities will be removed in the next version:
 
 All of following attributes should be duplicated data that can be gotten from other devices/entities and as such, they will be removed in the next version.
 
-* `device_model` will be removed from all entities
-* `last_tripped_time` will be removed from binary sensor entities
-* `up_since` will be removed from camera and light entities
-* `enabled_at` will be removed from light entities
-* `camera_id`, `chime_duration`, `is_dark`, `mic_sensitivity`, `privacy_mode`, `wdr_value`, and `zoom_position`  will be removed from camera entities
+* `device_model` will be removed from all entities -- provided in the UI as part of the "Device Info"
+* `last_tripped_time` will be removed from binary sensor entities -- use the `last_changed` value provided by the [HA state instead](https://www.home-assistant.io/docs/configuration/state_object/)
+* `up_since` will be removed from camera and light entities -- now has its own sensor
+* `enabled_at` will be removed from light entities -- now has its own sensor
+* `camera_id` will be removed from camera entities -- no services need the camera ID anymore so it does not need to be exposed as an attribute. You can still get device IDs for testing/debugging from the Configuration URL in the "Device Info" section
+* `chime_duration`, `is_dark`, `mic_sensitivity`, `privacy_mode`, `wdr_value`, and `zoom_position`  will be removed from camera entities -- all of them have now have their own sensors
 
 
 ### Changes in this release
@@ -74,6 +75,8 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `NEW`: Added "Motion Sensitivity" number entity for Flood Lights
 
 * `NEW`: Added "Chime Duration" number entity for Doorbells
+
+* `NEW`: Added "Uptime" sensor entity for all UniFi Protect adoptable devices. This is disabled by default.
 
 * `CHANGE`: Overhaul Config Flow
     * Adds Reauthentication support

@@ -20,6 +20,7 @@ from pyunifiprotect.data import Light, ModelType
 from .const import (
     ATTR_ENABLED_AT,
     DEVICES_WITH_CAMERA,
+    DEVICES_WITH_ENTITIES,
     DOMAIN,
     ENTITY_CATEGORY_DIAGNOSTIC,
 )
@@ -53,6 +54,15 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_value="recording_settings.mode",
+    ),
+    UnifiProtectSensorEntityDescription(
+        key="uptime",
+        name="Uptime",
+        icon="mdi:mdi-clock",
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        ufp_device_types=DEVICES_WITH_ENTITIES,
+        ufp_value="up_since",
     ),
     UnifiProtectSensorEntityDescription(
         key="light_turn_on",

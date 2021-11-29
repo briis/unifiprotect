@@ -21,7 +21,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.config_validation import datetime
 from pyunifiprotect.data.devices import Camera, Light, Sensor
 from pyunifiprotect.data.types import ModelType
-from pyunifiprotect.utils import to_js_time, utc_now
+from pyunifiprotect.utils import utc_now
 
 from .const import (
     ATTR_EVENT_OBJECT,
@@ -306,7 +306,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         if key == _KEY_DARK:
             return attr
         if key == _KEY_DOORBELL:
-            attr[ATTR_LAST_TRIP_TIME] = to_js_time(self.device.last_ring)
+            attr[ATTR_LAST_TRIP_TIME] = self.device.last_ring.isoformat()
             return attr
 
         if isinstance(self.device, Sensor):
@@ -316,11 +316,11 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 else:
                     last_trip = self.device.open_status_changed_at
 
-                attr[ATTR_LAST_TRIP_TIME] = to_js_time(last_trip)
+                attr[ATTR_LAST_TRIP_TIME] = last_trip.isoformat()
             return attr
         elif isinstance(self.device, Light):
             if key == _KEY_MOTION:
-                attr[ATTR_LAST_TRIP_TIME] = to_js_time(self.device.last_motion)
+                attr[ATTR_LAST_TRIP_TIME] = self.device.last_ring.isoformat()
             return attr
 
         # Camera motion sensors with object detection
@@ -347,7 +347,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
 
         attr.update(
             {
-                ATTR_LAST_TRIP_TIME: to_js_time(self.device.last_motion),
+                ATTR_LAST_TRIP_TIME: self.device.last_motion.isoformat(),
                 ATTR_EVENT_SCORE: score,
                 ATTR_EVENT_OBJECT: detected_object,
             }

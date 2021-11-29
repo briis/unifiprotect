@@ -14,7 +14,6 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from pyunifiprotect.data.devices import Light
 from pyunifiprotect.data.types import LightModeEnableType, LightModeType
-from pyunifiprotect.utils import to_js_time
 
 from .const import (
     ATTR_ONLINE,
@@ -108,7 +107,7 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         return {
             **super().extra_state_attributes,
             ATTR_ONLINE: self.device.is_connected,
-            ATTR_UP_SINCE: to_js_time(self.device.up_since),
+            ATTR_UP_SINCE: self.device.up_since.isoformat(),
         }
 
     async def async_light_settings(

@@ -46,9 +46,8 @@ class UnifiProtectData:
     ) -> Generator[ProtectAdoptableDeviceModel, None, None]:
         """Get all devices matching types."""
 
-        attrs = [f"{m.value}s" for m in device_types]
-
-        for attr in attrs:
+        for device_type in device_types:
+            attr = f"{device_type.value}s"
             devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
                 self._protect.bootstrap, attr
             )
@@ -102,8 +101,8 @@ class UnifiProtectData:
         if updates is None:
             return
 
-        attrs = [f"{m.value}s" for m in DEVICES_WITH_ENTITIES]
-        for attr in attrs:
+        for device_type in DEVICES_WITH_ENTITIES:
+            attr = f"{device_type.value}s"
             devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
                 self._protect.bootstrap, attr
             )

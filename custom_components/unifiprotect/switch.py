@@ -136,13 +136,16 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         self.device: Camera | Light = device
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._switch_type = self.entity_description.key
-        if isinstance(self.device, Camera):
-            if self.device.is_privacy_on:
-                self._previous_mic_level = 100
-                self._previous_record_mode = RecordingMode.ALWAYS
-            else:
-                self._previous_mic_level = self.device.mic_volume
-                self._previous_record_mode = self.device.recording_settings.mode
+
+        if isinstance(self.device, Light):
+            return
+
+        if self.device.is_privacy_on:
+            self._previous_mic_level = 100
+            self._previous_record_mode = RecordingMode.ALWAYS
+        else:
+            self._previous_mic_level = self.device.mic_volume
+            self._previous_record_mode = self.device.recording_settings.mode
 
     @property
     def is_on(self) -> bool:
@@ -155,22 +158,24 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
 
-        if isinstance(self.device, Camera):
-            if self._switch_type == _KEY_HDR_MODE:
-                _LOGGER.debug("Turning on HDR mode")
-                await self.device.set_hdr(True)
-            elif self._switch_type == _KEY_HIGH_FPS:
-                _LOGGER.debug("Turning on High FPS mode")
-                await self.device.set_video_mode(VideoMode.HIGH_FPS)
-            elif self._switch_type == _KEY_PRIVACY_MODE:
-                _LOGGER.debug("Turning Privacy Mode on for %s", self.device.name)
-                self._previous_mic_level = self.device.mic_volume
-                self._previous_record_mode = self.device.recording_settings.mode
-                await self.device.set_privacy(True, 0, RecordingMode.NEVER)
-
         if self._switch_type == _KEY_STATUS_LIGHT:
             _LOGGER.debug("Changing Status Light to On")
             await self.device.set_status_light(True)
+
+        if isinstance(self.device, Light):
+            return
+
+        if self._switch_type == _KEY_HDR_MODE:
+            _LOGGER.debug("Turning on HDR mode")
+            await self.device.set_hdr(True)
+        elif self._switch_type == _KEY_HIGH_FPS:
+            _LOGGER.debug("Turning on High FPS mode")
+            await self.device.set_video_mode(VideoMode.HIGH_FPS)
+        elif self._switch_type == _KEY_PRIVACY_MODE:
+            _LOGGER.debug("Turning Privacy Mode on for %s", self.device.name)
+            self._previous_mic_level = self.device.mic_volume
+            self._previous_record_mode = self.device.recording_settings.mode
+            await self.device.set_privacy(True, 0, RecordingMode.NEVER)
 
     async def async_turn_off(self, **kwargs):
         """Turn the device off."""

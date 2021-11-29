@@ -23,7 +23,7 @@ from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, Light, Viewer
 from pyunifiprotect.data.nvr import Liveview
 
-from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
+from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG, TYPE_EMPTY_VALUE
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -39,7 +39,7 @@ _KEY_DOORBELL_TEXT = "doorbell_text"
 
 
 DOORBELL_BASE_TEXT = [
-    {"id": "", "name": "No Message"},
+    {"id": TYPE_EMPTY_VALUE, "name": "No Message"},
     {
         "id": DoorbellMessageType.LEAVE_PACKAGE_AT_DOOR.value,
         "name": DoorbellMessageType.LEAVE_PACKAGE_AT_DOOR.value.replace("_", " "),
@@ -260,8 +260,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
         if isinstance(unifi_value, Enum):
             unifi_value = unifi_value.value
-
-        if isinstance(unifi_value, Liveview):
+        elif isinstance(unifi_value, Liveview):
             unifi_value = unifi_value.id
         elif self.entity_description.key == _KEY_LIGHT_MOTION:
             assert isinstance(self.device, Light)
@@ -275,7 +274,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                 unifi_value = f"{LightModeType.MOTION.value}Dark"
         elif self.entity_description.key == _KEY_DOORBELL_TEXT:
             if unifi_value is None:
-                unifi_value = ""
+                unifi_value = TYPE_EMPTY_VALUE
             else:
                 return unifi_value.text
         return self._unifi_to_hass_options[unifi_value]
@@ -304,7 +303,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                     await self.device.set_lcd_text(
                         DoorbellMessageType.CUSTOM_MESSAGE, text=option
                     )
-                elif unifi_value == "":
+                elif unifi_value == TYPE_EMPTY_VALUE:
                     await self.device.set_lcd_text(None)
                 else:
                     await self.device.set_lcd_text(DoorbellMessageType(unifi_value))

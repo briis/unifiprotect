@@ -18,7 +18,7 @@ from pyunifiprotect.data.types import (
     RecordingMode,
     VideoMode,
 )
-from pyunifiprotect.utils import to_js_time, utc_now
+from pyunifiprotect.utils import utc_now
 
 from custom_components.unifiprotect.data import UnifiProtectData
 
@@ -279,7 +279,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
         return {
             **super().extra_state_attributes,
-            ATTR_UP_SINCE: to_js_time(self.device.up_since),
+            ATTR_UP_SINCE: self.device.up_since.isoformat(),
             ATTR_CAMERA_ID: self.device.id,
             ATTR_CHIME_ENABLED: self.device.feature_flags.has_chime,
             ATTR_CHIME_DURATION: self.device.chime_duration,

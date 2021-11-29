@@ -26,6 +26,11 @@ The following events will be removed in the next version:
 * `unifiprotect_doorbell` -- use a State Changed event on "Doorbell" binary sensor on the device instead
 * `unifiprotect_motion` -- use a State Changed event on the "Motion" binary sensor on the device instead
 
+The following entities will be removed in the next version:
+
+* The "Motion Recording" sensor for cameras (in favor of the "Recording Mode" select)
+* The "Light Turn On" sensor for flood lights (in favor of the "Lighting" select)
+
 All of following attributes should be duplicated data that can be gotten from other devices/entities and as such, they will be removed in the next version.
 
 * `device_model` will be removed from all entities

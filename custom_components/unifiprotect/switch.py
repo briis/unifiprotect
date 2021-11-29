@@ -137,7 +137,7 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._switch_type = self.entity_description.key
 
-        if isinstance(self.device, Light):
+        if not isinstance(self.device, Camera):
             return
 
         if self.device.is_privacy_on:

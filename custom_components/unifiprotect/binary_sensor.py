@@ -320,7 +320,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             return attr
         elif isinstance(self.device, Light):
             if key == _KEY_MOTION:
-                attr[ATTR_LAST_TRIP_TIME] = self.device.last_ring.isoformat()
+                attr[ATTR_LAST_TRIP_TIME] = self.device.last_motion.isoformat()
             return attr
 
         # Camera motion sensors with object detection

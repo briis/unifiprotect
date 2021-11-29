@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 import logging
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
@@ -12,6 +13,7 @@ from homeassistant.const import (
     DEVICE_CLASS_ILLUMINANCE,
     DEVICE_CLASS_SIGNAL_STRENGTH,
     DEVICE_CLASS_TEMPERATURE,
+    DEVICE_CLASS_TIMESTAMP,
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
@@ -58,7 +60,8 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
     UnifiProtectSensorEntityDescription(
         key="uptime",
         name="Uptime",
-        icon="mdi:mdi-clock",
+        icon="mdi:clock",
+        device_class=DEVICE_CLASS_TIMESTAMP,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         entity_registry_enabled_default=False,
         ufp_device_types=DEVICES_WITH_ENTITIES,
@@ -160,7 +163,12 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        return get_nested_attr(self.device, self.entity_description.ufp_value)
+        value = get_nested_attr(self.device, self.entity_description.ufp_value)
+
+        if isinstance(value, datetime):
+            value = value.replace(microsecond=0).isoformat()
+
+        return value
 
     @property
     def extra_state_attributes(self):

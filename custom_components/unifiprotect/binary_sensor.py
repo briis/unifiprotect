@@ -279,7 +279,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 self.device, self.entity_description.ufp_value
             )
 
-        self._attr_extra_state_attributes = self._async_get_extra_attrs()
+        self._extra_state_attributes = self._async_get_extra_attrs()
 
     @callback
     async def _async_wait_for_doorbell(self, end_time: datetime):
@@ -359,4 +359,4 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     @property
     def extra_state_attributes(self):
         """Return the extra state attributes."""
-        return {**super().extra_state_attributes, **self._attr_extra_state_attributes}
+        return {**super().extra_state_attributes, **self._extra_state_attributes}

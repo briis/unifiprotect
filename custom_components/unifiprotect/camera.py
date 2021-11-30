@@ -242,10 +242,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
     @callback
     def _async_update_device_from_protect(self):
         super()._async_update_device_from_protect()
-        for channel in self.device.channels:
-            if channel.id == self.channel.id:
-                self.channel = channel
-                break
+        self.channel = self.device.channels[self.channel.id]
         self._async_set_stream_source()
 
     @property

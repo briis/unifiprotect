@@ -313,7 +313,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
         if self.entity_description.ufp_enum_type is not None:
             unifi_value = self.entity_description.ufp_enum_type(unifi_value)
-        elif _KEY_VIEWER:
+        elif self.entity_description.key == _KEY_VIEWER:
             unifi_value = self.protect.bootstrap.liveviews[unifi_value]
 
         _LOGGER.debug("%s set to: %s", self.entity_description.key, option)

@@ -202,8 +202,66 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self._doorbell_callback: Optional[TaskClass] = None
 
     @callback
+    def _async_get_extra_attrs(self):
+        attrs = {}
+        key = self.entity_description.key
+
+        if key == _KEY_DARK:
+            return attrs
+
+        if key == _KEY_DOORBELL:
+            attrs[ATTR_LAST_TRIP_TIME] = self.device.last_ring.isoformat()
+        elif isinstance(self.device, Sensor):
+            if key in (_KEY_MOTION, _KEY_DOOR):
+                if key == _KEY_MOTION:
+                    last_trip = self.device.motion_detected_at
+                else:
+                    last_trip = self.device.open_status_changed_at
+
+                attrs[ATTR_LAST_TRIP_TIME] = last_trip.isoformat()
+        elif isinstance(self.device, Light):
+            if key == _KEY_MOTION:
+                attrs[ATTR_LAST_TRIP_TIME] = self.device.last_motion.isoformat()
+
+        if not isinstance(self.device, Camera):
+            return attrs
+
+        # Camera motion sensors with object detection
+        score = 0
+        if (
+            self.device.is_smart_detected
+            and self.device.last_smart_detect_event is not None
+            and len(self.device.last_smart_detect_event.smart_detect_types) > 0
+        ):
+            score = self.device.last_smart_detect_event.score
+            detected_object = self.device.last_smart_detect_event.smart_detect_types[0]
+            _LOGGER.debug(
+                "OBJECTS: %s on %s",
+                self.device.last_smart_detect_event.smart_detect_types,
+                self._attr_name,
+            )
+        else:
+            if (
+                self.device.is_motion_detected
+                and self.device.last_motion_event is not None
+            ):
+                score = self.device.last_motion_event.score
+            detected_object = None
+
+        attrs.update(
+            {
+                ATTR_LAST_TRIP_TIME: self.device.last_motion.isoformat(),
+                ATTR_EVENT_SCORE: score,
+                ATTR_EVENT_OBJECT: detected_object,
+            }
+        )
+
+        return attrs
+
+    @callback
     def _async_update_device_from_protect(self):
         super()._async_update_device_from_protect()
+
         if self.entity_description.key == _KEY_DOORBELL:
             last_ring = get_nested_attr(self.device, self.entity_description.ufp_value)
             now = utc_now()
@@ -220,6 +278,8 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             self._attr_is_on = get_nested_attr(
                 self.device, self.entity_description.ufp_value
             )
+
+        self._attr_extra_state_attributes = self._async_get_extra_attrs()
 
     @callback
     async def _async_wait_for_doorbell(self, end_time: datetime):
@@ -299,57 +359,4 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     @property
     def extra_state_attributes(self):
         """Return the extra state attributes."""
-        key = self.entity_description.key
-        attr = {
-            **super().extra_state_attributes,
-        }
-        if key == _KEY_DARK:
-            return attr
-        if key == _KEY_DOORBELL:
-            attr[ATTR_LAST_TRIP_TIME] = self.device.last_ring.isoformat()
-            return attr
-
-        if isinstance(self.device, Sensor):
-            if key in (_KEY_MOTION, _KEY_DOOR):
-                if key == _KEY_MOTION:
-                    last_trip = self.device.motion_detected_at
-                else:
-                    last_trip = self.device.open_status_changed_at
-
-                attr[ATTR_LAST_TRIP_TIME] = last_trip.isoformat()
-            return attr
-        elif isinstance(self.device, Light):
-            if key == _KEY_MOTION:
-                attr[ATTR_LAST_TRIP_TIME] = self.device.last_motion.isoformat()
-            return attr
-
-        # Camera motion sensors with object detection
-        score = 0
-        if (
-            self.device.is_smart_detected
-            and self.device.last_smart_detect_event is not None
-            and len(self.device.last_smart_detect_event.smart_detect_types) > 0
-        ):
-            score = self.device.last_smart_detect_event.score
-            detected_object = self.device.last_smart_detect_event.smart_detect_types[0]
-            _LOGGER.debug(
-                "OBJECTS: %s on %s",
-                self.device.last_smart_detect_event.smart_detect_types,
-                self._attr_name,
-            )
-        else:
-            if (
-                self.device.is_motion_detected
-                and self.device.last_motion_event is not None
-            ):
-                score = self.device.last_motion_event.score
-            detected_object = None
-
-        attr.update(
-            {
-                ATTR_LAST_TRIP_TIME: self.device.last_motion.isoformat(),
-                ATTR_EVENT_SCORE: score,
-                ATTR_EVENT_OBJECT: detected_object,
-            }
-        )
-        return attr
+        return {**super().extra_state_attributes, **self._attr_extra_state_attributes}

@@ -166,7 +166,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         value = get_nested_attr(self.device, self.entity_description.ufp_value)
 
         if isinstance(value, datetime):
-            value = value.replace(microsecond=0).isoformat()
+            return value.replace(microsecond=0).isoformat()
 
         return value
 

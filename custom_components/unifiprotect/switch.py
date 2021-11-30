@@ -168,10 +168,12 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         if self._switch_type == _KEY_HDR_MODE:
             _LOGGER.debug("Turning on HDR mode")
             await self.device.set_hdr(True)
-        elif self._switch_type == _KEY_HIGH_FPS:
+            return
+        if self._switch_type == _KEY_HIGH_FPS:
             _LOGGER.debug("Turning on High FPS mode")
             await self.device.set_video_mode(VideoMode.HIGH_FPS)
-        elif self._switch_type == _KEY_PRIVACY_MODE:
+            return
+        if self._switch_type == _KEY_PRIVACY_MODE:
             _LOGGER.debug("Turning Privacy Mode on for %s", self.device.name)
             self._previous_mic_level = self.device.mic_volume
             self._previous_record_mode = self.device.recording_settings.mode
@@ -184,14 +186,17 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
             if self._switch_type == _KEY_HDR_MODE:
                 _LOGGER.debug("Turning off HDR mode")
                 await self.device.set_hdr(False)
-            elif self._switch_type == _KEY_HIGH_FPS:
+                return
+            if self._switch_type == _KEY_HIGH_FPS:
                 _LOGGER.debug("Turning off High FPS mode")
                 await self.device.set_video_mode(VideoMode.DEFAULT)
-            elif self._switch_type == _KEY_PRIVACY_MODE:
+                return
+            if self._switch_type == _KEY_PRIVACY_MODE:
                 _LOGGER.debug("Turning Privacy Mode off for %s", self.device.name)
                 await self.device.set_privacy(
                     False, self._previous_mic_level, self._previous_record_mode
                 )
+                return
 
         if self._switch_type == _KEY_STATUS_LIGHT:
             _LOGGER.debug("Changing Status Light to Off")

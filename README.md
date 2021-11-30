@@ -65,7 +65,7 @@ If you are not using the latest beta of the integration, you can view old versio
 As of v0.10 of the integration, the following versions of HA and UniFi Protect are _required_ to even install the integration:
 
 * UniFi Protect minimum version is **1.20.0**
-* Home Assistant minimum version is **2021.9.0**
+* Home Assistant minimum version is **2021.11.0**
 
 ## Hardware Support
 

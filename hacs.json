@@ -5,11 +5,12 @@
         "sensor",
         "camera",
         "switch",
-        "light"
+        "light",
+        "select",
+        "number"
     ],
-    "homeassistant": "2021.7.0",
+    "homeassistant": "2021.11.0",
     "iot_class": [
-        "Local Polling",
         "Local Push"
     ]
 }

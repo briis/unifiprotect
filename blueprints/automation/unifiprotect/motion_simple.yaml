@@ -1,26 +1,26 @@
 blueprint:
-  name: Send Doorbell Notification (simple)
-  description: Send a simple notification when someone rings the doorbell.
+  name: Send Motion Notification (simple)
+  description: Send a simple notification when motion is detected by camera.
   domain: automation
   input:
-    doorbell:
-      name: Doorbell Sensor
-      description: The doorbell binary sensor for your Doorbell
+    motion_sensor:
+      name: Motion Sensor
+      description: The motion binary sensor for your Camera
       selector:
         entity:
           integration: unifiprotect
           domain: binary_sensor
-          device_class: occupancy
+          device_class: motion
     title:
       name: Notification Title
       description: Title for Notification
-      default: Doorbell!
+      default: Motion!
       selector:
         text:
     channel:
       name: Notification Channel
       description: Notification channel/group to use. https://companion.home-assistant.io/docs/notifications/notifications-basic#notification-channels
-      default: Doorbell
+      default: Motion
       selector:
         text:
     cooldown:
@@ -35,17 +35,17 @@ blueprint:
           mode: box
 
 variables:
-  doorbell: !input doorbell
+  motion_sensor: !input motion_sensor
   title: !input title
   channel: !input channel
   tag: "{{ channel.lower().replace(' ', '-') }}"
-  message: "Someone rang the doorbell at {{
-    as_local(states[doorbell].last_changed).strftime('%I:%M
+  message: "Motion detected by {{ states[motion_sensor].name }} at {{
+    as_local(states[motion_sensor].last_changed).strftime('%I:%M
     %p') }}!"
 
 trigger:
   - platform: state
-    entity_id: !input doorbell
+    entity_id: !input motion_sensor
     from: "off"
     to: "on"
 

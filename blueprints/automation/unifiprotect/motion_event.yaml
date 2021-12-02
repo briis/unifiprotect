@@ -3,8 +3,7 @@ blueprint:
   description: |
     ## UniFi Protect Motion / Smart Detection Notifications
 
-    This blueprint will send push notifications to desktop browser / mobile Home 
-    Assistant apps when a motion or smart detection event is fired.
+    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a motion or smart detection event is fired.
 
     ### Required Settings
 
@@ -14,11 +13,23 @@ blueprint:
 
       - What Smart Detection(s) you want to trigger on
       - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2]
-      - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag[5]])
+      - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
       - Cooldown before sending another notification
-      - Silence timer for muting notifications via Actionable Notification (docs: [HTML5][6], [Mobile[7]])
+      - Silence timer for muting notifications via Actionable Notification (docs: [HTML5][6], [Mobile][7])
       - Configurable HA Internal / External Base URLs
       - Configurable lovelace view from notification
+
+    ### Requirements
+
+    To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
+
+    - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
+    - The [unifiprotect][8] integration
+    - A UniFi camera pair with your NVR 
+      - If you want to filter smart detections, you need a Smart Detection capable camera. This is any G4 series camera _except_ the EA G4 Instant.
+    - A valid HTTPS certifcate and public facing Home Assistant instance
+      - If you do not have these, the actionable notifications and images will not appear in the notifications.
+      - You do not need your _whole_ Home Assistant to be publically accessible. Only the paths `/api/camera_proxy/*` and `/api/webhook/*` need to be accessible outside of your network.
 
     [1]: https://www.home-assistant.io/integrations/html5
     [2]: https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
@@ -27,6 +38,7 @@ blueprint:
     [5]: https://companion.home-assistant.io/docs/notifications/notifications-basic/#replacing
     [6]: https://www.home-assistant.io/integrations/html5#actions
     [7]: https://companion.home-assistant.io/docs/notifications/actionable-notifications/
+    [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
   domain: automation
   input:
     device_filter:
@@ -80,6 +92,7 @@ blueprint:
       name: (Optional) Cooldown
       description: >
         Delay before sending another notification for this camera after the last event.
+        Is also the interval you have to choose to silence the notifications.
       default: 30
       selector:
         number:
@@ -130,6 +143,7 @@ blueprint:
         boolean:
 
 mode: single
+max_exceeded: silent
 
 variables:
   # input vars
@@ -230,6 +244,7 @@ variables:
     {% else %}
       {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
     {% endif %}
+  silence_action: "silence-{{ trigger_entity_id }}"
 
 trigger:
   - platform: event
@@ -260,11 +275,11 @@ action:
             data:
               title: "Debug: {{ notification_title }}"
               message: |
-                Entity ID: {{ trigger_entity_id }}
-                Object: {{ trigger_object }} (is_none: {{ trigger_object == None }})
-                Camera: {{ camera_entity_id }}
-                Notification Service (Mobile): notify.{{ input_notify_target_app }}
-                Notification Service (HTML5): notify.{{ input_notify_target_html5 }}
+                Entity ID: `{{ trigger_entity_id }}`
+                Object: `{{ trigger_object }}`
+                Camera: `{{ camera_entity_id }}`
+                Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
+                Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
 
                 Channel: {{ notification_channel }}
                 Tag: {{ notification_tag }}
@@ -296,7 +311,7 @@ action:
           { "action": "URI", "title": "Open Camera", "uri": "{{ lovelace_view }}" },
           {% endif %}
           {% if input_silence_timer > 0 %}
-          { "action": "silence-{{ trigger_entity_id }}", "title": "Silence", "destructive": True },
+          { "action": "{{ silence_action }}", "title": "Silence", "destructive": True },
           {% endif %}]
   - service: notify.{{ input_notify_target_html5 }}
     data:
@@ -309,17 +324,17 @@ action:
         url: "{{ notification_url }}"
         actions: >
           [{% if input_silence_timer > 0 %}
-          { "action": "silence-{{ trigger_entity_id }}", "title": "Silence" },
+          { "action": "{{ silence_action }}", "title": "Silence" },
           {% endif %}]
   - wait_for_trigger:
       - platform: event
         event_type: mobile_app_notification_action
         event_data:
-          action: "silence-{{ trigger_entity_id }}"
+          action: "{{ silence_action }}"
       - platform: event
         event_type: html5_notification.clicked
         event_data:
-          action: "silence-{{ trigger_entity_id }}"
+          action: "{{ silence_action }}"
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false
@@ -329,7 +344,7 @@ action:
           - service: notify.persistent_notification
             data:
               title: "Debug: {{ notification_title }}"
-              message: Slience started.
+              message: Silence started.
   - delay:
       minutes: "{{ input_silence_timer }}"
   - choose:
@@ -338,4 +353,4 @@ action:
           - service: notify.persistent_notification
             data:
               title: "Debug: {{ notification_title }}"
-              message: Slience ended.
+              message: Silence ended.

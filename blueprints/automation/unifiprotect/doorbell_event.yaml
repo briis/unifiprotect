@@ -1,0 +1,376 @@
+blueprint:
+  name: UniFi Protect Doorbell Notifications
+  description: |
+    ## UniFi Protect Doorbell Notifications
+
+    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a UniFi Chime is rung.
+
+    ### Required Settings
+
+      - Area or Device with UniFi Protect Doorbell Sensor
+
+    ### Optional Settings
+
+      - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2]
+      - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
+      - Cooldown before sending another notification
+      - Silence timer for muting notifications via Actionable Notification (docs: [HTML5][6], [Mobile][7])
+      - Configurable HA Internal / External Base URLs
+      - Configurable lovelace view from notification
+      - Optional Actionable Notification to unlock door entity for camera
+
+    ### Requirements
+
+    To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
+
+    - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
+    - The [unifiprotect][8] integration
+    - A UniFi camera pair with your NVR that has a chime (like the G4 Doorbell)
+    - A valid HTTPS certifcate and public facing Home Assistant instance
+      - If you do not have these, the actionable notifications and images will not appear in the notifications.
+      - You do not need your _whole_ Home Assistant to be publically accessible. Only the paths `/api/camera_proxy/*` and `/api/webhook/*` need to be accessible outside of your network.
+
+    [1]: https://www.home-assistant.io/integrations/html5
+    [2]: https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
+    [3]: https://www.home-assistant.io/integrations/html5#tag
+    [4]: https://companion.home-assistant.io/docs/notifications/notifications-basic/#notification-channels
+    [5]: https://companion.home-assistant.io/docs/notifications/notifications-basic/#replacing
+    [6]: https://www.home-assistant.io/integrations/html5#actions
+    [7]: https://companion.home-assistant.io/docs/notifications/actionable-notifications/
+    [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
+  domain: automation
+  input:
+    device_filter:
+      name: Device(s)
+      description: >
+        The doorbell sensor / area / devices you want to trigger notifications for.
+        Will always be the first doorbell sensor found in filter if triggered manually.
+      selector:
+        target:
+          device:
+            integration: unifiprotect
+          entity:
+            integration: unifiprotect
+            domain: binary_sensor
+            device_class: occupancy
+    lock_entity:
+      name: (Optional) Door Lock Entity
+      description: >
+        The Lock entity to provide an actionable notification to unlock on doorbell
+        ring.
+      default: ""
+      selector:
+        entity:
+          domain: lock
+    notify_target_app:
+      name: (Optional) Notification Target (Mobile App)
+      description: >
+        The notification target for mobile apps notifications.
+        https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
+      default: notify
+      selector:
+        text:
+    notify_target_html5:
+      name: (Optional) Notification Target (HTML5 Push)
+      description: >
+        The notification target for HTML5 push notifications.
+        https://www.home-assistant.io/integrations/html5
+      default: push_notification
+      selector:
+        text:
+    channel:
+      name: (Optional) Notification Channel
+      description: >
+        Notification channel/tag to use. Will automatically be prepended with 
+        "Manual " if action is triggered manually.
+        https://companion.home-assistant.io/docs/notifications/notifications-basic#notification-channels
+      default: Doorbell
+      selector:
+        text:
+    cooldown:
+      name: (Optional) Cooldown
+      description: >
+        Delay before sending another notification for this camera after the last event.
+        It is also the interval you have to silence the notifications or unlock the door.
+      default: 30
+      selector:
+        number:
+          max: 300
+          min: 0
+          unit_of_measurement: seconds
+    silence_timer:
+      name: (Optional) Silence Notifications
+      description: >
+        How long to silence notifications for this camera when requested as part of the
+        actionable notification.
+      default: 30
+      selector:
+        number:
+          max: 300
+          min: 0
+          unit_of_measurement: minutes
+    base_ha_url:
+      name: (Optional) Base Home Assistant URL
+      description: Base URL to use for opening HA links in HTML5 push notifications.
+      default: http://homeassistant.local:8123
+      selector:
+        text:
+    base_image_url:
+      name: (Optional) Base Image URL
+      description: >
+        Publically accesible base URL for your Home Assistant instance. May be different 
+        from your Base Home Assistant URL if your HA instance not publically accessible.
+        Must be an HTTPS URL with a valid certificate.
+      default: ""
+      selector:
+        text:
+    lovelace_view:
+      name: (Optional) Lovelace View
+      description: |
+        Home Assistant Lovelace view to open when clicking notification.
+        If left blank, URI Notification actions will not be generated.
+      default: ""
+      selector:
+        text:
+    debug_enabled:
+      name: (Optional) Debug
+      description: >
+        Enable debugging for automation. If enabled, will send persistent notifications 
+        with extra data.
+      default: false
+      selector:
+        boolean:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  # input vars
+  input_device_filter: !input device_filter
+  input_channel: !input channel
+  input_base_image_url: !input base_image_url
+  input_base_ha_url: !input base_ha_url
+  input_lovelace_view: !input lovelace_view
+  input_debug_enabled: !input debug_enabled
+  input_notify_target_app: !input notify_target_app
+  input_notify_target_html5: !input notify_target_html5
+  input_silence_timer: !input silence_timer
+  input_lock_entity: !input lock_entity
+  # itermediate variables
+  raw_area_ids: |
+    {% if 'area_id' not in input_device_filter %}
+      []
+    {% elif input_device_filter.area_id is string %}
+      ["{{ input_device_filter.area_id }}"]
+    {% else %}
+      {{ input_device_filter.area_id }}
+    {% endif %}
+  raw_device_ids: |
+    {% if 'device_id' not in input_device_filter %}
+      []
+    {% elif input_device_filter.device_id is string %}
+      ["{{ input_device_filter.device_id }}"]
+    {% else %}
+      {{ input_device_filter.device_id }}
+    {% endif %}
+  raw_entity_ids: |
+    {% if 'entity_id' not in input_device_filter %}
+      []
+    {% elif input_device_filter.entity_id is string %}
+      ["{{ input_device_filter.entity_id }}"]
+    {% else %}
+      {{ input_device_filter.entity_id }}
+    {% endif %}
+  device_ids: "{{ ((raw_area_ids | map('area_devices') | map('join','|||') | join('|||')).split('|||') | list + raw_device_ids | list) | unique | list }}"
+  entity_ids: "{{ ((device_ids | map('device_entities') | map('join','|||') | join('|||')).split('|||') | list + raw_entity_ids | list) | unique | list }}"
+  # automation data
+  doorbell_entity_ids: '[{% for eid in entity_ids %}{%if eid.startswith(''binary_sensor'') and is_state_attr(eid, "device_class", "occupancy") %}"{{ eid }}",{% endif %}{% endfor %}]'
+  camera_id_map: |
+    {
+      {% for entity_id in doorbell_entity_ids %}
+      "{{ entity_id }}": [{% for eid in device_entities(device_id(entity_id)) %}{%if eid.startswith("camera") %}"{{ eid }}",{% endif %}{% endfor %}],
+      {% endfor %}
+    }
+  # automation variables
+  lovelace_view: "{{ input_lovelace_view | trim }}"
+  trigger_entity_id: |
+    {% if "event" in trigger %}
+      {{ trigger.event.data.entity_id }}
+    {% else %}
+      {{ doorbell_entity_ids | first }}
+    {% endif %}
+  camera_entity_id: "{{ camera_id_map[trigger_entity_id] | default([None]) | first }}"
+  lock_entity_id: "{{ input_lock_entity or '' }}"
+  trigger_time: |
+    {% if states[trigger_entity_id] == None %}
+      None
+    {% else %}
+      {{ as_local(states[trigger_entity_id].last_changed).strftime('%I:%M %p') }}
+    {% endif %}
+  notification_channel: |
+    {% if "event" in trigger %}
+      {{ input_channel }}
+    {% else %}
+      Manual {{ input_channel }}
+    {% endif %}
+  notification_tag: "{{ notification_channel.lower().replace(' ', '-') }}"
+  notification_title: "{{ device_attr(trigger_entity_id, 'name') }}"
+  notification_url: |
+    {% if lovelace_view == "" %}
+      None
+    {% else %}
+      {{ input_base_ha_url | trim }}{{ lovelace_view }}
+    {% endif %}
+  notification_message: "Someone rang {{ notification_title }}{% if trigger_time != None %} at {{ trigger_time }}{% endif %}."
+  notification_message_html5: |
+    {{ notification_message }}{% if notification_url != None %}
+
+    Tap to open camera in Home Assistant.
+    {% endif %}
+  notification_image: |
+    {% if camera_entity_id == None %}
+      None
+    {% else %}
+      {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
+    {% endif %}
+  silence_action: "silence-{{ trigger_entity_id }}"
+  unlock_action: "unlock-{{ lock_entity_id }}"
+
+trigger:
+  - platform: event
+    event_type: state_changed
+
+condition:
+  - condition: template
+    value_template: >
+      {% if trigger.event.data.entity_id in doorbell_entity_ids and trigger.event.data.new_state.state == "on" and trigger.event.data.old_state.state == "off" and trigger_entity_id != None %}
+        true
+      {% else %}
+        false
+      {% endif %}
+
+action:
+  - choose:
+      - conditions: "{{ input_debug_enabled }}"
+        sequence:
+          - service: notify.persistent_notification
+            data:
+              title: "Debug: {{ notification_title }}"
+              message: |
+                Entity ID: `{{ trigger_entity_id }}`
+                Camera: `{{ camera_entity_id }}`
+                Lock: `{{ lock_entity_id }}`
+                Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
+                Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
+
+                Channel: {{ notification_channel }}
+                Tag: {{ notification_tag }}
+                Message: {{ notification_message }}
+                Image: {{ notification_image }}
+                URL: {{ notification_url }}
+
+  - service: notify.{{ input_notify_target_app }}
+    data:
+      message: "{{ notification_message }}"
+      title: "{{ notification_title }}"
+      data:
+        # Android/iOS notification tag
+        tag: "{{ notification_tag }}"
+        # Android notification Channel
+        channel: "{{ notification_channel }}"
+        # Android high prority
+        ttl: 0
+        priority: high
+        # iOS high prority
+        time-sensitive: 1
+        # Android image
+        image: "{{ notification_image }}"
+        # iOS image
+        attachment:
+          url: "{{ notification_image }}"
+        actions: >
+          [{% if notification_url != None %}
+          { "action": "URI", "title": "Open Camera", "uri": "{{ lovelace_view }}" },
+          {% endif %}
+          {% if lock_entity_id != "" %}
+          { "action": "{{ unlock_action }}", "title": "Unlock Door" },
+          {% endif %}
+          {% if input_silence_timer > 0 %}
+          { "action": "{{ silence_action }}", "title": "Silence", "destructive": True },
+          {% endif %}]
+  - service: notify.{{ input_notify_target_html5 }}
+    data:
+      message: "{{ notification_message_html5 }}"
+      title: "{{ notification_title }}"
+      data:
+        # HTML5 Notification tag
+        tag: "{{ notification_tag }}"
+        image: "{{ notification_image }}"
+        url: "{{ notification_url }}"
+        actions: >
+          [{% if lock_entity_id != "" %}
+          { "action": "{{ unlock_action }}", "title": "Unlock Door" },
+          {% endif %}
+          {% if input_silence_timer > 0 %}
+          { "action": "{{ silence_action }}", "title": "Silence" },
+          {% endif %}]
+  - wait_for_trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "{{ silence_action }}"
+      - platform: event
+        event_type: html5_notification.clicked
+        event_data:
+          action: "{{ silence_action }}"
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "{{ unlock_action }}"
+      - platform: event
+        event_type: html5_notification.clicked
+        event_data:
+          action: "{{ unlock_action }}"
+    timeout:
+      seconds: !input cooldown
+    continue_on_timeout: false
+  - choose:
+      - conditions: "{{ input_debug_enabled }}"
+        sequence:
+          - service: notify.persistent_notification
+            data:
+              title: "Debug: {{ notification_title }}"
+              message: |
+                Callback: `{{ wait.trigger.event.event_type }}`
+                Actions: `{{ wait.trigger.event.data.action }}`
+  - choose:
+      - conditions: "{{ lock_entity_id != '' and wait.trigger.event.data.action == unlock_action }}"
+        sequence:
+          - choose:
+              - conditions: "{{ input_debug_enabled }}"
+                sequence:
+                  - service: notify.persistent_notification
+                    data:
+                      title: "Debug: {{ notification_title }}"
+                      message: "Unloock `{{ lock_entity_id }}`"
+          - service: lock.unlock
+            data:
+              entity_id: "{{ lock_entity_id }}"
+      - conditions: "{{wait.trigger.event.data.action == silence_action }}"
+        sequence:
+          - choose:
+              - conditions: "{{ input_debug_enabled }}"
+                sequence:
+                  - service: notify.persistent_notification
+                    data:
+                      title: "Debug: {{ notification_title }}"
+                      message: Silence started.
+          - delay:
+              minutes: "{{ input_silence_timer }}"
+          - choose:
+              - conditions: "{{ input_debug_enabled }}"
+                sequence:
+                  - service: notify.persistent_notification
+                    data:
+                      title: "Debug: {{ notification_title }}"
+                      message: Silence ended.

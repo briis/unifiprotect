@@ -21,6 +21,7 @@ from pyunifiprotect.data.types import (
 from pyunifiprotect.utils import utc_now
 
 from custom_components.unifiprotect.data import UnifiProtectData
+from custom_components.unifiprotect.utils import get_datetime_attr
 
 from .const import (
     ATTR_BITRATE,
@@ -276,7 +277,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
         return {
             **super().extra_state_attributes,
-            ATTR_UP_SINCE: self.device.up_since.isoformat(),
+            ATTR_UP_SINCE: get_datetime_attr(self.device.up_since),
             ATTR_CAMERA_ID: self.device.id,
             ATTR_CHIME_ENABLED: self.device.feature_flags.has_chime,
             ATTR_CHIME_DURATION: self.device.chime_duration,

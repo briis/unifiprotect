@@ -32,7 +32,7 @@ from .const import (
 )
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
-from .utils import get_nested_attr
+from .utils import get_datetime_attr, get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -210,7 +210,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             return attrs
 
         if key == _KEY_DOORBELL:
-            attrs[ATTR_LAST_TRIP_TIME] = self.device.last_ring.isoformat()
+            attrs[ATTR_LAST_TRIP_TIME] = get_datetime_attr(self.device.last_ring)
         elif isinstance(self.device, Sensor):
             if key in (_KEY_MOTION, _KEY_DOOR):
                 if key == _KEY_MOTION:
@@ -218,10 +218,10 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 else:
                     last_trip = self.device.open_status_changed_at
 
-                attrs[ATTR_LAST_TRIP_TIME] = last_trip.isoformat()
+                attrs[ATTR_LAST_TRIP_TIME] = get_datetime_attr(last_trip)
         elif isinstance(self.device, Light):
             if key == _KEY_MOTION:
-                attrs[ATTR_LAST_TRIP_TIME] = self.device.last_motion.isoformat()
+                attrs[ATTR_LAST_TRIP_TIME] = get_datetime_attr(self.device.last_motion)
 
         if not isinstance(self.device, Camera):
             return attrs
@@ -250,7 +250,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
 
         attrs.update(
             {
-                ATTR_LAST_TRIP_TIME: self.device.last_motion.isoformat(),
+                ATTR_LAST_TRIP_TIME: get_datetime_attr(self.device.last_motion),
                 ATTR_EVENT_SCORE: score,
                 ATTR_EVENT_OBJECT: detected_object,
             }

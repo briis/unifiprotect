@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -15,3 +18,7 @@ def get_nested_attr(obj: Any, attr: str) -> Any:
         value = value.value
 
     return value
+
+
+def get_datetime_attr(dt: datetime | None) -> str | None:
+    return None if dt is None else dt

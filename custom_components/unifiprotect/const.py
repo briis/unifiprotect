@@ -86,6 +86,7 @@ DEVICES_WITH_ENTITIES = (
     | DEVICES_WITH_SENSOR
     | DEVICES_WITH_SELECT
 )
+DEVICES_FOR_SUBSCRIBE = DEVICES_WITH_ENTITIES | {ModelType.NVR, ModelType.EVENT}
 
 ENTITY_CATEGORY_CONFIG = (
     "config"  # Replace with value from HA Core when more people are on 2021.11

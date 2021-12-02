@@ -30,6 +30,7 @@ from .const import (
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
+    DEVICES_FOR_SUBSCRIBE,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
     PLATFORMS,
@@ -69,6 +70,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         password=entry.data[CONF_PASSWORD],
         verify_ssl=entry.data[CONF_VERIFY_SSL],
         session=session,
+        subscribed_models=DEVICES_FOR_SUBSCRIBE,
+        ignore_stats=True,
     )
     _LOGGER.debug("Connect to UniFi Protect")
     protect_data = UnifiProtectData(hass, protect, SCAN_INTERVAL, entry)

@@ -34,6 +34,8 @@ blueprint:
           step: 1
           mode: box
 
+mode: single
+
 variables:
   doorbell: !input doorbell
   title: !input title

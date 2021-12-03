@@ -89,7 +89,7 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `NEW`: Added media player entity for cameras with speaker. Speaker will accept any ffmpeg playable audio file URI (URI must be accessible from _Home Assistant_, not your Camera). TTS works great!
   * Implements #304
 
-* `NEW`: Adds config option to update all metrics (storage stat usage, uptimes, CPU usage, etc.) in realtime. **WARNING**: Enabling this option will greatly increase your CPU usage (~2x is what we were seeing in our testing. It is recommended to leave it disabled for now as we do not have a lot of diagnostic sensors using this data yet.
+* `NEW`: Adds config option to update all metrics (storage stat usage, uptimes, CPU usage, etc.) in realtime. **WARNING**: Enabling this option will greatly increase your CPU usage. ~2x is what we were seeing in our testing. It is recommended to leave it disabled for now as we do not have a lot of diagnostic sensors using this data yet.
 
 * `CHANGE`: Overhaul Config Flow
     * Adds Reauthentication support

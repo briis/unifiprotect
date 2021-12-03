@@ -17,22 +17,28 @@ from homeassistant.const import (
     CONF_VERIFY_SSL,
     EVENT_HOMEASSISTANT_STOP,
 )
-from homeassistant.core import Config, HomeAssistant, callback
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
-from pyunifiprotect.const import SERVER_ID
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data.nvr import NVR
+
+from custom_components.unifiprotect.utils import profile_ws_messages
 
 from .const import (
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
+    CONF_DURATION,
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
+    DEVICES_FOR_SUBSCRIBE,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
     PLATFORMS,
+    PROFILE_WS_SCHEMA,
+    SERVICE_PROFILE_WS,
 )
 from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
@@ -62,35 +68,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _async_import_options_from_data_if_missing(hass, entry)
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
-    protectserver = UpvServer(
-        session=session,
+    protect = ProtectApiClient(
         host=entry.data[CONF_HOST],
         port=entry.data[CONF_PORT],
         username=entry.data[CONF_USERNAME],
         password=entry.data[CONF_PASSWORD],
         verify_ssl=entry.data[CONF_VERIFY_SSL],
+        session=session,
+        subscribed_models=DEVICES_FOR_SUBSCRIBE,
+        ignore_stats=True,
     )
-
-    _LOGGER.debug("Connect to Unfi Protect")
-    protect_data = UnifiProtectData(hass, protectserver, SCAN_INTERVAL, entry)
+    _LOGGER.debug("Connect to UniFi Protect")
+    protect_data = UnifiProtectData(hass, protect, SCAN_INTERVAL, entry)
 
     try:
-        nvr_info = await protectserver.server_information()
+        nvr_info = await protect.get_nvr()
     except NotAuthorized as err:
         raise ConfigEntryAuthFailed(err) from err
     except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
         raise ConfigEntryNotReady from notreadyerror
 
-    if nvr_info["server_version"] < MIN_REQUIRED_PROTECT_V:
+    if nvr_info.version < MIN_REQUIRED_PROTECT_V:
         _LOGGER.error(
-            "You are running V%s of UniFi Protect. Minimum required version is V%s. Please upgrade UniFi Protect and then retry",
-            nvr_info["server_version"],
+            (
+                "You are running v%s of UniFi Protect. Minimum required version is v%s. "
+                "Please upgrade UniFi Protect and then retry"
+            ),
+            nvr_info.version,
             MIN_REQUIRED_PROTECT_V,
         )
         return False
 
     if entry.unique_id is None:
-        hass.config_entries.async_update_entry(entry, unique_id=nvr_info[SERVER_ID])
+        hass.config_entries.async_update_entry(entry, unique_id=nvr_info.mac)
 
     await protect_data.async_setup()
     if not protect_data.last_update_success:
@@ -98,8 +108,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = UnifiProtectEntryData(
         protect_data=protect_data,
-        upv=protectserver,
-        server_info=nvr_info,
+        protect=protect,
         disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
         doorbell_text=entry.options.get(CONF_DOORBELL_TEXT, None),
     )
@@ -107,6 +116,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+
+    async def profile_ws(call: ServiceCall):
+        duration: int = call.data[CONF_DURATION]
+        await profile_ws_messages(hass, protect, duration)
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_PROFILE_WS,
+        profile_ws,
+        PROFILE_WS_SCHEMA,
+    )
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(
@@ -117,18 +137,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def _async_get_or_create_nvr_device_in_registry(
-    hass: HomeAssistant, entry: ConfigEntry, nvr
+    hass: HomeAssistant, entry: ConfigEntry, nvr: NVR
 ) -> None:
     device_registry = await dr.async_get_registry(hass)
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
-        connections={(dr.CONNECTION_NETWORK_MAC, nvr["server_id"])},
-        identifiers={(DOMAIN, nvr["server_id"])},
+        connections={(dr.CONNECTION_NETWORK_MAC, nvr.mac)},
+        identifiers={(DOMAIN, nvr.mac)},
         manufacturer=DEFAULT_BRAND,
         name=entry.data[CONF_ID],
-        model=nvr["server_model"],
-        sw_version=nvr["server_version"],
-        configuration_url=f"https://{entry.data[CONF_HOST]}",
+        model=nvr.type,
+        sw_version=str(nvr.version),
+        configuration_url=nvr.api.base_url,
     )
 
 

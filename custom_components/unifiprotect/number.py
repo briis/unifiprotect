@@ -2,21 +2,27 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 import logging
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from pyunifiprotect.data import ModelType
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
+from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 
 _KEY_WDR = "wdr_value"
 _KEY_MIC_LEVEL = "mic_level"
 _KEY_ZOOM_POS = "zoom_position"
+_KEY_SENSITIVITY = "sensitivity"
+_KEY_DURATION = "duration"
+_KEY_CHIME = "chime_duration"
 
 
 @dataclass
@@ -26,8 +32,8 @@ class UnifiprotectRequiredKeysMixin:
     ufp_max: int
     ufp_min: int
     ufp_step: int
-    ufp_device_types: set[str]
-    ufp_required_field: str
+    ufp_device_types: set[ModelType]
+    ufp_required_field: str | None
     ufp_value: str
     ufp_set_function: str
 
@@ -49,9 +55,9 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_max=3,
         ufp_step=1,
         ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_required_field=None,
-        ufp_value="wdr",
-        ufp_set_function="set_camera_wdr",
+        ufp_required_field="feature_flags.has_wdr",
+        ufp_value="isp_settings.wdr",
+        ufp_set_function="set_wdr_level",
     ),
     UnifiProtectNumberEntityDescription(
         key=_KEY_MIC_LEVEL,
@@ -62,7 +68,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_max=100,
         ufp_step=1,
         ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_required_field=None,
+        ufp_required_field="feature_flags.has_mic",
         ufp_value="mic_volume",
         ufp_set_function="set_mic_volume",
     ),
@@ -75,9 +81,48 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_max=100,
         ufp_step=1,
         ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_required_field="has_opticalzoom",
-        ufp_value="zoom_position",
-        ufp_set_function="set_camera_zoom_position",
+        ufp_required_field="feature_flags.can_optical_zoom",
+        ufp_value="isp_settings.zoom_position",
+        ufp_set_function="set_camera_zoom",
+    ),
+    UnifiProtectNumberEntityDescription(
+        key=_KEY_SENSITIVITY,
+        name="Motion Sensitivity",
+        icon="mdi:walk",
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_min=0,
+        ufp_max=100,
+        ufp_step=1,
+        ufp_device_types={ModelType.LIGHT},
+        ufp_required_field=None,
+        ufp_value="light_device_settings.pir_sensitivity",
+        ufp_set_function="set_sensitivity",
+    ),
+    UnifiProtectNumberEntityDescription(
+        key=_KEY_DURATION,
+        name="Duration",
+        icon="mdi:camera-timer",
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_min=15,
+        ufp_max=900,
+        ufp_step=15,
+        ufp_device_types={ModelType.LIGHT},
+        ufp_required_field=None,
+        ufp_value="light_device_settings.pir_duration",
+        ufp_set_function="set_duration",
+    ),
+    UnifiProtectNumberEntityDescription(
+        key=_KEY_CHIME,
+        name="Duration",
+        icon="mdi:camera-timer",
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_min=0,
+        ufp_max=10000,
+        ufp_step=100,
+        ufp_device_types=DEVICES_WITH_CAMERA,
+        ufp_required_field="feature_flags.has_chime",
+        ufp_value="chime_duration",
+        ufp_set_function="set_chime_duration",
     ),
 )
 
@@ -87,33 +132,30 @@ async def async_setup_entry(
 ) -> None:
     """Set up Select entities for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    upv_object = entry_data.upv
+    protect = entry_data.protect
     protect_data = entry_data.protect_data
-    server_info = entry_data.server_info
 
     entities = []
 
     for description in NUMBER_TYPES:
         for device in protect_data.get_by_types(description.ufp_device_types):
-            device_data = device.data
-            if description.ufp_required_field and not device_data.get(
-                description.ufp_required_field
-            ):
-                continue
+            if description.ufp_required_field:
+                required_field = get_nested_attr(device, description.ufp_required_field)
+                if not required_field:
+                    continue
 
             entities.append(
                 UnifiProtectNumbers(
-                    upv_object,
+                    protect,
                     protect_data,
-                    server_info,
-                    device.device_id,
+                    device,
                     description,
                 )
             )
             _LOGGER.debug(
                 "Adding number entity %s for %s",
                 description.name,
-                device_data.get("name"),
+                device.name,
             )
 
     if not entities:
@@ -127,23 +169,27 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
 
     def __init__(
         self,
-        upv_object,
+        protect,
         protect_data,
-        server_info,
-        device_id,
+        device,
         description: UnifiProtectNumberEntityDescription,
     ):
         """Initialize the Number Entities."""
-        super().__init__(upv_object, protect_data, server_info, device_id, description)
-        self._attr_name = f"{self.entity_description.name} {self._device_data['name']}"
+        super().__init__(protect, protect_data, device, description)
+        self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._attr_max_value = self.entity_description.ufp_max
         self._attr_min_value = self.entity_description.ufp_min
         self._attr_step = self.entity_description.ufp_step
 
     @property
-    def state(self):
+    def state(self) -> float:
         """Return the state of the sensor."""
-        return self._device_data[self.entity_description.ufp_value]
+        value = get_nested_attr(self.device, self.entity_description.ufp_value)
+
+        if self.entity_description.key == _KEY_DURATION:
+            value = value.total_seconds()
+
+        return value
 
     async def async_set_value(self, value: float) -> None:
         """Set new value."""
@@ -152,6 +198,10 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
             "Calling %s to set %s for Camera %s",
             function,
             value,
-            self._device_data["name"],
+            self.device.name,
         )
-        await getattr(self.upv_object, function)(self._device_id, value)
+
+        if self.entity_description.key == _KEY_DURATION:
+            value = timedelta(seconds=value)
+
+        await getattr(self.device, function)(value)

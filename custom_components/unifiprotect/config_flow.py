@@ -17,8 +17,7 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
-from pyunifiprotect.const import SERVER_ID, SERVER_NAME
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 import voluptuous as vol
 
 from .const import (
@@ -78,7 +77,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             return None, {}
 
-        protect = UpvServer(
+        protect = ProtectApiClient(
             session=session,
             host=host,
             port=port,
@@ -90,7 +89,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         nvr_data = None
         try:
-            nvr_data = await protect.server_information()
+            nvr_data = await protect.get_nvr()
         except NotAuthorized as ex:
             _LOGGER.debug(ex)
             errors[CONF_PASSWORD] = "invalid_auth"
@@ -98,7 +97,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.debug(ex)
             errors["base"] = "nvr_error"
         else:
-            if nvr_data["server_version"] < MIN_REQUIRED_PROTECT_V:
+            if nvr_data.version < MIN_REQUIRED_PROTECT_V:
                 _LOGGER.debug("UniFi Protect Version not supported")
                 errors["base"] = "protect_version"
 
@@ -152,10 +151,10 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             nvr_data, errors = await self._async_get_nvr_data(user_input)
 
             if not errors:
-                await self.async_set_unique_id(nvr_data[SERVER_ID])
+                await self.async_set_unique_id(nvr_data.mac)
                 self._abort_if_unique_id_configured()
 
-                return await self._async_create_entry(nvr_data[SERVER_NAME], user_input)
+                return await self._async_create_entry(nvr_data.name, user_input)
 
         user_input = user_input or {}
         return self.async_show_form(

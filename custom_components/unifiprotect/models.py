@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
-from pyunifiprotect import UpvServer
+from pyunifiprotect import ProtectApiClient
 
 from .data import UnifiProtectData
 
@@ -14,7 +13,6 @@ class UnifiProtectEntryData:
     """Data for the unifiprotect integration."""
 
     protect_data: UnifiProtectData
-    upv: UpvServer
-    server_info: dict[str, Any]
+    protect: ProtectApiClient
     disable_stream: bool
     doorbell_text: str | None

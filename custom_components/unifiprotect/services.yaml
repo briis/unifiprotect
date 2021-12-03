@@ -1,3 +1,19 @@
+profile_ws_messages:
+  name: Profile UniFi Protect WS Messages
+  description: Profiles UniFi Protect Web Socket messages and prints out summary afterwards.
+  fields:
+    duration:
+      name: Profile Time
+      description: How long to profile
+      default: 60
+      required: true
+      selector:
+        number:
+          min: 10
+          max: 600
+          step: 10
+          unit_of_measurement: seconds
+
 set_recording_mode:
   name: Set Recording Mode
   description: "Set recording mode for the camera"

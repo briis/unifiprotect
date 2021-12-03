@@ -1,25 +1,21 @@
 """Base class for protect data."""
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import timedelta
 import logging
-from typing import Generator
-from homeassistant.config_entries import ConfigEntry
+from typing import Generator, Iterable
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
-from pyunifiprotect.exceptions import NotAuthorized
-from pyunifiprotect.unifi_protect_server import NvrError, UpvServer
+from pyunifiprotect import ProtectApiClient
+from pyunifiprotect.data import Bootstrap, Event, ModelType, WSSubscriptionMessage
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.exceptions import NotAuthorized, NvrError
+
+from .const import DEVICES_WITH_ENTITIES
 
 _LOGGER = logging.getLogger(__name__)
-
-
-@dataclass
-class UnifiProtectDevice:
-    device_id: str
-    type: str
-    data: dict
 
 
 class UnifiProtectData:
@@ -28,14 +24,14 @@ class UnifiProtectData:
     def __init__(
         self,
         hass: HomeAssistant,
-        protectserver: UpvServer,
+        protect: ProtectApiClient,
         update_interval: timedelta,
         entry: ConfigEntry,
     ):
         """Initialize an subscriber."""
         super().__init__()
         self._hass = hass
-        self._protectserver = protectserver
+        self._protect = protect
         self._entry = entry
         self._hass = hass
         self._update_interval = update_interval
@@ -43,23 +39,25 @@ class UnifiProtectData:
         self._unsub_interval = None
         self._unsub_websocket = None
 
-        self.data = {}
         self.last_update_success = False
 
-    def get_by_types(self, device_types) -> Generator[UnifiProtectDevice, None, None]:
+    def get_by_types(
+        self, device_types: Iterable[ModelType]
+    ) -> Generator[ProtectAdoptableDeviceModel, None, None]:
         """Get all devices matching types."""
-        if not self.data:
-            return
 
-        for device_id, device_data in self.data.items():
-            device_type = device_data.get("type")
-            if device_type and device_type in device_types:
-                yield UnifiProtectDevice(device_id, device_type, device_data)
+        for device_type in device_types:
+            attr = f"{device_type.value}s"
+            devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
+                self._protect.bootstrap, attr
+            )
+            for device in devices.values():
+                yield device
 
     async def async_setup(self):
         """Subscribe and do the refresh."""
-        self._unsub_websocket = self._protectserver.subscribe_websocket(
-            self._async_process_updates
+        self._unsub_websocket = self._protect.subscribe_websocket(
+            self._async_process_ws_message
         )
         await self.async_refresh()
 
@@ -71,16 +69,12 @@ class UnifiProtectData:
         if self._unsub_interval:
             self._unsub_interval()
             self._unsub_interval = None
-        await self._protectserver.async_disconnect_ws()
+        await self._protect.async_disconnect_ws()
 
-    async def async_refresh(self, *_, force_camera_update=False):
+    async def async_refresh(self, *_, force=False):
         """Update the data."""
         try:
-            self._async_process_updates(
-                await self._protectserver.update(
-                    force_camera_update=force_camera_update
-                )
-            )
+            self._async_process_updates(await self._protect.update(force=force))
             self.last_update_success = True
         except NvrError:
             if self.last_update_success:
@@ -93,11 +87,27 @@ class UnifiProtectData:
             self.last_update_success = False
 
     @callback
-    def _async_process_updates(self, updates):
+    def _async_process_ws_message(self, message: WSSubscriptionMessage):
+        if message.new_obj.model in DEVICES_WITH_ENTITIES:
+            self.async_signal_device_id_update(message.new_obj.id)
+        elif isinstance(message.new_obj, Event) and message.new_obj.camera is not None:
+            self.async_signal_device_id_update(message.new_obj.camera.id)
+
+    @callback
+    def _async_process_updates(self, updates: Bootstrap | None):
         """Process update from the protect data."""
-        for device_id, data in updates.items():
-            self.data[device_id] = data
-            self.async_signal_device_id_update(device_id)
+
+        # Websocket connected, use data from it
+        if updates is None:
+            return
+
+        for device_type in DEVICES_WITH_ENTITIES:
+            attr = f"{device_type.value}s"
+            devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
+                self._protect.bootstrap, attr
+            )
+            for device_id in devices.keys():
+                self.async_signal_device_id_update(device_id)
 
     @callback
     def async_subscribe_device_id(self, device_id, update_callback):

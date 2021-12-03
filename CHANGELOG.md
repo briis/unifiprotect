@@ -55,7 +55,7 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
     * This should lead to a number of behind-the-scenes reliability improvements.
-      * Should fix/close the following issues: #341, #317, #297, #255, and #248 (TODO: Verify)
+      * Should fix/close the following issues: #248, #255, #297, #317, #341, and #360 (TODO: Verify)
 
 * `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
   * Closes #337

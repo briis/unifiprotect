@@ -41,17 +41,19 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `chime_duration`, `is_dark`, `mic_sensitivity`, `privacy_mode`, `wdr_value`, and `zoom_position`  will be removed from camera entities -- all of them have now have their own sensors
 
 
-### Changes in this release
+### Breaking Changes in this release
 
-* `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading.
+* `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading. If you do not, you will need to manually delete the old Privacy Zone from your UniFi Protect app.
 
 * `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR.
 
-* `CHANGE`: **BREAKING CHANGE** `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not reliable between restarts.
+* `CHANGE`: **BREAKING CHANGE** the `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not reliable between restarts.
 
 * `CHANGE`: **BREAKING CHANGE** the `event_object` attribute for binary motion sensors has changed the value for no object detected from "None Identified" (string) to "None" (NoneType/null)
 
 * `CHANGE`: **BREAKING CHANGE** The Doorbell Text select entity for Doorbells has been overhauled. The Config Flow option for Doorbell Messages has been removed. You now can use the the  `unifiprotect.add_doorbell_text` and `unifiprotect.remove_doorbell_text` services to add/remove Doorbell messages. This will persist the messages in UniFi Protect and the choices will now be the same ones that appear in the UniFi Protect iOS/Android app.
+
+### Other Changes in this release
 
 * `NEW`: Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. If you need RTSP camera entities, you can enable one of the given insecure camera entities.
 

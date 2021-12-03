@@ -29,9 +29,10 @@ class UnifiProtectEntity(Entity):
         if description:
             self.entity_description = description
 
+        if not hasattr(self, "device"):
+            self.device: ProtectAdoptableDeviceModel = device
         self.protect: ProtectApiClient = protect
         self.protect_data: UnifiProtectData = protect_data
-        self.device: ProtectAdoptableDeviceModel = device
         if description is None:
             self._attr_unique_id = f"{self.device.id}_{self.device.mac}"
         else:

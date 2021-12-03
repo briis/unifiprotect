@@ -73,8 +73,8 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
 
     def __init__(self, protect, protect_data, device):
         """Initialize an Unifi light."""
-        super().__init__(protect, protect_data, device, None)
         self.device: Light = device
+        super().__init__(protect, protect_data, device, None)
         self._attr_name = self.device.name
         self._attr_icon = "mdi:spotlight-beam"
         self._attr_supported_features = SUPPORT_BRIGHTNESS

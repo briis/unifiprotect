@@ -195,8 +195,8 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         description: UnifiProtectBinaryEntityDescription,
     ):
         """Initialize the Binary Sensor."""
-        super().__init__(protect, protect_data, device, description)
         self.device: Camera | Light | Sensor = device
+        super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {description.name.title()}"
         self._async_update_device_from_protect()
         self._doorbell_callback: Optional[TaskClass] = None

@@ -205,8 +205,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         options: list[dict[str, Any]] | None,
     ):
         """Initialize the unifi protect select entity."""
-        super().__init__(protect, protect_data, device, description)
         self.device: Camera | Viewer | Light = device
+        super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._data_key = description.ufp_value
 

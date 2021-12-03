@@ -145,8 +145,8 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         description: UnifiProtectSwitchEntityDescription,
     ):
         """Initialize an Unifi Protect Switch."""
-        super().__init__(protect, protect_data, device, description)
         self.device: Camera | Light = device
+        super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._switch_type = self.entity_description.key
 

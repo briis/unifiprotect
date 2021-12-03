@@ -204,9 +204,8 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         disable_stream: bool,
     ):
         """Initialize an Unifi camera."""
-        super().__init__(protect, protect_data, camera, None)
-
         self.device: UnifiCamera = camera
+        super().__init__(protect, protect_data, camera, None)
         self.channel = channel
         self._secure = secure
         self._disable_stream = disable_stream

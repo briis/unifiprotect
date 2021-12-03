@@ -97,6 +97,7 @@ ENTITY_CATEGORY_DIAGNOSTIC = (
 
 MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 
+SERVICE_PROFILE_WS = "profile_ws_messages"
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"
@@ -165,6 +166,11 @@ SET_RECORDING_MODE_SCHEMA = vol.Schema(
         vol.Optional(CONF_RECORDING_MODE, default=TYPE_RECORD_MOTION): vol.In(
             VALID_RECORDING_MODES
         ),
+    }
+)
+PROFILE_WS_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_DURATION): vol.Coerce(int),
     }
 )
 

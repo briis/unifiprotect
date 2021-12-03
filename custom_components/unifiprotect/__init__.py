@@ -17,16 +17,19 @@ from homeassistant.const import (
     CONF_VERIFY_SSL,
     EVENT_HOMEASSISTANT_STOP,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 from pyunifiprotect.data.nvr import NVR
 
+from custom_components.unifiprotect.utils import profile_ws_messages
+
 from .const import (
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
+    CONF_DURATION,
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
@@ -34,6 +37,8 @@ from .const import (
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
     PLATFORMS,
+    PROFILE_WS_SCHEMA,
+    SERVICE_PROFILE_WS,
 )
 from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
@@ -111,6 +116,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+
+    async def profile_ws(call: ServiceCall):
+        duration: int = call.data[CONF_DURATION]
+        await profile_ws_messages(hass, protect, duration)
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_PROFILE_WS,
+        profile_ws,
+        PROFILE_WS_SCHEMA,
+    )
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(

@@ -34,9 +34,9 @@ class UnifiProtectEntity(Entity):
         self.protect: ProtectApiClient = protect
         self.protect_data: UnifiProtectData = protect_data
         if description is None:
-            self._attr_unique_id = f"{self.device.id}_{self.device.mac}"
+            self._attr_unique_id = f"{self.device.id}"
         else:
-            self._attr_unique_id = f"{description.key}_{self.device.mac}"
+            self._attr_unique_id = f"{self.device.id}_{description.key}"
         self._attr_device_info = DeviceInfo(
             name=self.device.name,
             manufacturer=DEFAULT_BRAND,

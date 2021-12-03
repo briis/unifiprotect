@@ -298,7 +298,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def _async_fire_events(self):
         """Fire events on ring or motion.
 
-        Remove this before merging to core.
+        CORE: Remove this before merging to core.
         """
 
         key = self.entity_description.key
@@ -311,7 +311,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def _async_fire_doorbell_event(self):
         """Fire events on ring.
 
-        Remove this before merging to core.
+        CORE: Remove this before merging to core.
         """
 
         assert isinstance(self.device, Camera)

@@ -19,14 +19,16 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import entity_registry as er, device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 from pyunifiprotect.data.nvr import NVR
+from pyunifiprotect.data.types import ModelType
 
-from custom_components.unifiprotect.utils import profile_ws_messages, above_ha_version
+from custom_components.unifiprotect.utils import above_ha_version, profile_ws_messages
 
 from .const import (
+    CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
     CONF_DURATION,
@@ -34,7 +36,9 @@ from .const import (
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
+    DEVICE_TYPE_CAMERA,
     DEVICES_FOR_SUBSCRIBE,
+    DEVICES_WITH_ENTITIES,
     DOMAIN,
     DOORBELL_TEXT_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
@@ -52,6 +56,93 @@ from .models import UnifiProtectEntryData
 _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+
+
+@callback
+async def _async_migrate_data(
+    hass: HomeAssistant, entry: ConfigEntry, protect: ProtectApiClient
+):
+    # already up to date, skip
+    if CONF_ALL_UPDATES in entry.options:
+        return
+
+    _LOGGER.info("Starting entity migration...")
+
+    # migrate entry
+    options = dict(entry.options)
+    options[CONF_ALL_UPDATES] = False
+    if CONF_DOORBELL_TEXT in options:
+        del options[CONF_DOORBELL_TEXT]
+    hass.config_entries.async_update_entry(entry, data=entry.data, options=options)
+
+    # migrate entities
+    registry = er.async_get(hass)
+    mac_to_id: dict[str, str] = {}
+    mac_to_channel_id: dict[str, str] = {}
+    bootstrap = await protect.get_bootstrap()
+    for model in DEVICES_WITH_ENTITIES:
+        attr = model.value + "s"
+        for device in getattr(bootstrap, attr).values():
+            mac_to_id[device.mac] = device.id
+            if model == ModelType.CAMERA:
+                for channel in device.channels:
+                    channel_id = str(channel.id)
+                    if channel.is_rtsp_enabled:
+                        break
+                mac_to_channel_id[device.mac] = channel_id
+
+    count = 0
+    entities = er.async_entries_for_config_entry(registry, entry.entry_id)
+    for entity in entities:
+        new_unique_id: str | None = None
+        if entity.domain != DEVICE_TYPE_CAMERA:
+            parts = entity.unique_id.split("_")
+            if len(parts) >= 2:
+                device_or_key = "_".join(parts[:-1])
+                mac = parts[-1]
+
+                device_id = mac_to_id[mac]
+                if device_or_key == device_id:
+                    new_unique_id = device_id
+                else:
+                    new_unique_id = f"{device_id}_{device_or_key}"
+        else:
+            parts = entity.unique_id.split("_")
+            if len(parts) == 2:
+                mac = parts[1]
+                device_id = mac_to_id[mac]
+                channel_id = mac_to_channel_id[mac]
+                new_unique_id = f"{device_id}_{channel_id}"
+            else:
+                device_id = parts[0]
+                channel_id = parts[2]
+                extra = "" if len(parts) == 3 else "_insecure"
+                new_unique_id = f"{device_id}_{channel_id}{extra}"
+
+        if new_unique_id is not None:
+            _LOGGER.debug(
+                "Migrating entity %s (old unique_id: %s, new unique_id: %s)",
+                entity.entity_id,
+                entity.unique_id,
+                new_unique_id,
+            )
+            try:
+                registry.async_update_entity(
+                    entity.entity_id, new_unique_id=new_unique_id
+                )
+            except ValueError:
+                _LOGGER.warning(
+                    "Could not migrate entity %s (old unique_id: %s, new unique_id: %s)",
+                    entity.entity_id,
+                    entity.unique_id,
+                    new_unique_id,
+                )
+            else:
+                count += 1
+
+    _LOGGER.info("Migrated %s entities", count)
+    if count != len(entities):
+        _LOGGER.warning("%s entities not migrated", len(entities) - count)
 
 
 @callback
@@ -82,7 +173,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         verify_ssl=entry.data[CONF_VERIFY_SSL],
         session=session,
         subscribed_models=DEVICES_FOR_SUBSCRIBE,
-        ignore_stats=True,
+        ignore_stats=not entry.options.get(CONF_ALL_UPDATES, False),
     )
     _LOGGER.debug("Connect to UniFi Protect")
     protect_data = UnifiProtectData(hass, protect, SCAN_INTERVAL, entry)
@@ -105,6 +196,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         return False
 
+    await _async_migrate_data(hass, entry, protect)
     if entry.unique_id is None:
         hass.config_entries.async_update_entry(entry, unique_id=nvr_info.mac)
 

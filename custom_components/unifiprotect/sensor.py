@@ -118,6 +118,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         name="Bluetooth Signal Strength",
         native_unit_of_measurement="dB",
         device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+        entity_registry_enabled_default=False,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.SENSOR},
         ufp_value="bluetooth_connection_state.signal_strength",

@@ -43,8 +43,6 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 ### Changes in this release
 
-* `NEW`: **BREAKING CHANGE** Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. This will change the unique ID of your default Camera so your old Camera entities will become orphaned. If you need RTSP camera entities, you can enable one of the given insecure camera entities.
-
 * `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading.
 
 * `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR.
@@ -65,6 +63,8 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `CHANGE`: Configuration URLs for UFP devices will now take you directly to the device in the UFP Web UI.
 
 * `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
+
+* `NEW`: Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. If you need RTSP camera entities, you can enable one of the given insecure camera entities.
 
 * `NEW`: Added the following attributes to Camera entity: `width`, `height`, `fps`, `bitrate` and `channel_id`
 
@@ -88,6 +88,8 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * `NEW`: Added media player entity for cameras with speaker. Speaker will accept any ffmpeg playable audio file URI (URI must be accessible from _Home Assistant_, not your Camera). TTS works great!
   * Implements #304
+
+* `NEW`: Adds config option to update all metrics (storage stat usage, uptimes, CPU usage, etc.) in realtime. **WARNING**: Enabling this option will greatly increase your CPU usage (~2x is what we were seeing in our testing. It is recommended to leave it disabled for now as we do not have a lot of diagnostic sensors using this data yet.
 
 * `CHANGE`: Overhaul Config Flow
     * Adds Reauthentication support

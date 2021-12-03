@@ -55,6 +55,27 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 ### Other Changes in this release
 
+* `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
+    * This should lead to a number of behind-the-scenes reliability improvements.
+      * Should fix/close the following issues: #248, #255, #297, #317, #341, and #360 (TODO: Verify)
+
+* `CHANGE`: Overhaul Config Flow
+    * Adds Reauthentication support
+    * Adds "Verify SSL"
+    * Updates Setup / Reauth / Options flows to pre-populate forms from existing settings
+    * Removes changing username/password as part of the options flow as it is redundant with Reauthentication support
+    * Removes Doorbell Text option since it is handled directly by UniFi Protect now
+    * Adds new config option to update all metrics (storage stat usage, uptimes, CPU usage, etc.) in realtime. **WARNING**: Enabling this option will greatly increase your CPU usage. ~2x is what we were seeing in our testing. It is recommended to leave it disabled for now as we do not have a lot of diagnostic sensors using this data yet.
+
+* `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
+  * Closes #337
+
+* `CHANGE`: Configuration URLs for UFP devices will now take you directly to the device in the UFP Web UI.
+
+* `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
+
+* `CHANGE`: The Bluetooth strength sensor for the UP Sense is now disabled by default (will not effect anyone that already has the sensor).
+
 * `NEW`: Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. If you need RTSP camera entities, you can enable one of the given insecure camera entities.
 
 * `NEW`: Added the following attributes to Camera entity: `width`, `height`, `fps`, `bitrate` and `channel_id`
@@ -80,26 +101,6 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `NEW`: Added media player entity for cameras with speaker. Speaker will accept any ffmpeg playable audio file URI (URI must be accessible from _Home Assistant_, not your Camera). TTS works great!
   * Implements #304
 
-* `NEW`: Adds config option to update all metrics (storage stat usage, uptimes, CPU usage, etc.) in realtime. **WARNING**: Enabling this option will greatly increase your CPU usage. ~2x is what we were seeing in our testing. It is recommended to leave it disabled for now as we do not have a lot of diagnostic sensors using this data yet.
-
-* `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
-    * This should lead to a number of behind-the-scenes reliability improvements.
-      * Should fix/close the following issues: #248, #255, #297, #317, #341, and #360 (TODO: Verify)
-
-* `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
-  * Closes #337
-
-* `CHANGE`: Configuration URLs for UFP devices will now take you directly to the device in the UFP Web UI.
-
-* `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
-
-* `CHANGE`: The Bluetooth strength sensor for the UP Sense is now disabled by default (will not effect anyone that already has the sensor).
-
-* `CHANGE`: Overhaul Config Flow
-    * Adds Reauthentication support
-    * Adds "Verify SSL"
-    * Updates Setup / Reauth / Options flows to pre-populate forms from existing settings
-    * Removes changing username/password as part of the options flow as it is redundant with Reauthentication support
 
 ## 0.10.0
 

@@ -40,7 +40,7 @@ It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, 
 5. [UniFi Protect Services](#special-unifi-protect-services)
 6. [UniFi Protect Events](#unifi-protect-events)
 7. [Automating Services](#automating-services)
-    * [Send a notfication when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
+    * [Send a notification when the doorbell is pressed](#send-a-notification-when-the-doorbell-is-pressed)
     * [Person Detection](#automate-person-detection)
     * [Input Slider for Doorbell Chime Duration](#create-input-slider-for-doorbell-chime-duration)
 8. [Enable Debug Logging](#enable-debug-logging)

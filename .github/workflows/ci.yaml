@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: 3.9
 
-      # - name: Hassfest
-      #   uses: home-assistant/actions/hassfest@master
+      - name: Hassfest
+        uses: home-assistant/actions/hassfest@master
 
       - name: Install Linting Dependencies
         run: |
@@ -33,11 +33,11 @@ jobs:
           pip install ./hass
           pip install git+https://github.com/KapJI/homeassistant-stubs.git
 
-      # - name: isort
-      #   run: isort --check-only --quiet custom_components/unifiprotect
+      - name: isort
+        run: isort --check-only --quiet custom_components/unifiprotect
 
-      # - name: black
-      #   run: black --check custom_components/unifiprotect
+      - name: black
+        run: black --check custom_components/unifiprotect
 
       - name: mypy
         run: cd ./hass && mypy homeassistant/components/unifiprotect

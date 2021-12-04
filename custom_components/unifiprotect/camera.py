@@ -143,11 +143,17 @@ async def async_setup_entry(
         "async_set_recording_mode",
     )
 
-    platform.async_register_entity_service(SERVICE_SET_IR_MODE, SET_IR_MODE_SCHEMA, "async_set_ir_mode")
+    platform.async_register_entity_service(
+        SERVICE_SET_IR_MODE, SET_IR_MODE_SCHEMA, "async_set_ir_mode"
+    )
 
-    platform.async_register_entity_service(SERVICE_SET_STATUS_LIGHT, SET_STATUS_LIGHT_SCHEMA, "async_set_status_light")
+    platform.async_register_entity_service(
+        SERVICE_SET_STATUS_LIGHT, SET_STATUS_LIGHT_SCHEMA, "async_set_status_light"
+    )
 
-    platform.async_register_entity_service(SERVICE_SET_HDR_MODE, SET_HDR_MODE_SCHEMA, "async_set_hdr_mode")
+    platform.async_register_entity_service(
+        SERVICE_SET_HDR_MODE, SET_HDR_MODE_SCHEMA, "async_set_hdr_mode"
+    )
 
     platform.async_register_entity_service(
         SERVICE_SET_HIGHFPS_VIDEO_MODE,
@@ -161,15 +167,21 @@ async def async_setup_entry(
         "async_set_doorbell_lcd_message",
     )
 
-    platform.async_register_entity_service(SERVICE_SET_MIC_VOLUME, SET_MIC_VOLUME_SCHEMA, "async_set_mic_volume")
+    platform.async_register_entity_service(
+        SERVICE_SET_MIC_VOLUME, SET_MIC_VOLUME_SCHEMA, "async_set_mic_volume"
+    )
 
-    platform.async_register_entity_service(SERVICE_SET_PRIVACY_MODE, SET_PRIVACY_MODE_SCHEMA, "async_set_privacy_mode")
+    platform.async_register_entity_service(
+        SERVICE_SET_PRIVACY_MODE, SET_PRIVACY_MODE_SCHEMA, "async_set_privacy_mode"
+    )
 
     platform.async_register_entity_service(
         SERVICE_SET_ZOOM_POSITION, SET_ZOOM_POSITION_SCHEMA, "async_set_zoom_position"
     )
 
-    platform.async_register_entity_service(SERVICE_SET_WDR_VALUE, SET_WDR_VALUE_SCHEMA, "async_set_wdr_value")
+    platform.async_register_entity_service(
+        SERVICE_SET_WDR_VALUE, SET_WDR_VALUE_SCHEMA, "async_set_wdr_value"
+    )
 
     platform.async_register_entity_service(
         SERVICE_SET_DOORBELL_CHIME_DURAION,
@@ -221,7 +233,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             rtsp_url = self.channel.rtsps_url
 
         self._stream_source = None if disable_stream else rtsp_url
-        self._attr_supported_features: int = SUPPORT_STREAM if self._stream_source else 0
+        self._attr_supported_features: int = (
+            SUPPORT_STREAM if self._stream_source else 0
+        )
 
     @callback
     def _async_update_device_from_protect(self) -> None:
@@ -291,7 +305,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     async def async_set_highfps_video_mode(self, high_fps_on: bool) -> None:
         """Set camera High FPS video mode."""
-        await self.device.set_video_mode(VideoMode.HIGH_FPS if high_fps_on else VideoMode.DEFAULT)
+        await self.device.set_video_mode(
+            VideoMode.HIGH_FPS if high_fps_on else VideoMode.DEFAULT
+        )
 
     async def async_set_doorbell_lcd_message(self, message: str, duration: str) -> None:
         """Set LCD Message on Doorbell display."""
@@ -300,13 +316,17 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         if duration.isnumeric():
             reset_at = utc_now() + timedelta(minutes=int(duration))
 
-        await self.device.set_lcd_text(DoorbellMessageType.CUSTOM_MESSAGE, message, reset_at=reset_at)
+        await self.device.set_lcd_text(
+            DoorbellMessageType.CUSTOM_MESSAGE, message, reset_at=reset_at
+        )
 
     async def async_set_mic_volume(self, level: int) -> None:
         """Set camera Microphone Level."""
         await self.device.set_mic_volume(level)
 
-    async def async_set_privacy_mode(self, privacy_mode: bool, mic_level: int, recording_mode: str) -> None:
+    async def async_set_privacy_mode(
+        self, privacy_mode: bool, mic_level: int, recording_mode: str
+    ) -> None:
         """Set camera Privacy mode."""
 
         arg_mic_level: None | int = None
@@ -316,7 +336,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         if recording_mode != TYPE_RECORD_NOTSET:
             arg_recording_mode = RecordingMode(recording_mode)
 
-        await self.device.set_privacy(privacy_mode, mic_level=arg_mic_level, recording_mode=arg_recording_mode)
+        await self.device.set_privacy(
+            privacy_mode, mic_level=arg_mic_level, recording_mode=arg_recording_mode
+        )
 
     async def async_set_wdr_value(self, value: int) -> None:
         """Set camera wdr value."""
@@ -338,7 +360,9 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             return
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self.device.name)
 
-    async def async_camera_image(self, width: int | None = None, height: int | None = None) -> bytes | None:
+    async def async_camera_image(
+        self, width: int | None = None, height: int | None = None
+    ) -> bytes | None:
         """Return the Camera Image."""
         last_image = await self.device.get_snapshot(width, height)
         self._last_image = last_image

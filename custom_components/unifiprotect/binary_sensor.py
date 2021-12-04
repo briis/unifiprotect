@@ -57,7 +57,9 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectBinaryEntityDescription(BinarySensorEntityDescription, UnifiprotectRequiredKeysMixin):
+class UnifiProtectBinaryEntityDescription(
+    BinarySensorEntityDescription, UnifiprotectRequiredKeysMixin
+):
     """Describes Unifi Protect Binary Sensor entity."""
 
 
@@ -241,14 +243,19 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             and len(self.device.last_smart_detect_event.smart_detect_types) > 0
         ):
             score = self.device.last_smart_detect_event.score
-            detected_object: SmartDetectObjectType | None = self.device.last_smart_detect_event.smart_detect_types[0]
+            detected_object: SmartDetectObjectType | None = (
+                self.device.last_smart_detect_event.smart_detect_types[0]
+            )
             _LOGGER.debug(
                 "OBJECTS: %s on %s",
                 self.device.last_smart_detect_event.smart_detect_types,
                 self._attr_name,
             )
         else:
-            if self.device.is_motion_detected and self.device.last_motion_event is not None:
+            if (
+                self.device.is_motion_detected
+                and self.device.last_motion_event is not None
+            ):
                 score = self.device.last_motion_event.score
             detected_object = None
 
@@ -279,7 +286,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                     self._async_wait_for_doorbell(last_ring + RING_INTERVAL)
                 )
         else:
-            self._attr_is_on = get_nested_attr(self.device, self.entity_description.ufp_value)
+            self._attr_is_on = get_nested_attr(
+                self.device, self.entity_description.ufp_value
+            )
 
         self._extra_state_attributes = self._async_get_extra_attrs()
 
@@ -338,8 +347,14 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         obj: list[str] | None = None
         if isinstance(self.device, Camera):
             is_on = self.device.is_motion_detected
-            if self.device.is_smart_detected and self.device.last_smart_detect_event is not None:
-                obj = [t.value for t in self.device.last_smart_detect_event.smart_detect_types]
+            if (
+                self.device.is_smart_detected
+                and self.device.last_smart_detect_event is not None
+            ):
+                obj = [
+                    t.value
+                    for t in self.device.last_smart_detect_event.smart_detect_types
+                ]
         else:
             is_on = self.device.is_pir_motion_detected
 

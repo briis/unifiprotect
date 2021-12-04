@@ -69,7 +69,9 @@ MOTION_MODE_TO_LIGHT_MODE = [
     {"id": LightModeType.MANUAL.value, "name": LIGHT_MODE_OFF},
 ]
 
-DEVICE_RECORDING_MODES = [{"id": mode.value, "name": mode.value.title()} for mode in list(RecordingMode)]
+DEVICE_RECORDING_MODES = [
+    {"id": mode.value, "name": mode.value.title()} for mode in list(RecordingMode)
+]
 
 
 @dataclass
@@ -85,7 +87,9 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectSelectEntityDescription(SelectEntityDescription, UnifiprotectRequiredKeysMixin):
+class UnifiProtectSelectEntityDescription(
+    SelectEntityDescription, UnifiprotectRequiredKeysMixin
+):
     """Describes Unifi Protect Sensor entity."""
 
 
@@ -213,8 +217,12 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
         if options is not None:
             self._attr_options = [item["name"] for item in options]
-            self._hass_to_unifi_options: dict[str, Any] = {item["name"]: item["id"] for item in options}
-            self._unifi_to_hass_options: dict[Any, str] = {item["id"]: item["name"] for item in options}
+            self._hass_to_unifi_options: dict[str, Any] = {
+                item["name"]: item["id"] for item in options
+            }
+            self._unifi_to_hass_options: dict[Any, str] = {
+                item["id"]: item["name"] for item in options
+            }
         self._async_set_dynamic_options()
 
     @callback
@@ -227,11 +235,18 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             return
 
         if self.entity_description.key == _KEY_VIEWER:
-            options = [{"id": item.id, "name": item.name} for item in self.protect.bootstrap.liveviews.values()]
+            options = [
+                {"id": item.id, "name": item.name}
+                for item in self.protect.bootstrap.liveviews.values()
+            ]
         elif self.entity_description.key == _KEY_DOORBELL_TEXT:
-            default_message = self.protect.bootstrap.nvr.doorbell_settings.default_message_text
+            default_message = (
+                self.protect.bootstrap.nvr.doorbell_settings.default_message_text
+            )
             messages = self.protect.bootstrap.nvr.doorbell_settings.all_messages
-            built_messages = ({"id": item.type.value, "name": item.text} for item in messages)
+            built_messages = (
+                {"id": item.type.value, "name": item.text} for item in messages
+            )
 
             options = [
                 {"id": "", "name": f"Default Message ({default_message})"},
@@ -257,7 +272,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             # a bit of extra to allow On Motion Always/Dark
             if (
                 self.device.light_mode_settings.mode == LightModeType.MOTION
-                and self.device.light_mode_settings.enable_at == LightModeEnableType.DARK
+                and self.device.light_mode_settings.enable_at
+                == LightModeEnableType.DARK
             ):
                 unifi_value = f"{LightModeType.MOTION.value}Dark"
         elif self.entity_description.key == _KEY_DOORBELL_TEXT:
@@ -271,7 +287,9 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the Select Entity Option."""
         if option not in self.options:
-            raise HomeAssistantError(f"Cannot set the value to {option}; Allowed values are: {self.options}")
+            raise HomeAssistantError(
+                f"Cannot set the value to {option}; Allowed values are: {self.options}"
+            )
 
         if isinstance(self.device, Light):
             if self.entity_description.key == _KEY_LIGHT_MOTION:
@@ -287,7 +305,9 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         if isinstance(self.device, Camera):
             if self.entity_description.key == _KEY_DOORBELL_TEXT:
                 if unifi_value.startswith(DoorbellMessageType.CUSTOM_MESSAGE.value):
-                    await self.device.set_lcd_text(DoorbellMessageType.CUSTOM_MESSAGE, text=option)
+                    await self.device.set_lcd_text(
+                        DoorbellMessageType.CUSTOM_MESSAGE, text=option
+                    )
                 elif unifi_value == TYPE_EMPTY_VALUE:
                     await self.device.set_lcd_text(None)
                 else:

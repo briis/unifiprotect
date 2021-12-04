@@ -76,7 +76,9 @@ class UnifiProtectEntity(Entity):
             devices = getattr(self.protect.bootstrap, f"{self.device.model.value}s")
             self.device = devices[self.device.id]
 
-        self._attr_available = self.protect_data.last_update_success and self.device.is_connected
+        self._attr_available = (
+            self.protect_data.last_update_success and self.device.is_connected
+        )
 
     @callback
     def _async_updated_event(self) -> None:
@@ -85,4 +87,8 @@ class UnifiProtectEntity(Entity):
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
-        self.async_on_remove(self.protect_data.async_subscribe_device_id(self.device.id, self._async_updated_event))
+        self.async_on_remove(
+            self.protect_data.async_subscribe_device_id(
+                self.device.id, self._async_updated_event
+            )
+        )

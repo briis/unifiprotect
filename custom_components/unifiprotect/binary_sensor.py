@@ -23,7 +23,7 @@ from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, Light, Sensor
-from pyunifiprotect.data.types import ModelType, SmartDetectObjectType
+from pyunifiprotect.data.types import ModelType
 from pyunifiprotect.utils import utc_now
 
 from .const import ATTR_EVENT_OBJECT, ATTR_EVENT_SCORE, DOMAIN, RING_INTERVAL
@@ -238,8 +238,8 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             and len(self.device.last_smart_detect_event.smart_detect_types) > 0
         ):
             score = self.device.last_smart_detect_event.score
-            detected_object: SmartDetectObjectType | None = (
-                self.device.last_smart_detect_event.smart_detect_types[0]
+            detected_object: str | None = (
+                self.device.last_smart_detect_event.smart_detect_types[0].value
             )
             _LOGGER.debug(
                 "OBJECTS: %s on %s",

@@ -11,6 +11,7 @@ from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
+from homeassistant.exceptions import HomeAssistantError
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.utils import print_ws_stat_summary
 
@@ -38,17 +39,23 @@ def get_datetime_attr(dt: datetime | None) -> str | None:
 
 
 async def profile_ws_messages(
-    hass: HomeAssistant, protect: ProtectApiClient, seconds: int
+    hass: HomeAssistant, protect: ProtectApiClient, seconds: int, name: str
 ) -> None:
+
+    if protect.bootstrap.capture_ws_stats:
+        raise HomeAssistantError("Profile already in progress")
+
     protect.bootstrap.capture_ws_stats = True
 
     start_time = time.time()
+    nvr_id = name.replace(" ", "_").lower()
+    message_id = f"ufp_ws_profiler_{nvr_id}_{start_time}"
     hass.components.persistent_notification.async_create(
         "The WS profile has started. This notification will be updated when it is complete.",
-        title="UniFi Protect WS Profile Started",
-        notification_id=f"ufp_ws_profiler_{start_time}",
+        title=f"{name}: WS Profile Started",
+        notification_id=message_id,
     )
-    _LOGGER.info("Start WS Profile for %ss", seconds)
+    _LOGGER.info("%s: Start WS Profile for %ss", name, seconds)
     end = time.monotonic() + seconds
     while time.monotonic() < end:
         await asyncio.sleep(10)
@@ -63,12 +70,12 @@ async def profile_ws_messages(
     stats_buffer = StringIO()
     print_ws_stat_summary(protect.bootstrap.ws_stats, output=stats_buffer.write)
     protect.bootstrap.clear_ws_stats()
-    _LOGGER.info("Complete WS Profile:\n%s", stats_buffer.getvalue())
+    _LOGGER.info("%s: Complete WS Profile:\n%s", name, stats_buffer.getvalue())
 
     hass.components.persistent_notification.async_create(
         f"Wrote raw stats to {out_file}\n\n```\n{stats_buffer.getvalue()}\n```",
-        title="UniFi Protect WS Profile Completed",
-        notification_id=f"ufp_ws_profiler_{start_time}",
+        title=f"{name}: WS Profile Completed",
+        notification_id=message_id,
     )
 
 

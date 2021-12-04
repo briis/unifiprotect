@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import timedelta
+import functools
 import logging
 
 from aiohttp import CookieJar
@@ -17,22 +18,20 @@ from homeassistant.const import (
     CONF_VERIFY_SSL,
     EVENT_HOMEASSISTANT_STOP,
 )
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import entity_registry as er, device_registry as dr
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 from pyunifiprotect.data.nvr import NVR
 from pyunifiprotect.data.types import ModelType
 
-from custom_components.unifiprotect.utils import above_ha_version, profile_ws_messages
+from custom_components.unifiprotect.utils import above_ha_version
 
 from .const import (
     CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
-    CONF_DURATION,
-    CONF_MESSAGE,
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
@@ -52,6 +51,12 @@ from .const import (
 )
 from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
+from .services import (
+    add_doorbell_text,
+    remove_doorbell_text,
+    set_default_doorbell_text,
+    profile_ws,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -84,12 +89,14 @@ async def _async_migrate_data(
         attr = model.value + "s"
         for device in getattr(bootstrap, attr).values():
             mac_to_id[device.mac] = device.id
-            if model == ModelType.CAMERA:
-                for channel in device.channels:
-                    channel_id = str(channel.id)
-                    if channel.is_rtsp_enabled:
-                        break
-                mac_to_channel_id[device.mac] = channel_id
+            if model != ModelType.CAMERA:
+                continue
+
+            for channel in device.channels:
+                channel_id = str(channel.id)
+                if channel.is_rtsp_enabled:
+                    break
+            mac_to_channel_id[device.mac] = channel_id
 
     count = 0
     entities = er.async_entries_for_config_entry(registry, entry.entry_id)
@@ -119,26 +126,26 @@ async def _async_migrate_data(
                 extra = "" if len(parts) == 3 else "_insecure"
                 new_unique_id = f"{device_id}_{channel_id}{extra}"
 
-        if new_unique_id is not None:
-            _LOGGER.debug(
-                "Migrating entity %s (old unique_id: %s, new unique_id: %s)",
+        if new_unique_id is None:
+            continue
+
+        _LOGGER.debug(
+            "Migrating entity %s (old unique_id: %s, new unique_id: %s)",
+            entity.entity_id,
+            entity.unique_id,
+            new_unique_id,
+        )
+        try:
+            registry.async_update_entity(entity.entity_id, new_unique_id=new_unique_id)
+        except ValueError:
+            _LOGGER.warning(
+                "Could not migrate entity %s (old unique_id: %s, new unique_id: %s)",
                 entity.entity_id,
                 entity.unique_id,
                 new_unique_id,
             )
-            try:
-                registry.async_update_entity(
-                    entity.entity_id, new_unique_id=new_unique_id
-                )
-            except ValueError:
-                _LOGGER.warning(
-                    "Could not migrate entity %s (old unique_id: %s, new unique_id: %s)",
-                    entity.entity_id,
-                    entity.unique_id,
-                    new_unique_id,
-                )
-            else:
-                count += 1
+        else:
+            count += 1
 
     _LOGGER.info("Migrated %s entities", count)
     if count != len(entities):
@@ -217,41 +224,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
-    async def add_doorbell_text(call: ServiceCall):
-        message: str = call.data[CONF_MESSAGE]
-        await protect.bootstrap.nvr.add_custom_doorbell_message(message)
-
-    async def remove_doorbell_text(call: ServiceCall):
-        message: str = call.data[CONF_MESSAGE]
-        await protect.bootstrap.nvr.remove_custom_doorbell_message(message)
-
-    async def set_default_doorbell_text(call: ServiceCall):
-        message: str = call.data[CONF_MESSAGE]
-        await protect.bootstrap.nvr.set_default_doorbell_message(message)
-
-    async def profile_ws(call: ServiceCall):
-        duration: int = call.data[CONF_DURATION]
-        await profile_ws_messages(hass, protect, duration)
-
     hass.services.async_register(
-        DOMAIN, SERVICE_ADD_DOORBELL_TEXT, add_doorbell_text, DOORBELL_TEXT_SCHEMA
+        DOMAIN,
+        SERVICE_ADD_DOORBELL_TEXT,
+        functools.partial(add_doorbell_text, hass),
+        DOORBELL_TEXT_SCHEMA,
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_REMOVE_DOORBELL_TEXT,
-        remove_doorbell_text,
+        functools.partial(remove_doorbell_text, hass),
         DOORBELL_TEXT_SCHEMA,
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_DEFAULT_DOORBELL_TEXT,
-        set_default_doorbell_text,
+        functools.partial(set_default_doorbell_text, hass),
         DOORBELL_TEXT_SCHEMA,
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_PROFILE_WS,
-        profile_ws,
+        functools.partial(profile_ws, hass),
         PROFILE_WS_SCHEMA,
     )
 

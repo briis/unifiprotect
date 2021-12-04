@@ -220,29 +220,31 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
     def _async_update_device_from_protect(self):
         super()._async_update_device_from_protect()
 
-        if self.entity_description.key in (_KEY_VIEWER, _KEY_DOORBELL_TEXT):
-            if self.entity_description.key == _KEY_VIEWER:
-                options = [
-                    {"id": item.id, "name": item.name}
-                    for item in self.protect.bootstrap.liveviews.values()
-                ]
-            elif self.entity_description.key == _KEY_DOORBELL_TEXT:
-                default_message = (
-                    self.protect.bootstrap.nvr.doorbell_settings.default_message_text
-                )
-                messages = self.protect.bootstrap.nvr.doorbell_settings.all_messages
-                built_messages = (
-                    {"id": item.type.value, "name": item.text} for item in messages
-                )
+        if self.entity_description.key not in (_KEY_VIEWER, _KEY_DOORBELL_TEXT):
+            return
 
-                options = [
-                    {"id": "", "name": f"Default Message ({default_message})"},
-                    *built_messages,
-                ]
+        if self.entity_description.key == _KEY_VIEWER:
+            options = [
+                {"id": item.id, "name": item.name}
+                for item in self.protect.bootstrap.liveviews.values()
+            ]
+        elif self.entity_description.key == _KEY_DOORBELL_TEXT:
+            default_message = (
+                self.protect.bootstrap.nvr.doorbell_settings.default_message_text
+            )
+            messages = self.protect.bootstrap.nvr.doorbell_settings.all_messages
+            built_messages = (
+                {"id": item.type.value, "name": item.text} for item in messages
+            )
 
-            self._attr_options = [item["name"] for item in options]
-            self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
-            self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
+            options = [
+                {"id": "", "name": f"Default Message ({default_message})"},
+                *built_messages,
+            ]
+
+        self._attr_options = [item["name"] for item in options]
+        self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
+        self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
 
     @property
     def current_option(self) -> str:

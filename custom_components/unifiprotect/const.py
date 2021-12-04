@@ -3,7 +3,7 @@
 # from typing_extensions import Required
 from datetime import timedelta
 
-from homeassistant.const import ATTR_ENTITY_ID
+from homeassistant.const import ATTR_ENTITY_ID, CONF_DEVICE, CONF_DEVICE_ID
 from homeassistant.helpers import config_validation as cv
 from pyunifiprotect.data.types import ModelType, Version
 import voluptuous as vol
@@ -168,10 +168,14 @@ LIGHT_SETTINGS_SCHEMA = vol.Schema(
     }
 )
 
-DOORBELL_TEXT_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_MESSAGE): cv.string,
-    }
+DOORBELL_TEXT_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            **cv.ENTITY_SERVICE_FIELDS,
+            vol.Required(CONF_MESSAGE): cv.string,
+        },
+    ),
+    cv.has_at_least_one_key(CONF_DEVICE_ID),
 )
 
 SET_RECORDING_MODE_SCHEMA = vol.Schema(
@@ -182,10 +186,14 @@ SET_RECORDING_MODE_SCHEMA = vol.Schema(
         ),
     }
 )
-PROFILE_WS_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_DURATION): vol.Coerce(int),
-    }
+PROFILE_WS_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            **cv.ENTITY_SERVICE_FIELDS,
+            vol.Required(CONF_DURATION): vol.Coerce(int),
+        },
+    ),
+    cv.has_at_least_one_key(CONF_DEVICE_ID),
 )
 
 SET_IR_MODE_SCHEMA = vol.Schema(

@@ -38,7 +38,9 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectSwitchEntityDescription(SwitchEntityDescription, UnifiprotectRequiredKeysMixin):
+class UnifiProtectSwitchEntityDescription(
+    SwitchEntityDescription, UnifiprotectRequiredKeysMixin
+):
     """Describes Unifi Protect Switch entity."""
 
 
@@ -232,4 +234,6 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
             await self.device.set_video_mode(VideoMode.DEFAULT)
         elif self._switch_type == _KEY_PRIVACY_MODE:
             _LOGGER.debug("Turning Privacy Mode off for %s", self.device.name)
-            await self.device.set_privacy(False, self._previous_mic_level, self._previous_record_mode)
+            await self.device.set_privacy(
+                False, self._previous_mic_level, self._previous_record_mode
+            )

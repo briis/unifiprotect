@@ -44,7 +44,9 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectNumberEntityDescription(NumberEntityDescription, UnifiprotectRequiredKeysMixin):
+class UnifiProtectNumberEntityDescription(
+    NumberEntityDescription, UnifiprotectRequiredKeysMixin
+):
     """Describes Unifi Protect Number entity."""
 
 

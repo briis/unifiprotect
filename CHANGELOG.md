@@ -99,6 +99,7 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `NEW`: (requires 2021.12+) Added "Reboot Device" button for all adoptable UniFi Protect devices. This button is disabled by default. Use with caution as there is no confirm. "Pressing" it instantly reboots your device.
 
 * `NEW`: Added media player entity for cameras with speaker. Speaker will accept any ffmpeg playable audio file URI (URI must be accessible from _Home Assistant_, not your Camera). TTS works great!
+  * TODO: Investigate for final release. This _may_ not work as expected on G4 Doorbells. Not sure yet if it is because of the recent Doorbell issues or because Doorbells are different.
   * Implements #304
 
 

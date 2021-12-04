@@ -24,10 +24,14 @@ def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
     ]
 
 
+def _async_unifi_mac_from_hass(mac: str):
+    # MAC addresses in UFP are always caps
+    return mac.replace(":", "").upper()
+
+
 def _async_get_macs_for_device(device_entry: dr.DeviceEntry) -> list[str]:
     return [
-        # MAC addresses in UFP are always caps
-        cval.replace(":", "").upper()
+        _async_unifi_mac_from_hass(cval)
         for ctype, cval in device_entry.connections
         if ctype == dr.CONNECTION_NETWORK_MAC
     ]
@@ -68,49 +72,36 @@ def _async_get_protect_from_call(
     return instances
 
 
-async def add_doorbell_text(hass: HomeAssistant, call: ServiceCall) -> None:
-    message: str = call.data[CONF_MESSAGE]
-    instances = _async_get_protect_from_call(hass, call)
-
+async def _async_call_nvr(
+    instances: list[tuple[dr.DeviceEntry, ProtectApiClient]],
+    method: str,
+    *args,
+    **kwargs,
+):
     try:
         await asyncio.gather(
-            *(
-                i.bootstrap.nvr.add_custom_doorbell_message(message)
-                for _, i in instances
-            )
+            *(getattr(i.bootstrap.nvr, method)(*args, **kwargs) for _, i in instances)
         )
     except (BadRequest, ValidationError) as err:
         raise HomeAssistantError(str(err)) from err
+
+
+async def add_doorbell_text(hass: HomeAssistant, call: ServiceCall) -> None:
+    message: str = call.data[CONF_MESSAGE]
+    instances = _async_get_protect_from_call(hass, call)
+    await _async_call_nvr(instances, "add_custom_doorbell_message", message)
 
 
 async def remove_doorbell_text(hass: HomeAssistant, call: ServiceCall) -> None:
     message: str = call.data[CONF_MESSAGE]
     instances = _async_get_protect_from_call(hass, call)
-
-    try:
-        await asyncio.gather(
-            *(
-                i.bootstrap.nvr.remove_custom_doorbell_message(message)
-                for _, i in instances
-            )
-        )
-    except (BadRequest, ValidationError) as err:
-        raise HomeAssistantError(str(err)) from err
+    await _async_call_nvr(instances, "remove_custom_doorbell_message", message)
 
 
 async def set_default_doorbell_text(hass: HomeAssistant, call: ServiceCall) -> None:
     message: str = call.data[CONF_MESSAGE]
     instances = _async_get_protect_from_call(hass, call)
-
-    try:
-        await asyncio.gather(
-            *(
-                i.bootstrap.nvr.set_default_doorbell_message(message)
-                for _, i in instances
-            )
-        )
-    except (BadRequest, ValidationError) as err:
-        raise HomeAssistantError(str(err)) from err
+    await _async_call_nvr(instances, "set_default_doorbell_message", message)
 
 
 async def profile_ws(hass: HomeAssistant, call: ServiceCall) -> None:

@@ -3,12 +3,13 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
-from typing import Generator, Optional
+from typing import Any, Callable, Generator, Optional, Sequence
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
+from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Camera as UnifiCamera
 from pyunifiprotect.data.devices import CameraChannel
@@ -19,9 +20,6 @@ from pyunifiprotect.data.types import (
     VideoMode,
 )
 from pyunifiprotect.utils import utc_now
-
-from custom_components.unifiprotect.data import UnifiProtectData
-from custom_components.unifiprotect.utils import get_datetime_attr
 
 from .const import (
     ATTR_BITRATE,
@@ -38,7 +36,6 @@ from .const import (
     ATTR_WDR_VALUE,
     ATTR_WIDTH,
     ATTR_ZOOM_POSITION,
-    DEFAULT_BRAND,
     DOMAIN,
     SERVICE_SET_DOORBELL_CHIME_DURAION,
     SERVICE_SET_DOORBELL_LCD_MESSAGE,
@@ -64,6 +61,7 @@ from .const import (
     SET_ZOOM_POSITION_SCHEMA,
     TYPE_RECORD_NOTSET,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
@@ -87,7 +85,9 @@ def get_camera_channels(
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Discover cameras on a Unifi Protect NVR."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -143,17 +143,11 @@ async def async_setup_entry(
         "async_set_recording_mode",
     )
 
-    platform.async_register_entity_service(
-        SERVICE_SET_IR_MODE, SET_IR_MODE_SCHEMA, "async_set_ir_mode"
-    )
+    platform.async_register_entity_service(SERVICE_SET_IR_MODE, SET_IR_MODE_SCHEMA, "async_set_ir_mode")
 
-    platform.async_register_entity_service(
-        SERVICE_SET_STATUS_LIGHT, SET_STATUS_LIGHT_SCHEMA, "async_set_status_light"
-    )
+    platform.async_register_entity_service(SERVICE_SET_STATUS_LIGHT, SET_STATUS_LIGHT_SCHEMA, "async_set_status_light")
 
-    platform.async_register_entity_service(
-        SERVICE_SET_HDR_MODE, SET_HDR_MODE_SCHEMA, "async_set_hdr_mode"
-    )
+    platform.async_register_entity_service(SERVICE_SET_HDR_MODE, SET_HDR_MODE_SCHEMA, "async_set_hdr_mode")
 
     platform.async_register_entity_service(
         SERVICE_SET_HIGHFPS_VIDEO_MODE,
@@ -167,21 +161,15 @@ async def async_setup_entry(
         "async_set_doorbell_lcd_message",
     )
 
-    platform.async_register_entity_service(
-        SERVICE_SET_MIC_VOLUME, SET_MIC_VOLUME_SCHEMA, "async_set_mic_volume"
-    )
+    platform.async_register_entity_service(SERVICE_SET_MIC_VOLUME, SET_MIC_VOLUME_SCHEMA, "async_set_mic_volume")
 
-    platform.async_register_entity_service(
-        SERVICE_SET_PRIVACY_MODE, SET_PRIVACY_MODE_SCHEMA, "async_set_privacy_mode"
-    )
+    platform.async_register_entity_service(SERVICE_SET_PRIVACY_MODE, SET_PRIVACY_MODE_SCHEMA, "async_set_privacy_mode")
 
     platform.async_register_entity_service(
         SERVICE_SET_ZOOM_POSITION, SET_ZOOM_POSITION_SCHEMA, "async_set_zoom_position"
     )
 
-    platform.async_register_entity_service(
-        SERVICE_SET_WDR_VALUE, SET_WDR_VALUE_SCHEMA, "async_set_wdr_value"
-    )
+    platform.async_register_entity_service(SERVICE_SET_WDR_VALUE, SET_WDR_VALUE_SCHEMA, "async_set_wdr_value")
 
     platform.async_register_entity_service(
         SERVICE_SET_DOORBELL_CHIME_DURAION,
@@ -202,14 +190,14 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         is_default: bool,
         secure: bool,
         disable_stream: bool,
-    ):
+    ) -> None:
         """Initialize an Unifi camera."""
         self.device: UnifiCamera = camera
         super().__init__(protect, protect_data, camera, None)
         self.channel = channel
         self._secure = secure
         self._disable_stream = disable_stream
-        self._last_image = None
+        self._last_image: bytes | None = None
         self._async_set_stream_source()
         if self._secure:
             self._attr_unique_id = f"{self.device.id}_{self.channel.id}"
@@ -223,7 +211,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             self._attr_name = f"{self.device.name} {self.channel.name} Insecure"
 
     @callback
-    def _async_set_stream_source(self):
+    def _async_set_stream_source(self) -> None:
         disable_stream = self._disable_stream
         if not self.channel.is_rtsp_enabled:
             disable_stream = False
@@ -233,16 +221,16 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             rtsp_url = self.channel.rtsps_url
 
         self._stream_source = None if disable_stream else rtsp_url
-        self._attr_supported_features = SUPPORT_STREAM if self._stream_source else 0
+        self._attr_supported_features: int = SUPPORT_STREAM if self._stream_source else 0
 
     @callback
-    def _async_update_device_from_protect(self):
+    def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
         self.channel = self.device.channels[self.channel.id]
         self._async_set_stream_source()
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> int:
         """Return supported features for this camera.
 
         CORE: Remove this before merging to core.
@@ -250,32 +238,22 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         return self._attr_supported_features
 
     @property
-    def motion_detection_enabled(self):
+    def motion_detection_enabled(self) -> bool:
         """Camera Motion Detection Status."""
         return self.device.feature_flags.has_motion_zones and super().available
 
     @property
-    def brand(self):
-        """Return the Cameras Brand."""
-        return DEFAULT_BRAND
-
-    @property
-    def model(self):
-        """Return the camera model."""
-        return self.device.type
-
-    @property
-    def is_recording(self):
+    def is_recording(self) -> bool:
         """Return true if the device is recording."""
         return self.device.is_connected and self.device.is_recording
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict[str, Any]:
         """Add additional Attributes to Camera."""
 
         return {
             **super().extra_state_attributes,
-            ATTR_UP_SINCE: get_datetime_attr(self.device.up_since),
+            ATTR_UP_SINCE: self.device.up_since,
             ATTR_CAMERA_ID: self.device.id,
             ATTR_CHIME_ENABLED: self.device.feature_flags.has_chime,
             ATTR_CHIME_DURATION: self.device.chime_duration,
@@ -313,9 +291,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     async def async_set_highfps_video_mode(self, high_fps_on: bool) -> None:
         """Set camera High FPS video mode."""
-        await self.device.set_video_mode(
-            VideoMode.HIGH_FPS if high_fps_on else VideoMode.DEFAULT
-        )
+        await self.device.set_video_mode(VideoMode.HIGH_FPS if high_fps_on else VideoMode.DEFAULT)
 
     async def async_set_doorbell_lcd_message(self, message: str, duration: str) -> None:
         """Set LCD Message on Doorbell display."""
@@ -324,29 +300,23 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         if duration.isnumeric():
             reset_at = utc_now() + timedelta(minutes=int(duration))
 
-        await self.device.set_lcd_text(
-            DoorbellMessageType.CUSTOM_MESSAGE, message, reset_at=reset_at
-        )
+        await self.device.set_lcd_text(DoorbellMessageType.CUSTOM_MESSAGE, message, reset_at=reset_at)
 
     async def async_set_mic_volume(self, level: int) -> None:
         """Set camera Microphone Level."""
         await self.device.set_mic_volume(level)
 
-    async def async_set_privacy_mode(
-        self, privacy_mode: bool, mic_level: int, recording_mode: str
-    ) -> None:
+    async def async_set_privacy_mode(self, privacy_mode: bool, mic_level: int, recording_mode: str) -> None:
         """Set camera Privacy mode."""
 
-        kwargs = {}
+        arg_mic_level: None | int = None
+        arg_recording_mode: None | RecordingMode = None
         if mic_level >= 0:
-            kwargs["mic_level"] = mic_level
+            arg_mic_level = mic_level
         if recording_mode != TYPE_RECORD_NOTSET:
-            kwargs["recording_mode"] = RecordingMode(recording_mode)
+            arg_recording_mode = RecordingMode(recording_mode)
 
-        await self.device.set_privacy(
-            privacy_mode,
-            **kwargs,
-        )
+        await self.device.set_privacy(privacy_mode, mic_level=arg_mic_level, recording_mode=arg_recording_mode)
 
     async def async_set_wdr_value(self, value: int) -> None:
         """Set camera wdr value."""
@@ -368,14 +338,12 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             return
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self.device.name)
 
-    async def async_camera_image(
-        self, width: Optional[int] = None, height: Optional[int] = None
-    ) -> None:
+    async def async_camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> bytes | None:
         """Return the Camera Image."""
         last_image = await self.device.get_snapshot(width, height)
         self._last_image = last_image
         return self._last_image
 
-    async def stream_source(self) -> None:
+    async def stream_source(self) -> str | None:
         """Return the Stream Source."""
         return self._stream_source

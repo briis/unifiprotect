@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -20,7 +22,9 @@ def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
     ]
 
 
-def _async_get_protect_from_call(hass, call) -> list[tuple[str, ProtectApiClient]]:
+def _async_get_protect_from_call(
+    hass: HomeAssistant, call: ServiceCall
+) -> list[tuple[str, ProtectApiClient]]:
     referenced = async_extract_referenced_entity_ids(hass, call)
     device_registry = dr.async_get(hass)
 

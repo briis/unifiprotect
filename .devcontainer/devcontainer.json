@@ -14,7 +14,8 @@
 		"ms-python.python",
 		"github.vscode-pull-request-github",
 		"ryanluker.vscode-coverage-gutters",
-		"ms-python.vscode-pylance"
+		"ms-python.vscode-pylance",
+		"bungcip.better-toml",
 	],
 	"mounts": [
 		"type=volume,target=/config,src=vsc-dev-unifiprotect-ha-config,volume-driver=local"
@@ -25,13 +26,23 @@
 		"terminal.integrated.defaultProfile.linux": "bash",
 		"python.pythonPath": "/usr/local/python/bin/python",
 		"python.analysis.autoSearchPaths": false,
-		"python.linting.pylintEnabled": true,
-		"python.linting.enabled": true,
-		"python.linting.pylintArgs": [
-			"--disable",
-			"import-error"
+		"python.formatting.blackArgs": [
+			"--line-length",
+			"120"
 		],
 		"python.formatting.provider": "black",
+		"python.linting.banditEnabled": false,
+		"python.linting.enabled": true,
+		"python.linting.flake8Enabled": false,
+		"python.linting.mypyEnabled": false,
+		"python.linting.pylintEnabled": true,
+		"python.linting.pylintArgs": [
+			"--rcfile=${workspaceFolder}/pyproject.toml"
+		],
+		"python.linting.pylamaEnabled": false,
+		"python.sortImports.args": [
+			"--settings-path=${workspaceFolder}/pyproject.toml"
+		],
 		"editor.formatOnPaste": false,
 		"editor.formatOnSave": true,
 		"editor.formatOnType": true,

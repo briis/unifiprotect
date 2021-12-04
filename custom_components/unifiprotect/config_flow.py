@@ -18,6 +18,7 @@ from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data.nvr import NVR
 import voluptuous as vol
 
 from .const import (
@@ -37,8 +38,8 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 2
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
 
         self.entry: config_entries.ConfigEntry | None = None
 
@@ -51,7 +52,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
     @callback
-    async def _async_create_entry(self, title: str, data: dict[str, Any]):
+    async def _async_create_entry(self, title: str, data: dict[str, Any]) -> FlowResult:
         return self.async_create_entry(
             title=title,
             data={**data, CONF_ID: title},
@@ -65,7 +66,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _async_get_nvr_data(
         self,
         user_input: dict[str, Any],
-    ) -> tuple[dict[str, Any] | None, dict[str, str]]:
+    ) -> tuple[NVR | None, dict[str, str]]:
         session = async_create_clientsession(
             self.hass, cookie_jar=CookieJar(unsafe=True)
         )
@@ -113,7 +114,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
 
-        errors = {}
+        errors: dict[str, str] = {}
         assert self.entry is not None
 
         # prepopulate fields
@@ -146,11 +147,11 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle a flow initiated by the user."""
 
-        errors = {}
+        errors: dict[str, str] = {}
         if user_input is not None:
             nvr_data, errors = await self._async_get_nvr_data(user_input)
 
-            if not errors:
+            if nvr_data and not errors:
                 await self.async_set_unique_id(nvr_data.mac)
                 self._abort_if_unique_id_configured()
 
@@ -182,11 +183,13 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options."""
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
+from typing import Any, Callable, Sequence
 
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
@@ -12,6 +13,9 @@ from homeassistant.components.light import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
+from homeassistant.helpers.entity import Entity
+from pyunifiprotect.api import ProtectApiClient
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Light
 from pyunifiprotect.data.types import LightModeEnableType, LightModeType
 
@@ -22,6 +26,7 @@ from .const import (
     LIGHT_SETTINGS_SCHEMA,
     SERVICE_LIGHT_SETTINGS,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
@@ -31,7 +36,9 @@ ON_STATE = True
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up lights for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -58,12 +65,12 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-def unifi_brightness_to_hass(value):
+def unifi_brightness_to_hass(value: int) -> int:
     """Convert unifi brightness 1..6 to hass format 0..255."""
     return min(255, round((value / 6) * 255))
 
 
-def hass_to_unifi_brightness(value):
+def hass_to_unifi_brightness(value: int) -> int:
     """Convert hass brightness 0..255 to unifi 1..6 scale."""
     return max(1, round((value / 255) * 6))
 
@@ -71,8 +78,14 @@ def hass_to_unifi_brightness(value):
 class UnifiProtectLight(UnifiProtectEntity, LightEntity):
     """A Ubiquiti Unifi Protect Light Entity."""
 
-    def __init__(self, protect, protect_data, device):
+    def __init__(
+        self,
+        protect: ProtectApiClient,
+        protect_data: UnifiProtectData,
+        device: ProtectAdoptableDeviceModel,
+    ):
         """Initialize an Unifi light."""
+        assert isinstance(device, Light)
         self.device: Light = device
         super().__init__(protect, protect_data, device, None)
         self._attr_name = self.device.name
@@ -81,14 +94,14 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         self._async_update_device_from_protect()
 
     @callback
-    def _async_update_device_from_protect(self):
+    def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
         self._attr_is_on = self.device.is_light_on
         self._attr_brightness = unifi_brightness_to_hass(
             self.device.light_device_settings.led_level
         )
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the light on."""
         hass_brightness = kwargs.get(ATTR_BRIGHTNESS, self.brightness)
         unifi_brightness = hass_to_unifi_brightness(hass_brightness)
@@ -96,27 +109,27 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         _LOGGER.debug("Turning on light with brightness %s", unifi_brightness)
         await self.device.set_light(True, unifi_brightness)
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the light off."""
         _LOGGER.debug("Turning off light")
         await self.device.set_light(False)
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict[str, Any]:
         """Return the device state attributes."""
         return {
             **super().extra_state_attributes,
             ATTR_ONLINE: self.device.is_connected,
-            ATTR_UP_SINCE: self.device.up_since.isoformat(),
+            ATTR_UP_SINCE: self.device.up_since,
         }
 
     async def async_light_settings(
         self,
-        mode,
+        mode: str,
         enable_at: str | None = None,
         duration: int | None = None,
         sensitivity: int | None = None,
-    ):
+    ) -> None:
         """Adjust Light Settings."""
 
         turn_off_duration: timedelta | None = None

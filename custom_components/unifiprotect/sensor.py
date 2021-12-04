@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 import logging
+from typing import Any, Callable, Sequence
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -14,12 +15,14 @@ from homeassistant.const import (
     DEVICE_CLASS_SIGNAL_STRENGTH,
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_TIMESTAMP,
-    MAJOR_VERSION,
-    MINOR_VERSION,
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.typing import StateType
+from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Light, ModelType
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
 from .const import (
     ATTR_ENABLED_AT,
@@ -28,6 +31,7 @@ from .const import (
     DOMAIN,
     ENTITY_CATEGORY_DIAGNOSTIC,
 )
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 from .utils import above_ha_version, get_nested_attr
@@ -127,7 +131,9 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up sensors for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -154,27 +160,29 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
 
     def __init__(
         self,
-        protect,
-        protect_data,
-        device,
+        protect: ProtectApiClient,
+        protect_data: UnifiProtectData,
+        device: ProtectAdoptableDeviceModel,
         description: UnifiProtectSensorEntityDescription,
     ):
         """Initialize an Unifi Protect sensor."""
+        self.entity_description: UnifiProtectSensorEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
 
     @property
-    def native_value(self):
+    def native_value(self) -> StateType | date | datetime:
         """Return the state of the sensor."""
         value = get_nested_attr(self.device, self.entity_description.ufp_value)
 
+        assert isinstance(value, (str, int, float, datetime)) or value is None
         if isinstance(value, datetime) and not above_ha_version(2021, 12):
             return value.replace(microsecond=0).isoformat()
 
         return value
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict[str, Any]:
         """Return the device state attributes."""
         if isinstance(self.device, Light):
             return {

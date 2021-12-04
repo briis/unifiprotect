@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, Callable, Sequence
 
 from homeassistant.components.media_player import (
     DEVICE_CLASS_SPEAKER,
@@ -19,12 +20,12 @@ from homeassistant.components.media_player.const import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_IDLE, STATE_PLAYING
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Camera
 
-from custom_components.unifiprotect.data import UnifiProtectData
-
 from .const import DOMAIN
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
@@ -32,7 +33,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Discover cameras with speakers on a Unifi Protect NVR."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -60,7 +63,7 @@ class UnifiProtectMediaPlayer(UnifiProtectEntity, MediaPlayerEntity):
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
         camera: Camera,
-    ):
+    ) -> None:
         """Initialize an UniFi speaker."""
 
         description = MediaPlayerEntityDescription(
@@ -81,7 +84,7 @@ class UnifiProtectMediaPlayer(UnifiProtectEntity, MediaPlayerEntity):
         self._async_update_device_from_protect()
 
     @callback
-    def _async_update_device_from_protect(self):
+    def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
         self._attr_volume_level = float(self.device.speaker_settings.volume / 100)
 
@@ -94,13 +97,13 @@ class UnifiProtectMediaPlayer(UnifiProtectEntity, MediaPlayerEntity):
             self._attr_state = STATE_IDLE
 
     @callback
-    async def async_set_volume_level(self, volume: float):
+    async def async_set_volume_level(self, volume: float) -> None:
         """Set volume level, range 0..1."""
 
         volume_int = int(volume * 100)
         await self.device.set_speaker_volume(volume_int)
 
-    def media_stop(self):
+    def media_stop(self) -> None:
         """Send stop command."""
 
         if (
@@ -110,7 +113,9 @@ class UnifiProtectMediaPlayer(UnifiProtectEntity, MediaPlayerEntity):
             _LOGGER.debug("Stopping playback for %s Speaker", self.device.name)
             self.device.talkback_stream.stop()
 
-    async def async_play_media(self, media_type: str, media_id: str, **kwargs):
+    async def async_play_media(
+        self, media_type: str, media_id: str, **kwargs: Any
+    ) -> None:
         """Play a piece of media."""
 
         if media_type != MEDIA_TYPE_MUSIC:

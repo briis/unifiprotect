@@ -1,10 +1,12 @@
 """Shared Entity definition for Unifi Protect Integration."""
 from __future__ import annotations
 
+from typing import Any, Optional
+
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import callback
 import homeassistant.helpers.device_registry as dr
-from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
@@ -20,15 +22,14 @@ class UnifiProtectEntity(Entity):
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
         device: ProtectAdoptableDeviceModel,
-        description,
-    ):
+        description: Optional[EntityDescription],
+    ) -> None:
         """Initialize the entity."""
         super().__init__()
         self._attr_should_poll = False
 
-        if description:
+        if description and not hasattr(self, "entity_description"):
             self.entity_description = description
-
         if not hasattr(self, "device"):
             self.device: ProtectAdoptableDeviceModel = device
         self.protect: ProtectApiClient = protect
@@ -45,9 +46,15 @@ class UnifiProtectEntity(Entity):
             sw_version=self.device.firmware_version,
             connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
             configuration_url=self.device.protect_url,
+            default_manufacturer=DEFAULT_BRAND,
+            default_model="",
+            entry_type=None,
+            identifiers=set(),
+            suggested_area=None,
+            default_name="",
         )
 
-    async def async_update(self):
+    async def async_update(self) -> None:
         """Update the entity.
 
         Only used by the generic entity update service.
@@ -55,7 +62,7 @@ class UnifiProtectEntity(Entity):
         await self.protect_data.async_refresh()
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict[str, Any]:
         """Return common attributes"""
         return {
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
@@ -63,8 +70,9 @@ class UnifiProtectEntity(Entity):
         }
 
     @callback
-    def _async_update_device_from_protect(self):
+    def _async_update_device_from_protect(self) -> None:
         if self.protect_data.last_update_success:
+            assert self.device.model
             devices = getattr(self.protect.bootstrap, f"{self.device.model.value}s")
             self.device = devices[self.device.id]
 
@@ -73,11 +81,11 @@ class UnifiProtectEntity(Entity):
         )
 
     @callback
-    def _async_updated_event(self):
+    def _async_updated_event(self) -> None:
         self._async_update_device_from_protect()
         self.async_write_ha_state()
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
         self.async_on_remove(
             self.protect_data.async_subscribe_device_id(

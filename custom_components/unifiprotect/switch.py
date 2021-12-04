@@ -3,16 +3,24 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+from typing import Any, Callable, Sequence
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from pyunifiprotect.data import Camera, Light, ModelType, VideoMode
+from homeassistant.helpers.entity import Entity
+from pyunifiprotect.api import ProtectApiClient
+from pyunifiprotect.data import Camera, Light, ModelType, VideoMode, devices
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.types import RecordingMode
 
-from custom_components.unifiprotect.const import DEVICES_WITH_ENTITIES
-
-from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
+from .const import (
+    DEVICES_WITH_CAMERA,
+    DEVICES_WITH_ENTITIES,
+    DOMAIN,
+    ENTITY_CATEGORY_CONFIG,
+)
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 from .utils import get_nested_attr
@@ -30,9 +38,7 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectSwitchEntityDescription(
-    SwitchEntityDescription, UnifiprotectRequiredKeysMixin
-):
+class UnifiProtectSwitchEntityDescription(SwitchEntityDescription, UnifiprotectRequiredKeysMixin):
     """Describes Unifi Protect Switch entity."""
 
 
@@ -102,7 +108,9 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up switches for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -139,13 +147,13 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
 
     def __init__(
         self,
-        protect,
-        protect_data,
-        device,
+        protect: ProtectApiClient,
+        protect_data: UnifiProtectData,
+        device: ProtectAdoptableDeviceModel,
         description: UnifiProtectSwitchEntityDescription,
     ):
         """Initialize an Unifi Protect Switch."""
-        self.device: Camera | Light = device
+        self.entity_description: UnifiProtectSwitchEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._switch_type = self.entity_description.key
@@ -165,18 +173,22 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         """Return true if device is on."""
         ufp_value = get_nested_attr(self.device, self.entity_description.ufp_value)
         if self._switch_type == _KEY_HIGH_FPS:
-            return ufp_value == VideoMode.HIGH_FPS
+            return bool(ufp_value == VideoMode.HIGH_FPS)
         return ufp_value is True
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
+
+        if self._switch_type == _KEY_SSH:
+            _LOGGER.debug("Turning on SSH")
+            await self.device.set_ssh(True)
+
+        if not isinstance(self.device, (Camera, Light)):
+            return
 
         if self._switch_type == _KEY_STATUS_LIGHT:
             _LOGGER.debug("Changing Status Light to On")
             await self.device.set_status_light(True)
-        elif self._switch_type == _KEY_SSH:
-            _LOGGER.debug("Turning on SSH")
-            await self.device.set_ssh(True)
 
         if isinstance(self.device, Light):
             return
@@ -195,15 +207,19 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
             self._previous_record_mode = self.device.recording_settings.mode
             await self.device.set_privacy(True, 0, RecordingMode.NEVER)
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
+
+        if self._switch_type == _KEY_SSH:
+            _LOGGER.debug("Turning off SSH")
+            await self.device.set_ssh(False)
+
+        if not isinstance(self.device, (Camera, Light)):
+            return
 
         if self._switch_type == _KEY_STATUS_LIGHT:
             _LOGGER.debug("Changing Status Light to Off")
             await self.device.set_status_light(False)
-        elif self._switch_type == _KEY_SSH:
-            _LOGGER.debug("Turning off SSH")
-            await self.device.set_ssh(False)
 
         if not isinstance(self.device, Camera):
             return
@@ -216,6 +232,4 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
             await self.device.set_video_mode(VideoMode.DEFAULT)
         elif self._switch_type == _KEY_PRIVACY_MODE:
             _LOGGER.debug("Turning Privacy Mode off for %s", self.device.name)
-            await self.device.set_privacy(
-                False, self._previous_mic_level, self._previous_record_mode
-            )
+            await self.device.set_privacy(False, self._previous_mic_level, self._previous_record_mode)

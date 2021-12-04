@@ -29,7 +29,7 @@ There is support for the following device types within Home Assistant:
   * For each camera a number entity will be created from where you can set the microphone sensitivity level.
   * For each camera supporting Optical Zoom, a number entity will be setup to set the zoom position.
 
-It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
+It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automatically for each Camera found, once the Integration has been configured.
 
 ## Table of Contents
 

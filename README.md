@@ -2,7 +2,7 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/briis/unifiprotect?style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/custom-components/hacs) [![](https://img.shields.io/badge/COMMUNITY-FORUM-success?style=flat-square)](https://community.home-assistant.io/t/custom-component-unifi-protect/158041)
 
-The UniFi Protect Integration adds support for retrieving Camera feeds and Sensor data from a UniFi Protect installation on either a Ubiquiti CloudKey+ ,Ubiquiti UniFi Dream Machine Pro or UniFi Protect Network Video Recorder.
+The UniFi Protect Integration adds support for retrieving Camera feeds and Sensor data from a UniFi Protect installation on either an Ubiquiti CloudKey+, Ubiquiti UniFi Dream Machine Pro or UniFi Protect Network Video Recorder.
 
 There is support for the following device types within Home Assistant:
 * Camera
@@ -29,7 +29,7 @@ There is support for the following device types within Home Assistant:
   * For each camera a number entity will be created from where you can set the microphone sensitivity level.
   * For each camera supporting Optical Zoom, a number entity will be setup to set the zoom position.
 
-It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automativally for each Camera found, once the Integration has been configured.
+It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automatically for each Camera found, once the Integration has been configured.
 
 ## Table of Contents
 
@@ -40,7 +40,7 @@ It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, 
 5. [UniFi Protect Services](#special-unifi-protect-services)
 6. [UniFi Protect Events](#unifi-protect-events)
 7. [Automating Services](#automating-services)
-    * [Send a notfication when the doorbell is pressed](#send-a-notfication-when-the-doorbell-is-pressed)
+    * [Send a notification when the doorbell is pressed](#send-a-notification-when-the-doorbell-is-pressed)
     * [Person Detection](#automate-person-detection)
     * [Input Slider for Doorbell Chime Duration](#create-input-slider-for-doorbell-chime-duration)
 8. [Enable Debug Logging](#enable-debug-logging)
@@ -58,7 +58,7 @@ We try our best to avoid breaking changes so you may need to use older versions 
 
 ## Docs for Old Versions
 
-If you are not using the latest beta of the integration, you can view old versions of this README at any time in Github at `https://github.com/briis/unifiprotect/tree/{VERSION}`. Example, docs for v0.9.1 can be found at [https://github.com/briis/unifiprotect/tree/v0.9.1](https://github.com/briis/unifiprotect/tree/v0.9.1)
+If you are not using the latest beta of the integration, you can view old versions of this README at any time in GitHub at `https://github.com/briis/unifiprotect/tree/{VERSION}`. Example, docs for v0.9.1 can be found at [https://github.com/briis/unifiprotect/tree/v0.9.1](https://github.com/briis/unifiprotect/tree/v0.9.1)
 
 ## Minimal Versions
 
@@ -111,7 +111,7 @@ Before you install this Integration you need to ensure that the following two se
 
 This Integration is part of the default HACS store. Search for *unifi protect* under *Integrations* and install from there. After the installation of the files you must restart Home Assistant, or else you will not be able to add UniFi Protect from the Integration Page.
 
-If you are not familiar with HACS, or havn't installed it, I would recommend to [look through the HACS documentation](https://hacs.xyz/), before continuing. Even though you can install the Integration manually, I would recommend using HACS, as you would always be reminded when a new release is published.
+If you are not familiar with HACS, or haven't installed it, I would recommend to [look through the HACS documentation](https://hacs.xyz/), before continuing. Even though you can install the Integration manually, I would recommend using HACS, as you would always be reminded when a new release is published.
 
 **Please note**: All HACS does, is copying the needed files to Home Assistant, and placing them in the right directory. To get the Integration to work, you now need to go through the steps in the *Configuration* section.
 

@@ -74,10 +74,11 @@ async def _async_migrate_data(
 
     # migrate entry
     options = dict(entry.options)
+    data = dict(entry.data)
     options[CONF_ALL_UPDATES] = False
     if CONF_DOORBELL_TEXT in options:
         del options[CONF_DOORBELL_TEXT]
-    hass.config_entries.async_update_entry(entry, data=entry.data, options=options)
+    hass.config_entries.async_update_entry(entry, data=data, options=options)
 
     # migrate entities
     registry = er.async_get(hass)

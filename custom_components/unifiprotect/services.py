@@ -33,7 +33,7 @@ def _async_get_protect_from_call(
         if not (device_entry := device_registry.async_get(device_id)):
             raise HomeAssistantError(f"No device found for device id: {device_id}")
 
-        name = device_entry.name_by_user or device_entry.name
+        name = str(device_entry.name_by_user or device_entry.name)
         macs = [
             # MAC addresses in UFP are always caps
             cval.replace(":", "").upper()

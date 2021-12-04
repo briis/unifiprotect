@@ -17,7 +17,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_LAST_TRIP_TIME
+from homeassistant.const import ATTR_LAST_TRIP_TIME, ENTITY_CATEGORY_DIAGNOSTIC
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
@@ -26,13 +26,7 @@ from pyunifiprotect.data.devices import Camera, Light, Sensor
 from pyunifiprotect.data.types import ModelType, SmartDetectObjectType
 from pyunifiprotect.utils import utc_now
 
-from .const import (
-    ATTR_EVENT_OBJECT,
-    ATTR_EVENT_SCORE,
-    DOMAIN,
-    ENTITY_CATEGORY_DIAGNOSTIC,
-    RING_INTERVAL,
-)
+from .const import ATTR_EVENT_OBJECT, ATTR_EVENT_SCORE, DOMAIN, RING_INTERVAL
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -205,7 +199,8 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self.device: Camera | Light | Sensor = device
         self.entity_description: UnifiProtectBinaryEntityDescription = description
         super().__init__(protect, protect_data, device, description)
-        self._attr_name = f"{self.device.name} {description.name.title()}"
+        name = description.name or ""
+        self._attr_name = f"{self.device.name} {name.title()}"
         self._async_update_device_from_protect()
         self._doorbell_callback: TaskClass | None = None
 

@@ -28,7 +28,7 @@
 		"python.analysis.autoSearchPaths": false,
 		"python.formatting.blackArgs": [
 			"--line-length",
-			"120"
+			"88"
 		],
 		"python.formatting.provider": "black",
 		"python.linting.banditEnabled": false,

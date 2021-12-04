@@ -8,6 +8,7 @@ from typing import Any, Callable, Sequence
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import Entity
@@ -24,7 +25,7 @@ from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, Light, Viewer
 from pyunifiprotect.data.nvr import DoorbellMessage, Liveview
 
-from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG, TYPE_EMPTY_VALUE
+from .const import DEVICES_WITH_CAMERA, DOMAIN, TYPE_EMPTY_VALUE
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData

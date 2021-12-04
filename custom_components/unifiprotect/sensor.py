@@ -15,6 +15,7 @@ from homeassistant.const import (
     DEVICE_CLASS_SIGNAL_STRENGTH,
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_TIMESTAMP,
+    ENTITY_CATEGORY_DIAGNOSTIC,
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
@@ -24,13 +25,7 @@ from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Light, ModelType
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
-from .const import (
-    ATTR_ENABLED_AT,
-    DEVICES_WITH_CAMERA,
-    DEVICES_WITH_ENTITIES,
-    DOMAIN,
-    ENTITY_CATEGORY_DIAGNOSTIC,
-)
+from .const import ATTR_ENABLED_AT, DEVICES_WITH_CAMERA, DEVICES_WITH_ENTITIES, DOMAIN
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData

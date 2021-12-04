@@ -6,6 +6,5 @@ RUN apt update \
     && cd /opt \
     && git clone --depth=1 -b dev https://github.com/home-assistant/core.git hass \
     && python3 -m pip --disable-pip-version-check install --upgrade ./hass \
-    && python3 -m pip install git+https://github.com/KapJI/homeassistant-stubs.git \
-    && python3 -m pip install pyunifiprotect mypy black isort pyupgrade pylint pylint_strict_informational
+    && python3 -m pip install pyunifiprotect mypy black isort pyupgrade pylint pylint_strict_informational \
     && ln -s /workspaces/unifiprotect/custom_components/unifiprotect /opt/hass/homeassistant/components/unifiprotect

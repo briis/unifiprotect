@@ -31,7 +31,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyunifiprotect mypy black isort pyupgrade pylint pylint_strict_informational
           pip install ./hass
-          pip install git+https://github.com/KapJI/homeassistant-stubs.git
 
       - name: isort
         run: isort --check-only --quiet custom_components/unifiprotect

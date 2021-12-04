@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
 from enum import Enum
 from io import StringIO
 import json
@@ -9,12 +8,11 @@ import logging
 import time
 from typing import Any
 
-from homeassistant.core import HomeAssistant
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.utils import print_ws_stat_summary
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,19 +21,15 @@ def get_nested_attr(obj: Any, attr: str) -> Any:
     attrs = attr.split(".")
 
     value = obj
-    for attr in attrs:
-        if not hasattr(value, attr):
+    for key in attrs:
+        if not hasattr(value, key):
             return None
-        value = getattr(value, attr)
+        value = getattr(value, key)
 
     if isinstance(value, Enum):
         value = value.value
 
     return value
-
-
-def get_datetime_attr(dt: datetime | None) -> str | None:
-    return None if dt is None else dt
 
 
 async def profile_ws_messages(
@@ -63,9 +57,9 @@ async def profile_ws_messages(
     protect.bootstrap.capture_ws_stats = False
 
     json_data = [s.__dict__ for s in protect.bootstrap.ws_stats]
-    out_file = hass.config.path(f"ws_profile.{start_time}.json")
-    with open(out_file, "w", encoding="utf8") as f:
-        json.dump(json_data, f, indent=4)
+    out_path = hass.config.path(f"ws_profile.{start_time}.json")
+    with open(out_path, "w", encoding="utf8") as outfile:
+        json.dump(json_data, outfile, indent=4)
 
     stats_buffer = StringIO()
     print_ws_stat_summary(protect.bootstrap.ws_stats, output=stats_buffer.write)
@@ -73,15 +67,15 @@ async def profile_ws_messages(
     _LOGGER.info("%s: Complete WS Profile:\n%s", name, stats_buffer.getvalue())
 
     hass.components.persistent_notification.async_create(
-        f"Wrote raw stats to {out_file}\n\n```\n{stats_buffer.getvalue()}\n```",
+        f"Wrote raw stats to {out_path}\n\n```\n{stats_buffer.getvalue()}\n```",
         title=f"{name}: WS Profile Completed",
         notification_id=message_id,
     )
 
 
-def above_ha_version(major, minor) -> bool:
+def above_ha_version(major: int, minor: int) -> bool:
     if MAJOR_VERSION > major:
         return True
-    elif MAJOR_VERSION < major:
+    if MAJOR_VERSION < major:
         return False
     return MINOR_VERSION >= minor

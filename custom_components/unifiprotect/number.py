@@ -4,13 +4,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 import logging
+from typing import Callable, Sequence
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.const import ENTITY_CATEGORY_CONFIG
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity import Entity
+from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import ModelType
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
-from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
+from .const import DEVICES_WITH_CAMERA, DOMAIN
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 from .utils import get_nested_attr
@@ -128,7 +134,9 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up Select entities for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -169,27 +177,32 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
 
     def __init__(
         self,
-        protect,
-        protect_data,
-        device,
+        protect: ProtectApiClient,
+        protect_data: UnifiProtectData,
+        device: ProtectAdoptableDeviceModel,
         description: UnifiProtectNumberEntityDescription,
-    ):
+    ) -> None:
         """Initialize the Number Entities."""
+        self.entity_description: UnifiProtectNumberEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._attr_max_value = self.entity_description.ufp_max
         self._attr_min_value = self.entity_description.ufp_min
         self._attr_step = self.entity_description.ufp_step
+        self._async_update_device_from_protect()
 
-    @property
-    def state(self) -> float:
-        """Return the state of the sensor."""
-        value = get_nested_attr(self.device, self.entity_description.ufp_value)
+    @callback
+    def _async_update_device_from_protect(self) -> None:
+        super()._async_update_device_from_protect()
+        value: float | timedelta = get_nested_attr(
+            self.device, self.entity_description.ufp_value
+        )
 
-        if self.entity_description.key == _KEY_DURATION:
-            value = value.total_seconds()
+        if isinstance(self._attr_value, timedelta):
+            value = self.value.total_seconds()
 
-        return value
+        assert isinstance(value, float)
+        self._attr_value = value
 
     async def async_set_value(self, value: float) -> None:
         """Set new value."""
@@ -201,7 +214,8 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
             self.device.name,
         )
 
+        set_value: float | timedelta = value
         if self.entity_description.key == _KEY_DURATION:
-            value = timedelta(seconds=value)
+            set_value = timedelta(seconds=value)
 
-        await getattr(self.device, function)(value)
+        await getattr(self.device, function)(set_value)

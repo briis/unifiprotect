@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -20,7 +22,9 @@ def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
     ]
 
 
-def _async_get_protect_from_call(hass, call) -> list[tuple[str, ProtectApiClient]]:
+def _async_get_protect_from_call(
+    hass: HomeAssistant, call: ServiceCall
+) -> list[tuple[str, ProtectApiClient]]:
     referenced = async_extract_referenced_entity_ids(hass, call)
     device_registry = dr.async_get(hass)
 
@@ -29,7 +33,7 @@ def _async_get_protect_from_call(hass, call) -> list[tuple[str, ProtectApiClient
         if not (device_entry := device_registry.async_get(device_id)):
             raise HomeAssistantError(f"No device found for device id: {device_id}")
 
-        name = device_entry.name_by_user or device_entry.name
+        name = str(device_entry.name_by_user or device_entry.name)
         macs = [
             # MAC addresses in UFP are always caps
             cval.replace(":", "").upper()

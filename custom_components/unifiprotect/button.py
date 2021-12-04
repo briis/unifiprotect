@@ -2,16 +2,17 @@
 from __future__ import annotations
 
 import logging
+from typing import Callable, Sequence
 
 from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
-from custom_components.unifiprotect.data import UnifiProtectData
-
 from .const import DEVICES_WITH_ENTITIES, DOMAIN
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 
@@ -19,7 +20,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Discover devices on a UniFi Protect NVR."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]

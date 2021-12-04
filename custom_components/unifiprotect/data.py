@@ -3,15 +3,15 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
-from typing import Generator, Iterable
+from typing import Any, Generator, Iterable
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import Bootstrap, Event, ModelType, WSSubscriptionMessage
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.nvr import NVR, Liveview
+from pyunifiprotect.data.nvr import Liveview
 from pyunifiprotect.exceptions import NotAuthorized, NvrError
 
 from .const import DEVICES_WITH_ENTITIES
@@ -36,9 +36,9 @@ class UnifiProtectData:
         self._entry = entry
         self._hass = hass
         self._update_interval = update_interval
-        self._subscriptions = {}
-        self._unsub_interval = None
-        self._unsub_websocket = None
+        self._subscriptions: dict[str, list[CALLBACK_TYPE]] = {}
+        self._unsub_interval: CALLBACK_TYPE | None = None
+        self._unsub_websocket: CALLBACK_TYPE | None = None
 
         self.last_update_success = False
 
@@ -55,14 +55,14 @@ class UnifiProtectData:
             for device in devices.values():
                 yield device
 
-    async def async_setup(self):
+    async def async_setup(self) -> None:
         """Subscribe and do the refresh."""
         self._unsub_websocket = self._protect.subscribe_websocket(
             self._async_process_ws_message
         )
         await self.async_refresh()
 
-    async def async_stop(self, *args):
+    async def async_stop(self, *args: Any) -> None:
         """Stop processing data."""
         if self._unsub_websocket:
             self._unsub_websocket()
@@ -72,7 +72,7 @@ class UnifiProtectData:
             self._unsub_interval = None
         await self._protect.async_disconnect_ws()
 
-    async def async_refresh(self, *_, force=False):
+    async def async_refresh(self, *_: Any, force: bool = False) -> None:
         """Update the data."""
         try:
             self._async_process_updates(await self._protect.update(force=force))
@@ -88,7 +88,7 @@ class UnifiProtectData:
             self.last_update_success = False
 
     @callback
-    def _async_process_ws_message(self, message: WSSubscriptionMessage):
+    def _async_process_ws_message(self, message: WSSubscriptionMessage) -> None:
         if message.new_obj.model in DEVICES_WITH_ENTITIES:
             self.async_signal_device_id_update(message.new_obj.id)
         # trigger updates for camera that the event references
@@ -108,7 +108,7 @@ class UnifiProtectData:
             )
 
     @callback
-    def _async_process_updates(self, updates: Bootstrap | None):
+    def _async_process_updates(self, updates: Bootstrap | None) -> None:
         """Process update from the protect data."""
 
         # Websocket connected, use data from it
@@ -124,7 +124,9 @@ class UnifiProtectData:
                 self.async_signal_device_id_update(device_id)
 
     @callback
-    def async_subscribe_device_id(self, device_id, update_callback):
+    def async_subscribe_device_id(
+        self, device_id: str, update_callback: CALLBACK_TYPE
+    ) -> CALLBACK_TYPE:
         """Add an callback subscriber."""
         if not self._subscriptions:
             self._unsub_interval = async_track_time_interval(
@@ -132,23 +134,25 @@ class UnifiProtectData:
             )
         self._subscriptions.setdefault(device_id, []).append(update_callback)
 
-        def _unsubscribe():
+        def _unsubscribe() -> None:
             self.async_unsubscribe_device_id(device_id, update_callback)
 
         return _unsubscribe
 
     @callback
-    def async_unsubscribe_device_id(self, device_id, update_callback):
+    def async_unsubscribe_device_id(
+        self, device_id: str, update_callback: CALLBACK_TYPE
+    ) -> None:
         """Remove a callback subscriber."""
         self._subscriptions[device_id].remove(update_callback)
         if not self._subscriptions[device_id]:
             del self._subscriptions[device_id]
-        if not self._subscriptions:
+        if not self._subscriptions and self._unsub_interval:
             self._unsub_interval()
             self._unsub_interval = None
 
     @callback
-    def async_signal_device_id_update(self, device_id):
+    def async_signal_device_id_update(self, device_id: str) -> None:
         """Call the callbacks for a device_id."""
         if not self._subscriptions.get(device_id):
             return

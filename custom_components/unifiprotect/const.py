@@ -3,7 +3,7 @@
 # from typing_extensions import Required
 from datetime import timedelta
 
-from homeassistant.const import ATTR_ENTITY_ID, CONF_DEVICE, CONF_DEVICE_ID
+from homeassistant.const import ATTR_ENTITY_ID, CONF_DEVICE_ID
 from homeassistant.helpers import config_validation as cv
 from pyunifiprotect.data.types import ModelType, Version
 import voluptuous as vol
@@ -88,13 +88,6 @@ DEVICES_WITH_ENTITIES = (
     | DEVICES_WITH_SELECT
 )
 DEVICES_FOR_SUBSCRIBE = DEVICES_WITH_ENTITIES | {ModelType.NVR, ModelType.EVENT}
-
-ENTITY_CATEGORY_CONFIG = (
-    "config"  # Replace with value from HA Core when more people are on 2021.11
-)
-ENTITY_CATEGORY_DIAGNOSTIC = (
-    "diagnostic"  # Replace with value from HA Core when more people are on 2021.11
-)
 
 MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 

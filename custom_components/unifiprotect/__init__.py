@@ -26,8 +26,6 @@ from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 from pyunifiprotect.data.nvr import NVR
 from pyunifiprotect.data.types import ModelType
 
-from custom_components.unifiprotect.utils import above_ha_version
-
 from .const import (
     CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
@@ -53,10 +51,11 @@ from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
 from .services import (
     add_doorbell_text,
+    profile_ws,
     remove_doorbell_text,
     set_default_doorbell_text,
-    profile_ws,
 )
+from .utils import above_ha_version
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,7 +65,7 @@ SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 @callback
 async def _async_migrate_data(
     hass: HomeAssistant, entry: ConfigEntry, protect: ProtectApiClient
-):
+) -> None:
     # already up to date, skip
     if CONF_ALL_UPDATES in entry.options:
         return
@@ -75,10 +74,11 @@ async def _async_migrate_data(
 
     # migrate entry
     options = dict(entry.options)
+    data = dict(entry.data)
     options[CONF_ALL_UPDATES] = False
     if CONF_DOORBELL_TEXT in options:
         del options[CONF_DOORBELL_TEXT]
-    hass.config_entries.async_update_entry(entry, data=entry.data, options=options)
+    hass.config_entries.async_update_entry(entry, data=data, options=options)
 
     # migrate entities
     registry = er.async_get(hass)
@@ -153,7 +153,9 @@ async def _async_migrate_data(
 
 
 @callback
-def _async_import_options_from_data_if_missing(hass: HomeAssistant, entry: ConfigEntry):
+def _async_import_options_from_data_if_missing(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> None:
     options = dict(entry.options)
     data = dict(entry.data)
     modified = False
@@ -273,7 +275,7 @@ async def _async_get_or_create_nvr_device_in_registry(
     )
 
 
-async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
+async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update options."""
     await hass.config_entries.async_reload(entry.entry_id)
 
@@ -284,10 +286,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
         await data.protect_data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
-    return unload_ok
+    return bool(unload_ok)
 
 
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate old entry."""
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 

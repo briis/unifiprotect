@@ -4,12 +4,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 import logging
-from typing import Any, Type
+from typing import Any, Callable, Sequence
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.entity import Entity
 from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import (
     DoorbellMessageType,
@@ -21,9 +23,9 @@ from pyunifiprotect.data import (
 )
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, Light, Viewer
-from pyunifiprotect.data.nvr import Liveview
+from pyunifiprotect.data.nvr import DoorbellMessage, Liveview
 
-from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG, TYPE_EMPTY_VALUE
+from .const import DEVICES_WITH_CAMERA, DOMAIN, TYPE_EMPTY_VALUE
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -79,10 +81,10 @@ class UnifiprotectRequiredKeysMixin:
 
     ufp_device_types: set[ModelType]
     ufp_required_field: str | None
-    ufp_options: list[dict[str, Any]]
-    ufp_enum_type: Type[Enum] | None
+    ufp_options: list[dict[str, Any]] | None
+    ufp_enum_type: type[Enum] | None
     ufp_value: str
-    ufp_set_function: str
+    ufp_set_function: str | None
 
 
 @dataclass
@@ -156,7 +158,9 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up Select entities for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -205,19 +209,25 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         options: list[dict[str, Any]] | None,
     ):
         """Initialize the unifi protect select entity."""
+        assert isinstance(device, (Camera, Viewer, Light))
         self.device: Camera | Viewer | Light = device
+        self.entity_description: UnifiProtectSelectEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._data_key = description.ufp_value
 
         if options is not None:
             self._attr_options = [item["name"] for item in options]
-            self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
-            self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
+            self._hass_to_unifi_options: dict[str, Any] = {
+                item["name"]: item["id"] for item in options
+            }
+            self._unifi_to_hass_options: dict[Any, str] = {
+                item["id"]: item["name"] for item in options
+            }
         self._async_set_dynamic_options()
 
     @callback
-    def _async_set_dynamic_options(self):
+    def _async_set_dynamic_options(self) -> None:
         """These options do not actually update dynamically.
 
         This is due to possible downstream platforms dependencies on these options.
@@ -271,6 +281,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             if unifi_value is None:
                 unifi_value = TYPE_EMPTY_VALUE
             else:
+                assert isinstance(unifi_value, DoorbellMessage)
                 return unifi_value.text
         return self._unifi_to_hass_options[unifi_value]
 
@@ -312,5 +323,6 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             unifi_value = self.protect.bootstrap.liveviews[unifi_value]
 
         _LOGGER.debug("%s set to: %s", self.entity_description.key, option)
+        assert self.entity_description.ufp_set_function
         coro = getattr(self.device, self.entity_description.ufp_set_function)
         await coro(unifi_value)

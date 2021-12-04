@@ -3,9 +3,10 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from datetime import datetime
 import itertools
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Callable, Sequence
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY,
@@ -16,23 +17,20 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_LAST_TRIP_TIME
+from homeassistant.const import ATTR_LAST_TRIP_TIME, ENTITY_CATEGORY_DIAGNOSTIC
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.config_validation import datetime
+from homeassistant.helpers.entity import Entity
+from pyunifiprotect.api import ProtectApiClient
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, Light, Sensor
-from pyunifiprotect.data.types import ModelType
+from pyunifiprotect.data.types import ModelType, SmartDetectObjectType
 from pyunifiprotect.utils import utc_now
 
-from .const import (
-    ATTR_EVENT_OBJECT,
-    ATTR_EVENT_SCORE,
-    DOMAIN,
-    ENTITY_CATEGORY_DIAGNOSTIC,
-    RING_INTERVAL,
-)
+from .const import ATTR_EVENT_OBJECT, ATTR_EVENT_SCORE, DOMAIN, RING_INTERVAL
+from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
-from .utils import get_datetime_attr, get_nested_attr
+from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -142,7 +140,9 @@ DEVICE_TYPE_TO_DESCRIPTION = {
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up binary sensors for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
@@ -158,7 +158,7 @@ async def async_setup_entry(
         entity_descs = itertools.chain.from_iterable(
             descriptions
             for device_match, descriptions in DEVICE_TYPE_TO_DESCRIPTION.items()
-            if device.model in device_match
+            if device.model is not None and device.model in device_match
         )
 
         for description in entity_descs:
@@ -189,28 +189,32 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
 
     def __init__(
         self,
-        protect,
-        protect_data,
-        device,
+        protect: ProtectApiClient,
+        protect_data: UnifiProtectData,
+        device: ProtectAdoptableDeviceModel,
         description: UnifiProtectBinaryEntityDescription,
-    ):
+    ) -> None:
         """Initialize the Binary Sensor."""
+        assert isinstance(device, (Camera, Light, Sensor))
         self.device: Camera | Light | Sensor = device
+        self.entity_description: UnifiProtectBinaryEntityDescription = description
         super().__init__(protect, protect_data, device, description)
-        self._attr_name = f"{self.device.name} {description.name.title()}"
+        name = description.name or ""
+        self._attr_name = f"{self.device.name} {name.title()}"
         self._async_update_device_from_protect()
-        self._doorbell_callback: Optional[TaskClass] = None
+        self._doorbell_callback: TaskClass | None = None
 
     @callback
-    def _async_get_extra_attrs(self):
-        attrs = {}
+    def _async_get_extra_attrs(self) -> dict[str, Any]:
+        attrs: dict[str, Any] = {}
         key = self.entity_description.key
 
         if key == _KEY_DARK:
             return attrs
 
         if key == _KEY_DOORBELL:
-            attrs[ATTR_LAST_TRIP_TIME] = get_datetime_attr(self.device.last_ring)
+            assert isinstance(self.device, Camera)
+            attrs[ATTR_LAST_TRIP_TIME] = self.device.last_ring
         elif isinstance(self.device, Sensor):
             if key in (_KEY_MOTION, _KEY_DOOR):
                 if key == _KEY_MOTION:
@@ -218,10 +222,10 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 else:
                     last_trip = self.device.open_status_changed_at
 
-                attrs[ATTR_LAST_TRIP_TIME] = get_datetime_attr(last_trip)
+                attrs[ATTR_LAST_TRIP_TIME] = last_trip
         elif isinstance(self.device, Light):
             if key == _KEY_MOTION:
-                attrs[ATTR_LAST_TRIP_TIME] = get_datetime_attr(self.device.last_motion)
+                attrs[ATTR_LAST_TRIP_TIME] = self.device.last_motion
 
         if not isinstance(self.device, Camera):
             return attrs
@@ -234,7 +238,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             and len(self.device.last_smart_detect_event.smart_detect_types) > 0
         ):
             score = self.device.last_smart_detect_event.score
-            detected_object = self.device.last_smart_detect_event.smart_detect_types[0]
+            detected_object: SmartDetectObjectType | None = (
+                self.device.last_smart_detect_event.smart_detect_types[0]
+            )
             _LOGGER.debug(
                 "OBJECTS: %s on %s",
                 self.device.last_smart_detect_event.smart_detect_types,
@@ -250,7 +256,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
 
         attrs.update(
             {
-                ATTR_LAST_TRIP_TIME: get_datetime_attr(self.device.last_motion),
+                ATTR_LAST_TRIP_TIME: self.device.last_motion,
                 ATTR_EVENT_SCORE: score,
                 ATTR_EVENT_OBJECT: detected_object,
             }
@@ -259,7 +265,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         return attrs
 
     @callback
-    def _async_update_device_from_protect(self):
+    def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
 
         if self.entity_description.key == _KEY_DOORBELL:
@@ -282,7 +288,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self._extra_state_attributes = self._async_get_extra_attrs()
 
     @callback
-    async def _async_wait_for_doorbell(self, end_time: datetime):
+    async def _async_wait_for_doorbell(self, end_time: datetime) -> None:
         _LOGGER.debug("Doorbell callback started")
         while utc_now() < end_time:
             await asyncio.sleep(1)
@@ -290,12 +296,12 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self._async_updated_event()
 
     @callback
-    def _async_updated_event(self):
+    def _async_updated_event(self) -> None:
         self._async_fire_events()
         super()._async_updated_event()
 
     @callback
-    def _async_fire_events(self):
+    def _async_fire_events(self) -> None:
         """Fire events on ring or motion.
 
         CORE: Remove this before merging to core.
@@ -308,7 +314,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             self._async_fire_motion_event()
 
     @callback
-    def _async_fire_doorbell_event(self):
+    def _async_fire_doorbell_event(self) -> None:
         """Fire events on ring.
 
         CORE: Remove this before merging to core.
@@ -325,7 +331,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             )
 
     @callback
-    def _async_fire_motion_event(self):
+    def _async_fire_motion_event(self) -> None:
         """Fire events on motion.
 
         Remove this before merging to core.
@@ -357,6 +363,6 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         )
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict[str, Any]:
         """Return the extra state attributes."""
         return {**super().extra_state_attributes, **self._extra_state_attributes}

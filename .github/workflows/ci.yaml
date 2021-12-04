@@ -25,7 +25,7 @@ jobs:
 
       - name: Install Linting Dependencies
         run: |
-          git clone -b dev https://github.com/home-assistant/core.git hass
+          git clone --depth=1 -b dev https://github.com/home-assistant/core.git hass
           ln -s $GITHUB_WORKSPACE/custom_components/unifiprotect ./hass/homeassistant/components/unifiprotect
 
           python -m pip install --upgrade pip

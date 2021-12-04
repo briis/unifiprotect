@@ -25,9 +25,12 @@ jobs:
 
       - name: Install Linting Dependencies
         run: |
+          git clone https://github.com/home-assistant/core.git@dev hass
+          ln -s ./custom_components/unifiprotect ./hass/homeassistant/components/unifiprotect
+
           python -m pip install --upgrade pip
           pip install pyunifiprotect mypy black isort pyupgrade pylint pylint_strict_informational
-          pip install git+https://github.com/home-assistant/core.git@dev
+          pip install ./hass
           pip install git+https://github.com/KapJI/homeassistant-stubs.git
 
       - name: isort
@@ -37,7 +40,7 @@ jobs:
         run: black --check custom_components/unifiprotect
 
       - name: mypy
-        run: mypy custom_components/unifiprotect
+        run: cd ./hass && mypy homeassistant/components/unifiprotect
 
       - name: pyupgrade
         run: find . -name "*.py" | xargs pyupgrade

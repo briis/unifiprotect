@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.service import async_extract_referenced_entity_ids
@@ -24,11 +24,13 @@ def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
     ]
 
 
-def _async_unifi_mac_from_hass(mac: str):
+@callback
+def _async_unifi_mac_from_hass(mac: str) -> str:
     # MAC addresses in UFP are always caps
     return mac.replace(":", "").upper()
 
 
+@callback
 def _async_get_macs_for_device(device_entry: dr.DeviceEntry) -> list[str]:
     return [
         _async_unifi_mac_from_hass(cval)

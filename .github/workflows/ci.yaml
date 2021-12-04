@@ -43,7 +43,7 @@ jobs:
         run: cd ./hass && mypy homeassistant/components/unifiprotect
 
       - name: pyupgrade
-        run: find . -name "*.py" | xargs pyupgrade
+        run: find . ! -path "./hass/*" -name "*.py" | xargs pyupgrade
 
       - name: pylint
         run: pylint custom_components/unifiprotect

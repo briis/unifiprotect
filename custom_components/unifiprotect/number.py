@@ -198,11 +198,10 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
             self.device, self.entity_description.ufp_value
         )
 
-        if isinstance(self._attr_value, timedelta):
-            value = self.value.total_seconds()
-
-        assert isinstance(value, float)
-        self._attr_value = value
+        if isinstance(value, timedelta):
+            self._attr_value = value.total_seconds()
+        else:
+            self._attr_value = value
 
     async def async_set_value(self, value: float) -> None:
         """Set new value."""

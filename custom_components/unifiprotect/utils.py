@@ -11,6 +11,7 @@ from typing import Any
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.device_registry import DeviceEntry
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.utils import print_ws_stat_summary
 
@@ -33,7 +34,10 @@ def get_nested_attr(obj: Any, attr: str) -> Any:
 
 
 async def profile_ws_messages(
-    hass: HomeAssistant, protect: ProtectApiClient, seconds: int, name: str
+    hass: HomeAssistant,
+    protect: ProtectApiClient,
+    seconds: int,
+    device_entry: DeviceEntry,
 ) -> None:
 
     if protect.bootstrap.capture_ws_stats:
@@ -42,6 +46,7 @@ async def profile_ws_messages(
     protect.bootstrap.capture_ws_stats = True
 
     start_time = time.time()
+    name = device_entry.name_by_user or device_entry.name or device_entry.id
     nvr_id = name.replace(" ", "_").lower()
     message_id = f"ufp_ws_profiler_{nvr_id}_{start_time}"
     hass.components.persistent_notification.async_create(

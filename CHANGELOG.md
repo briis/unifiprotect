@@ -2,6 +2,12 @@
 
 ## 0.11.0-dev (master)
 
+* `CHANGE`: Allows `device_id` parameter for global service calls to be any device from a UniFi Protect instance
+
+* More clean up and improvements for upcoming Home Assistant core merge.
+
+## 0.11.0-beta.1
+
 ### Deprecations
 
 0.11 is last major release planned before we merge the `unifiprotect` integration into core. As a result, a number of features are being removed when we merged into core.

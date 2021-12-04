@@ -2,6 +2,13 @@ profile_ws_messages:
   name: Profile UniFi Protect WS Messages
   description: Profiles UniFi Protect Web Socket messages and prints out summary afterwards.
   fields:
+    device_id:
+      name: UniFi Protect NVR
+      description: Main NVR for the UniFi Protect instance you would like to target.
+      required: true
+      selector:
+        device:
+           integration: unifiprotect
     duration:
       name: Profile Time
       description: How long to profile
@@ -13,6 +20,60 @@ profile_ws_messages:
           max: 600
           step: 10
           unit_of_measurement: seconds
+add_doorbell_text:
+  name: Add Custom Doorbell Text
+  description: Adds a new custom message for Doorbells. You must restart Home Assistant afterwards for text options updates to appear on doorbells.
+  fields:
+    device_id:
+      name: UniFi Protect NVR
+      description: Main NVR for the UniFi Protect instance you would like to target.
+      required: true
+      selector:
+        device:
+           integration: unifiprotect
+    message:
+      name: Custom Message
+      description: The custom message to add. Max length of 30 characters.
+      example: Come In
+      required: true
+      selector:
+        text:
+remove_doorbell_text:
+  name: Remove Custom Doorbell Text
+  description: Removes an existing message for Doorbells. You must restart Home Assistant afterwards for text options updates to appear on doorbells.
+  fields:
+    device_id:
+      name: UniFi Protect NVR
+      description: Main NVR for the UniFi Protect instance you would like to target.
+      required: true
+      selector:
+        device:
+           integration: unifiprotect
+    message:
+      name: Custom Message
+      description: The custom message to remove. Max length of 30 characters.
+      example: Go Away!
+      required: true
+      selector:
+        text:
+set_default_doorbell_text:
+  name: Set Default Doorbell Text
+  description: Sets the default doorbell message. You must restart Home Assistant afterwards for text options updates to appear on doorbells.
+  fields:
+    device_id:
+      name: UniFi Protect NVR
+      description: Main NVR for the UniFi Protect instance you would like to target.
+      required: true
+      selector:
+        device:
+           integration: unifiprotect
+    message:
+      name: Default Message
+      description: The default message. Max length of 30 characters.
+      example: Welcome!
+      required: true
+      selector:
+        text:
 
 set_recording_mode:
   name: Set Recording Mode

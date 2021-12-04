@@ -3,7 +3,7 @@
 # from typing_extensions import Required
 from datetime import timedelta
 
-from homeassistant.const import ATTR_ENTITY_ID
+from homeassistant.const import ATTR_ENTITY_ID, CONF_DEVICE, CONF_DEVICE_ID
 from homeassistant.helpers import config_validation as cv
 from pyunifiprotect.data.types import ModelType, Version
 import voluptuous as vol
@@ -53,9 +53,10 @@ CONF_PRIVACY_MODE = "privacy_mode"
 CONF_POSITION = "position"
 CONF_SENSITIVITY = "sensitivity"
 CONF_VALUE = "value"
+CONF_ALL_UPDATES = "all_updates"
 
 CONFIG_OPTIONS = [
-    CONF_DOORBELL_TEXT,
+    CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
 ]
 CUSTOM_MESSAGE = "CUSTOM_MESSAGE"
@@ -98,6 +99,9 @@ ENTITY_CATEGORY_DIAGNOSTIC = (
 MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 
 SERVICE_PROFILE_WS = "profile_ws_messages"
+SERVICE_ADD_DOORBELL_TEXT = "add_doorbell_text"
+SERVICE_REMOVE_DOORBELL_TEXT = "remove_doorbell_text"
+SERVICE_SET_DEFAULT_DOORBELL_TEXT = "set_default_doorbell_text"
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"
@@ -134,6 +138,10 @@ PLATFORMS = [
     "light",
     "select",
     "number",
+    "media_player",
+]
+PLATFORMS_NEXT = PLATFORMS + [
+    "button",
 ]
 VALID_INFRARED_MODES = [
     TYPE_INFRARED_AUTO,
@@ -160,6 +168,16 @@ LIGHT_SETTINGS_SCHEMA = vol.Schema(
     }
 )
 
+DOORBELL_TEXT_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            **cv.ENTITY_SERVICE_FIELDS,
+            vol.Required(CONF_MESSAGE): cv.string,
+        },
+    ),
+    cv.has_at_least_one_key(CONF_DEVICE_ID),
+)
+
 SET_RECORDING_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
@@ -168,10 +186,14 @@ SET_RECORDING_MODE_SCHEMA = vol.Schema(
         ),
     }
 )
-PROFILE_WS_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_DURATION): vol.Coerce(int),
-    }
+PROFILE_WS_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            **cv.ENTITY_SERVICE_FIELDS,
+            vol.Required(CONF_DURATION): vol.Coerce(int),
+        },
+    ),
+    cv.has_at_least_one_key(CONF_DEVICE_ID),
 )
 
 SET_IR_MODE_SCHEMA = vol.Schema(

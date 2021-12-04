@@ -21,8 +21,8 @@ from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 import voluptuous as vol
 
 from .const import (
+    CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
-    CONF_DOORBELL_TEXT,
     DEFAULT_PORT,
     DEFAULT_VERIFY_SSL,
     DOMAIN,
@@ -57,7 +57,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             data={**data, CONF_ID: title},
             options={
                 CONF_DISABLE_RTSP: False,
-                CONF_DOORBELL_TEXT: "",
+                CONF_ALL_UPDATES: False,
             },
         )
 
@@ -122,7 +122,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             form_data.update(user_input)
 
             # validate login data
-            nvr_data, errors = await self._async_get_nvr_data(form_data)
+            _, errors = await self._async_get_nvr_data(form_data)
             if not errors:
                 self.hass.config_entries.async_update_entry(self.entry, data=form_data)
                 await self.hass.config_entries.async_reload(self.entry.entry_id)
@@ -196,12 +196,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(
-                        CONF_DOORBELL_TEXT,
-                        default=self.config_entry.options.get(CONF_DOORBELL_TEXT, ""),
-                    ): str,
-                    vol.Optional(
                         CONF_DISABLE_RTSP,
                         default=self.config_entry.options.get(CONF_DISABLE_RTSP, False),
+                    ): bool,
+                    vol.Optional(
+                        CONF_ALL_UPDATES,
+                        default=self.config_entry.options.get(CONF_ALL_UPDATES, False),
                     ): bool,
                 }
             ),

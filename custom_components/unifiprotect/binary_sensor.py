@@ -195,8 +195,8 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         description: UnifiProtectBinaryEntityDescription,
     ):
         """Initialize the Binary Sensor."""
-        super().__init__(protect, protect_data, device, description)
         self.device: Camera | Light | Sensor = device
+        super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {description.name.title()}"
         self._async_update_device_from_protect()
         self._doorbell_callback: Optional[TaskClass] = None
@@ -298,7 +298,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def _async_fire_events(self):
         """Fire events on ring or motion.
 
-        Remove this before merging to core.
+        CORE: Remove this before merging to core.
         """
 
         key = self.entity_description.key
@@ -311,7 +311,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def _async_fire_doorbell_event(self):
         """Fire events on ring.
 
-        Remove this before merging to core.
+        CORE: Remove this before merging to core.
         """
 
         assert isinstance(self.device, Camera)

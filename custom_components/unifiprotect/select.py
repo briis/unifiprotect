@@ -8,7 +8,7 @@ from typing import Any, Type
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import (
@@ -36,19 +36,6 @@ _KEY_REC_MODE = "recording_mode"
 _KEY_VIEWER = "viewer"
 _KEY_LIGHT_MOTION = "light_motion"
 _KEY_DOORBELL_TEXT = "doorbell_text"
-
-
-DOORBELL_BASE_TEXT = [
-    {"id": TYPE_EMPTY_VALUE, "name": "No Message"},
-    {
-        "id": DoorbellMessageType.LEAVE_PACKAGE_AT_DOOR.value,
-        "name": DoorbellMessageType.LEAVE_PACKAGE_AT_DOOR.value.replace("_", " "),
-    },
-    {
-        "id": DoorbellMessageType.DO_NOT_DISTURB.value,
-        "name": DoorbellMessageType.DO_NOT_DISTURB.value.replace("_", " "),
-    },
-]
 
 INFRARED_MODES = [
     {"id": IRLEDMode.AUTO.value, "name": "Auto"},
@@ -168,23 +155,6 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
 )
 
 
-def _build_doorbell_texts(doorbell_text) -> list[dict[str, str]]:
-    """Create a list of available doorbell texts from the defaults and configured."""
-    return [
-        *DOORBELL_BASE_TEXT,
-        *(
-            {"id": DoorbellMessageType.CUSTOM_MESSAGE.value, "name": item.strip()}
-            for item in (doorbell_text or "").split(",")
-            if len(item.strip()) != 0
-        ),
-    ]
-
-
-def _build_liveviews_options(liveviews: list[Liveview]) -> list[dict[str, str]]:
-    """Create a list of available liveviews from list of Liveview objs"""
-    return [{"id": item.id, "name": item.name} for item in liveviews]
-
-
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> None:
@@ -192,10 +162,6 @@ async def async_setup_entry(
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
-    doorbell_texts = _build_doorbell_texts(entry_data.doorbell_text)
-    liveviews: list[dict[str, Any]] = _build_liveviews_options(
-        protect.bootstrap.liveviews.values()
-    )
 
     entities = []
     for description in SELECT_TYPES:
@@ -205,26 +171,20 @@ async def async_setup_entry(
                 if not required_field:
                     continue
 
-            options = description.ufp_options
-            if description.key == _KEY_DOORBELL_TEXT:
-                options = doorbell_texts
-            if description.key == _KEY_VIEWER:
-                options = liveviews
-
             entities.append(
                 UnifiProtectSelects(
                     protect,
                     protect_data,
                     device,
                     description,
-                    options,
+                    description.ufp_options,
                 )
             )
             _LOGGER.debug(
                 "Adding select entity %s for %s with options %s",
                 description.name,
                 device.name,
-                options,
+                description.ufp_options,
             )
 
     if not entities:
@@ -242,14 +202,49 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         protect_data: UnifiProtectData,
         device: ProtectAdoptableDeviceModel,
         description: UnifiProtectSelectEntityDescription,
-        options: list[dict[str, Any]],
+        options: list[dict[str, Any]] | None,
     ):
         """Initialize the unifi protect select entity."""
-        super().__init__(protect, protect_data, device, description)
         self.device: Camera | Viewer | Light = device
+        super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
-        self._attr_options = [item["name"] for item in options]
         self._data_key = description.ufp_value
+
+        if options is not None:
+            self._attr_options = [item["name"] for item in options]
+            self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
+            self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
+        self._async_set_dynamic_options()
+
+    @callback
+    def _async_set_dynamic_options(self):
+        """These options do not actually update dynamically.
+
+        This is due to possible downstream platforms dependencies on these options.
+        """
+        if self.entity_description.key not in (_KEY_VIEWER, _KEY_DOORBELL_TEXT):
+            return
+
+        if self.entity_description.key == _KEY_VIEWER:
+            options = [
+                {"id": item.id, "name": item.name}
+                for item in self.protect.bootstrap.liveviews.values()
+            ]
+        elif self.entity_description.key == _KEY_DOORBELL_TEXT:
+            default_message = (
+                self.protect.bootstrap.nvr.doorbell_settings.default_message_text
+            )
+            messages = self.protect.bootstrap.nvr.doorbell_settings.all_messages
+            built_messages = (
+                {"id": item.type.value, "name": item.text} for item in messages
+            )
+
+            options = [
+                {"id": "", "name": f"Default Message ({default_message})"},
+                *built_messages,
+            ]
+
+        self._attr_options = [item["name"] for item in options]
         self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
         self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
 

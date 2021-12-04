@@ -41,21 +41,31 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `chime_duration`, `is_dark`, `mic_sensitivity`, `privacy_mode`, `wdr_value`, and `zoom_position`  will be removed from camera entities -- all of them have now have their own sensors
 
 
-### Changes in this release
+### Breaking Changes in this release
 
-* `NEW`: **BREAKING CHANGE** Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. This will change the unique ID of your default Camera so your old Camera entities will become orphaned. If you need RTSP camera entities, you can enable one of the given insecure camera entities.
-
-* `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading.
+* `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading. If you do not, you will need to manually delete the old Privacy Zone from your UniFi Protect app.
 
 * `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR.
 
-* `CHANGE`: **BREAKING CHANGE** `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not reliable between restarts.
+* `CHANGE`: **BREAKING CHANGE** the `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not reliable between restarts.
 
 * `CHANGE`: **BREAKING CHANGE** the `event_object` attribute for binary motion sensors has changed the value for no object detected from "None Identified" (string) to "None" (NoneType/null)
+
+* `CHANGE`: **BREAKING CHANGE** The Doorbell Text select entity for Doorbells has been overhauled. The Config Flow option for Doorbell Messages has been removed. You now can use the the  `unifiprotect.add_doorbell_text` and `unifiprotect.remove_doorbell_text` services to add/remove Doorbell messages. This will persist the messages in UniFi Protect and the choices will now be the same ones that appear in the UniFi Protect iOS/Android app. **NOTE**: After running one of these services, you must restart Home Assistant for the updated options to appear.
+
+### Other Changes in this release
 
 * `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
     * This should lead to a number of behind-the-scenes reliability improvements.
       * Should fix/close the following issues: #248, #255, #297, #317, #341, and #360 (TODO: Verify)
+
+* `CHANGE`: Overhaul Config Flow
+    * Adds Reauthentication support
+    * Adds "Verify SSL"
+    * Updates Setup / Reauth / Options flows to pre-populate forms from existing settings
+    * Removes changing username/password as part of the options flow as it is redundant with Reauthentication support
+    * Removes Doorbell Text option since it is handled directly by UniFi Protect now
+    * Adds new config option to update all metrics (storage stat usage, uptimes, CPU usage, etc.) in realtime. **WARNING**: Enabling this option will greatly increase your CPU usage. ~2x is what we were seeing in our testing. It is recommended to leave it disabled for now as we do not have a lot of diagnostic sensors using this data yet.
 
 * `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
   * Closes #337
@@ -63,6 +73,10 @@ All of following attributes should be duplicated data that can be gotten from ot
 * `CHANGE`: Configuration URLs for UFP devices will now take you directly to the device in the UFP Web UI.
 
 * `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
+
+* `CHANGE`: The Bluetooth strength sensor for the UP Sense is now disabled by default (will not effect anyone that already has the sensor).
+
+* `NEW`: Adds all of the possible enabled UFP Camera channels as different camera entities; only the highest resolution secure (RTSPS) one is enabled by default. If you need RTSP camera entities, you can enable one of the given insecure camera entities.
 
 * `NEW`: Added the following attributes to Camera entity: `width`, `height`, `fps`, `bitrate` and `channel_id`
 
@@ -78,11 +92,16 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * `NEW`: Added "Uptime" sensor entity for all UniFi Protect adoptable devices. This is disabled by default.
 
-* `CHANGE`: Overhaul Config Flow
-    * Adds Reauthentication support
-    * Adds "Verify SSL"
-    * Updates Setup / Reauth / Options flows to pre-populate forms from existing settings
-    * Removes changing username/password as part of the options flow as it is redundant with Reauthentication support
+* `NEW`: Added `unifiprotect.set_default_doorbell_text` service to allow you to set your default Doorbell message text. **NOTE**: After running this service, you must restart Home Assistant for the default to be reflected in the options.
+
+* `NEW`: Added "SSH Enabled" switch for all adoptable UniFi Protect devices. This switch is disabled by default.
+
+* `NEW`: (requires 2021.12+) Added "Reboot Device" button for all adoptable UniFi Protect devices. This button is disabled by default. Use with caution as there is no confirm. "Pressing" it instantly reboots your device.
+
+* `NEW`: Added media player entity for cameras with speaker. Speaker will accept any ffmpeg playable audio file URI (URI must be accessible from _Home Assistant_, not your Camera). TTS works great!
+  * TODO: Investigate for final release. This _may_ not work as expected on G4 Doorbells. Not sure yet if it is because of the recent Doorbell issues or because Doorbells are different.
+  * Implements #304
+
 
 ## 0.10.0
 

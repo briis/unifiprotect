@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import timedelta
+import functools
 import logging
 
 from aiohttp import CookieJar
@@ -17,35 +18,138 @@ from homeassistant.const import (
     CONF_VERIFY_SSL,
     EVENT_HOMEASSISTANT_STOP,
 )
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-import homeassistant.helpers.device_registry as dr
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 from pyunifiprotect.data.nvr import NVR
+from pyunifiprotect.data.types import ModelType
 
-from custom_components.unifiprotect.utils import profile_ws_messages
+from custom_components.unifiprotect.utils import above_ha_version
 
 from .const import (
+    CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
-    CONF_DURATION,
     CONFIG_OPTIONS,
     DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
+    DEVICE_TYPE_CAMERA,
     DEVICES_FOR_SUBSCRIBE,
+    DEVICES_WITH_ENTITIES,
     DOMAIN,
+    DOORBELL_TEXT_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
     PLATFORMS,
+    PLATFORMS_NEXT,
     PROFILE_WS_SCHEMA,
+    SERVICE_ADD_DOORBELL_TEXT,
     SERVICE_PROFILE_WS,
+    SERVICE_REMOVE_DOORBELL_TEXT,
+    SERVICE_SET_DEFAULT_DOORBELL_TEXT,
 )
 from .data import UnifiProtectData
 from .models import UnifiProtectEntryData
+from .services import (
+    add_doorbell_text,
+    remove_doorbell_text,
+    set_default_doorbell_text,
+    profile_ws,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+
+
+@callback
+async def _async_migrate_data(
+    hass: HomeAssistant, entry: ConfigEntry, protect: ProtectApiClient
+):
+    # already up to date, skip
+    if CONF_ALL_UPDATES in entry.options:
+        return
+
+    _LOGGER.info("Starting entity migration...")
+
+    # migrate entry
+    options = dict(entry.options)
+    options[CONF_ALL_UPDATES] = False
+    if CONF_DOORBELL_TEXT in options:
+        del options[CONF_DOORBELL_TEXT]
+    hass.config_entries.async_update_entry(entry, data=entry.data, options=options)
+
+    # migrate entities
+    registry = er.async_get(hass)
+    mac_to_id: dict[str, str] = {}
+    mac_to_channel_id: dict[str, str] = {}
+    bootstrap = await protect.get_bootstrap()
+    for model in DEVICES_WITH_ENTITIES:
+        attr = model.value + "s"
+        for device in getattr(bootstrap, attr).values():
+            mac_to_id[device.mac] = device.id
+            if model != ModelType.CAMERA:
+                continue
+
+            for channel in device.channels:
+                channel_id = str(channel.id)
+                if channel.is_rtsp_enabled:
+                    break
+            mac_to_channel_id[device.mac] = channel_id
+
+    count = 0
+    entities = er.async_entries_for_config_entry(registry, entry.entry_id)
+    for entity in entities:
+        new_unique_id: str | None = None
+        if entity.domain != DEVICE_TYPE_CAMERA:
+            parts = entity.unique_id.split("_")
+            if len(parts) >= 2:
+                device_or_key = "_".join(parts[:-1])
+                mac = parts[-1]
+
+                device_id = mac_to_id[mac]
+                if device_or_key == device_id:
+                    new_unique_id = device_id
+                else:
+                    new_unique_id = f"{device_id}_{device_or_key}"
+        else:
+            parts = entity.unique_id.split("_")
+            if len(parts) == 2:
+                mac = parts[1]
+                device_id = mac_to_id[mac]
+                channel_id = mac_to_channel_id[mac]
+                new_unique_id = f"{device_id}_{channel_id}"
+            else:
+                device_id = parts[0]
+                channel_id = parts[2]
+                extra = "" if len(parts) == 3 else "_insecure"
+                new_unique_id = f"{device_id}_{channel_id}{extra}"
+
+        if new_unique_id is None:
+            continue
+
+        _LOGGER.debug(
+            "Migrating entity %s (old unique_id: %s, new unique_id: %s)",
+            entity.entity_id,
+            entity.unique_id,
+            new_unique_id,
+        )
+        try:
+            registry.async_update_entity(entity.entity_id, new_unique_id=new_unique_id)
+        except ValueError:
+            _LOGGER.warning(
+                "Could not migrate entity %s (old unique_id: %s, new unique_id: %s)",
+                entity.entity_id,
+                entity.unique_id,
+                new_unique_id,
+            )
+        else:
+            count += 1
+
+    _LOGGER.info("Migrated %s entities", count)
+    if count != len(entities):
+        _LOGGER.warning("%s entities not migrated", len(entities) - count)
 
 
 @callback
@@ -76,7 +180,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         verify_ssl=entry.data[CONF_VERIFY_SSL],
         session=session,
         subscribed_models=DEVICES_FOR_SUBSCRIBE,
-        ignore_stats=True,
+        ignore_stats=not entry.options.get(CONF_ALL_UPDATES, False),
     )
     _LOGGER.debug("Connect to UniFi Protect")
     protect_data = UnifiProtectData(hass, protect, SCAN_INTERVAL, entry)
@@ -99,6 +203,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         return False
 
+    await _async_migrate_data(hass, entry, protect)
     if entry.unique_id is None:
         hass.config_entries.async_update_entry(entry, unique_id=nvr_info.mac)
 
@@ -110,21 +215,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         protect_data=protect_data,
         protect=protect,
         disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
-        doorbell_text=entry.options.get(CONF_DOORBELL_TEXT, None),
     )
 
     await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
 
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
-
-    async def profile_ws(call: ServiceCall):
-        duration: int = call.data[CONF_DURATION]
-        await profile_ws_messages(hass, protect, duration)
+    if above_ha_version(2021, 12):
+        hass.config_entries.async_setup_platforms(entry, PLATFORMS_NEXT)
+    else:
+        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     hass.services.async_register(
         DOMAIN,
+        SERVICE_ADD_DOORBELL_TEXT,
+        functools.partial(add_doorbell_text, hass),
+        DOORBELL_TEXT_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_REMOVE_DOORBELL_TEXT,
+        functools.partial(remove_doorbell_text, hass),
+        DOORBELL_TEXT_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_DEFAULT_DOORBELL_TEXT,
+        functools.partial(set_default_doorbell_text, hass),
+        DOORBELL_TEXT_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN,
         SERVICE_PROFILE_WS,
-        profile_ws,
+        functools.partial(profile_ws, hass),
         PROFILE_WS_SCHEMA,
     )
 
@@ -174,6 +295,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         new = {**config_entry.data}
         # keep verify SSL false for anyone migrating to maintain backwards compatibility
         new[CONF_VERIFY_SSL] = False
+        del new[CONF_DOORBELL_TEXT]
 
         config_entry.version = 2
         hass.config_entries.async_update_entry(config_entry, data=new)

@@ -204,22 +204,17 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
         disable_stream: bool,
     ):
         """Initialize an Unifi camera."""
-        super().__init__(protect, protect_data, camera, None)
-
         self.device: UnifiCamera = camera
+        super().__init__(protect, protect_data, camera, None)
         self.channel = channel
         self._secure = secure
         self._disable_stream = disable_stream
         self._last_image = None
         self._async_set_stream_source()
         if self._secure:
-            self._attr_unique_id = (
-                f"{self.device.id}_{self.device.mac}_{self.channel.id}"
-            )
+            self._attr_unique_id = f"{self.device.id}_{self.channel.id}"
         else:
-            self._attr_unique_id = (
-                f"{self.device.id}_{self.device.mac}_{self.channel.id}_insecure"
-            )
+            self._attr_unique_id = f"{self.device.id}_{self.channel.id}_insecure"
         # only the default (first) channel is enabled by default
         self._attr_entity_registry_enabled_default = is_default and secure
         if self._secure:
@@ -248,7 +243,10 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
 
     @property
     def supported_features(self):
-        """Return supported features for this camera."""
+        """Return supported features for this camera.
+
+        CORE: Remove this before merging to core.
+        """
         return self._attr_supported_features
 
     @property

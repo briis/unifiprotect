@@ -11,6 +11,7 @@ from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import Bootstrap, Event, ModelType, WSSubscriptionMessage
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.data.nvr import NVR, Liveview
 from pyunifiprotect.exceptions import NotAuthorized, NvrError
 
 from .const import DEVICES_WITH_ENTITIES
@@ -90,8 +91,21 @@ class UnifiProtectData:
     def _async_process_ws_message(self, message: WSSubscriptionMessage):
         if message.new_obj.model in DEVICES_WITH_ENTITIES:
             self.async_signal_device_id_update(message.new_obj.id)
+        # trigger updates for camera that the event references
         elif isinstance(message.new_obj, Event) and message.new_obj.camera is not None:
             self.async_signal_device_id_update(message.new_obj.camera.id)
+        # trigger update for all viewports when a liveview updates
+        elif len(self._protect.bootstrap.viewers) > 0 and isinstance(
+            message.new_obj, Liveview
+        ):
+            _LOGGER.error(
+                "Liveviews updated. Restart Home Assistant to update Viewport select options"
+            )
+        # trigger update for all Cameras with LCD screens when NVR Doorbell settings updates
+        elif "doorbell_settings" in message.changed_data:
+            _LOGGER.error(
+                "Doorbell settings updated. Restart Home Assistant to update Viewport select options"
+            )
 
     @callback
     def _async_process_updates(self, updates: Bootstrap | None):

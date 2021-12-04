@@ -10,6 +10,8 @@ from homeassistant.core import HomeAssistant
 from pyunifiprotect.data import Camera, Light, ModelType, VideoMode
 from pyunifiprotect.data.types import RecordingMode
 
+from custom_components.unifiprotect.const import DEVICES_WITH_ENTITIES
+
 from .const import DEVICES_WITH_CAMERA, DOMAIN, ENTITY_CATEGORY_CONFIG
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -38,6 +40,7 @@ _KEY_STATUS_LIGHT = "status_light"
 _KEY_HDR_MODE = "hdr_mode"
 _KEY_HIGH_FPS = "high_fps"
 _KEY_PRIVACY_MODE = "privacy_mode"
+_KEY_SSH = "ssh"
 
 SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
     UnifiProtectSwitchEntityDescription(
@@ -84,6 +87,16 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
         ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field="feature_flags.has_privacy_mask",
         ufp_value="is_privacy_on",
+    ),
+    UnifiProtectSwitchEntityDescription(
+        key=_KEY_SSH,
+        name="SSH Enabled",
+        icon="mdi:lock",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_device_types=DEVICES_WITH_ENTITIES,
+        ufp_required_field=None,
+        ufp_value="is_ssh_enabled",
     ),
 )
 
@@ -132,8 +145,8 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         description: UnifiProtectSwitchEntityDescription,
     ):
         """Initialize an Unifi Protect Switch."""
-        super().__init__(protect, protect_data, device, description)
         self.device: Camera | Light = device
+        super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._switch_type = self.entity_description.key
 
@@ -161,6 +174,9 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         if self._switch_type == _KEY_STATUS_LIGHT:
             _LOGGER.debug("Changing Status Light to On")
             await self.device.set_status_light(True)
+        elif self._switch_type == _KEY_SSH:
+            _LOGGER.debug("Turning on SSH")
+            await self.device.set_ssh(True)
 
         if isinstance(self.device, Light):
             return
@@ -185,6 +201,9 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         if self._switch_type == _KEY_STATUS_LIGHT:
             _LOGGER.debug("Changing Status Light to Off")
             await self.device.set_status_light(False)
+        elif self._switch_type == _KEY_SSH:
+            _LOGGER.debug("Turning off SSH")
+            await self.device.set_ssh(False)
 
         if not isinstance(self.device, Camera):
             return

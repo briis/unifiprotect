@@ -295,7 +295,8 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         new = {**config_entry.data}
         # keep verify SSL false for anyone migrating to maintain backwards compatibility
         new[CONF_VERIFY_SSL] = False
-        del new[CONF_DOORBELL_TEXT]
+        if CONF_DOORBELL_TEXT in new:
+            del new[CONF_DOORBELL_TEXT]
 
         config_entry.version = 2
         hass.config_entries.async_update_entry(config_entry, data=new)

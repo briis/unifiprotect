@@ -22,7 +22,7 @@ class UnifiProtectEntity(Entity):
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
         device: ProtectAdoptableDeviceModel,
-        description: Optional[EntityDescription],
+        description: EntityDescription | None,
     ) -> None:
         """Initialize the entity."""
         super().__init__()

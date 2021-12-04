@@ -207,7 +207,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {description.name.title()}"
         self._async_update_device_from_protect()
-        self._doorbell_callback: Optional[TaskClass] = None
+        self._doorbell_callback: TaskClass | None = None
 
     @callback
     def _async_get_extra_attrs(self) -> dict[str, Any]:

@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize, ready_for_review, converted_to_draft]
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  validate:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v2"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Hassfest
+        uses: home-assistant/actions/hassfest@master
+
+      - name: Install Linting Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyunifiprotect mypy black isort pyupgrade pylint pylint_strict_informational
+          pip install git+https://github.com/home-assistant/core.git@dev
+          pip install git+https://github.com/KapJI/homeassistant-stubs.git
+
+      - name: isort
+        run: isort --check-only --quiet custom_components/unifiprotect
+
+      - name: black
+        run: black --check custom_components/unifiprotect
+
+      - name: mypy
+        run: mypy custom_components/unifiprotect
+
+      - name: pyupgrade
+        run: find . -name "*.py" | xargs pyupgrade
+
+      - name: pylint
+        run: pylint custom_components/unifiprotect

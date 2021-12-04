@@ -81,7 +81,7 @@ class UnifiprotectRequiredKeysMixin:
     ufp_device_types: set[ModelType]
     ufp_required_field: str | None
     ufp_options: list[dict[str, Any]] | None
-    ufp_enum_type: Type[Enum] | None
+    ufp_enum_type: type[Enum] | None
     ufp_value: str
     ufp_set_function: str | None
 

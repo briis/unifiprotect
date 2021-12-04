@@ -338,7 +338,7 @@ class UnifiProtectCamera(UnifiProtectEntity, Camera):
             return
         _LOGGER.debug("Motion Detection Disabled for Camera: %s", self.device.name)
 
-    async def async_camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> bytes | None:
+    async def async_camera_image(self, width: int | None = None, height: int | None = None) -> bytes | None:
         """Return the Camera Image."""
         last_image = await self.device.get_snapshot(width, height)
         self._last_image = last_image

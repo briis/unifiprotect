@@ -10,7 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import Camera, Light, ModelType, VideoMode, devices
+from pyunifiprotect.data import Camera, Light, ModelType, VideoMode
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.types import RecordingMode
 

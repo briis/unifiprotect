@@ -10,7 +10,9 @@
   "dependencies": [],
   "version": "0.10.0",
   "codeowners": [
-    "@briis"
+    "@briis",
+    "@AngellusMortis",
+    "@bdraco"
   ],
   "iot_class": "local_push"
 }

@@ -51,7 +51,7 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * `CHANGE`: **BREAKING CHANGE** the `event_object` attribute for binary motion sensors has changed the value for no object detected from "None Identified" (string) to "None" (NoneType/null)
 
-* `CHANGE`: **BREAKING CHANGE** The Doorbell Text select entity for Doorbells has been overhauled. The Config Flow option for Doorbell Messages has been removed. You now can use the the  `unifiprotect.add_doorbell_text` and `unifiprotect.remove_doorbell_text` services to add/remove Doorbell messages. This will persist the messages in UniFi Protect and the choices will now be the same ones that appear in the UniFi Protect iOS/Android app.
+* `CHANGE`: **BREAKING CHANGE** The Doorbell Text select entity for Doorbells has been overhauled. The Config Flow option for Doorbell Messages has been removed. You now can use the the  `unifiprotect.add_doorbell_text` and `unifiprotect.remove_doorbell_text` services to add/remove Doorbell messages. This will persist the messages in UniFi Protect and the choices will now be the same ones that appear in the UniFi Protect iOS/Android app. **NOTE**: After running one of these services, you must restart Home Assistant for the updated options to appear.
 
 ### Other Changes in this release
 
@@ -92,7 +92,7 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * `NEW`: Added "Uptime" sensor entity for all UniFi Protect adoptable devices. This is disabled by default.
 
-* `NEW`: Added `unifiprotect.set_default_doorbell_text` service to allow you to set your default Doorbell message text.
+* `NEW`: Added `unifiprotect.set_default_doorbell_text` service to allow you to set your default Doorbell message text. **NOTE**: After running this service, you must restart Home Assistant for the default to be reflected in the options.
 
 * `NEW`: Added "SSH Enabled" switch for all adoptable UniFi Protect devices. This switch is disabled by default.
 

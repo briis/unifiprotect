@@ -95,18 +95,17 @@ class UnifiProtectData:
         elif isinstance(message.new_obj, Event) and message.new_obj.camera is not None:
             self.async_signal_device_id_update(message.new_obj.camera.id)
         # trigger update for all viewports when a liveview updates
-        elif isinstance(message.new_obj, Liveview):
-            for viewer in self._protect.bootstrap.viewers.values():
-                self.async_signal_device_id_update(viewer.id)
-        # trigger update for all Cameras with LCD screens when NVR Doorbell settings updates
-        elif (
-            isinstance(message.new_obj, NVR)
-            and "doorbell_settings" in message.changed_data
+        elif len(self._protect.bootstrap.viewers) > 0 and isinstance(
+            message.new_obj, Liveview
         ):
-            self._protect.bootstrap.nvr.update_all_messages()
-            for camera in self._protect.bootstrap.cameras.values():
-                if camera.feature_flags.has_lcd_screen:
-                    self.async_signal_device_id_update(camera.id)
+            _LOGGER.error(
+                "Liveviews updated. Restart Home Assistant to update Viewport select options"
+            )
+        # trigger update for all Cameras with LCD screens when NVR Doorbell settings updates
+        elif "doorbell_settings" in message.changed_data:
+            _LOGGER.error(
+                "Doorbell settings updated. Restart Home Assistant to update Viewport select options"
+            )
 
     @callback
     def _async_process_updates(self, updates: Bootstrap | None):

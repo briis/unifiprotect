@@ -214,12 +214,14 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             self._attr_options = [item["name"] for item in options]
             self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
             self._unifi_to_hass_options = {item["id"]: item["name"] for item in options}
-        self._async_update_device_from_protect()
+        self._async_set_dynamic_options()
 
     @callback
-    def _async_update_device_from_protect(self):
-        super()._async_update_device_from_protect()
+    def _async_set_dynamic_options(self):
+        """These options do not actually update dynamically.
 
+        This is due to possible downstream platforms dependencies on these options.
+        """
         if self.entity_description.key not in (_KEY_VIEWER, _KEY_DOORBELL_TEXT):
             return
 

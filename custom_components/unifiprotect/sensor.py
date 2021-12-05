@@ -24,7 +24,6 @@ from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Light, ModelType
 from pyunifiprotect.data.base import ProtectDeviceModel
 from pyunifiprotect.data.nvr import NVR
-from voluptuous.validators import Boolean
 
 from .const import ATTR_ENABLED_AT, DEVICES_THAT_ADOPT, DEVICES_WITH_CAMERA, DOMAIN
 from .data import UnifiProtectData
@@ -311,8 +310,8 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         if not hasattr(self, "_attr_native_value") or not self._attr_native_value:
             return True
 
-        assert isinstance(self._attr_native_value, float)
-        return abs((self._attr_native_value - new_value).total_seconds()) > 5
+        assert isinstance(self._attr_native_value, datetime)
+        return abs((self._attr_native_value - new_time).total_seconds()) > 5
 
     @callback
     def _async_update_device_from_protect(self) -> None:

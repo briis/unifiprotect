@@ -135,8 +135,9 @@ blueprint:
     base_image_url:
       name: (Optional) Base Image URL
       description: >
-        Publicly accessible base URL for your Home Assistant instance. May be different
-        from your Base Home Assistant URL if your HA instance not publicly accessible.
+        Publicly accessible base URL for your Home Assistant instance. If you are using
+        Nabu Casa, it should be that URL. May be different from your Base Home Assistant
+        URL if your HA instance not publicly accessible.
         Must be an HTTPS URL with a valid certificate.
       default: ""
       selector:

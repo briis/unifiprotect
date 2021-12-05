@@ -4,6 +4,14 @@
 
 * `CHANGE`: Allows `device_id` parameter for global service calls to be any device from a UniFi Protect instance
 
+* `NEW`: Adds NVR sensors. All of them are disabled by default. All of the sensors will only update every ~15 minutes unless the "Realtime metrics" config option is turned on. List of all sensors:
+    * Disk Health (one per disk)
+    * System Info: CPU Temp, CPU, Memory and Storage Utilization
+    * Uptime
+    * Recording Capacity (in seconds)
+    * Distributions of stored video for Resolution (4K/HD/Free)
+    * Distributions of stored video for Type (Continuous/Detections/Timelapse)
+
 * More clean up and improvements for upcoming Home Assistant core merge.
 
 ## 0.11.0-beta.1

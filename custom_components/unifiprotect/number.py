@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import ModelType
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.data.base import ProtectDeviceModel
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN
 from .data import UnifiProtectData
@@ -179,7 +179,7 @@ class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
         description: UnifiProtectNumberEntityDescription,
     ) -> None:
         """Initialize the Number Entities."""

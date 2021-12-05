@@ -8,10 +8,10 @@ from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect import ProtectApiClient
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
 
-from .const import DEVICES_WITH_ENTITIES, DOMAIN
+from .const import DEVICES_THAT_ADOPT, DOMAIN
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -31,29 +31,29 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            UnifiProtectMediaPlayer(
+            UnifiProtectButton(
                 protect,
                 protect_data,
                 device,
             )
-            for device in protect_data.get_by_types(DEVICES_WITH_ENTITIES)
+            for device in protect_data.get_by_types(DEVICES_THAT_ADOPT)
         ]
     )
 
 
-class UnifiProtectMediaPlayer(UnifiProtectEntity, ButtonEntity):
+class UnifiProtectButton(UnifiProtectEntity, ButtonEntity):
     """A Ubiquiti UniFi Protect Reboot button."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
     ):
         """Initialize an Unifi camera."""
-
+        assert isinstance(device, ProtectAdoptableDeviceModel)
+        self.device: ProtectAdoptableDeviceModel = device
         super().__init__(protect, protect_data, device, None)
-
         self._attr_name = f"{self.device.name} Reboot Device"
         self._attr_entity_registry_enabled_default = False
         self._attr_device_class = ButtonDeviceClass.RESTART

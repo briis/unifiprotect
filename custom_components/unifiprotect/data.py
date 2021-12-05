@@ -8,13 +8,17 @@ from typing import Any, Generator, Iterable
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
-from pyunifiprotect import ProtectApiClient
-from pyunifiprotect.data import Bootstrap, Event, ModelType, WSSubscriptionMessage
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.nvr import Liveview
-from pyunifiprotect.exceptions import NotAuthorized, NvrError
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data import (
+    Bootstrap,
+    Event,
+    Liveview,
+    ModelType,
+    WSSubscriptionMessage,
+)
+from pyunifiprotect.data.base import ProtectDeviceModel
 
-from .const import DEVICES_WITH_ENTITIES
+from .const import DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,12 +48,16 @@ class UnifiProtectData:
 
     def get_by_types(
         self, device_types: Iterable[ModelType]
-    ) -> Generator[ProtectAdoptableDeviceModel, None, None]:
+    ) -> Generator[ProtectDeviceModel, None, None]:
         """Get all devices matching types."""
 
         for device_type in device_types:
+            if device_type == ModelType.NVR:
+                yield self._protect.bootstrap.nvr
+                continue
+
             attr = f"{device_type.value}s"
-            devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
+            devices: dict[str, ProtectDeviceModel] = getattr(
                 self._protect.bootstrap, attr
             )
             for device in devices.values():
@@ -91,6 +99,11 @@ class UnifiProtectData:
     def _async_process_ws_message(self, message: WSSubscriptionMessage) -> None:
         if message.new_obj.model in DEVICES_WITH_ENTITIES:
             self.async_signal_device_id_update(message.new_obj.id)
+            # trigger update for all Cameras with LCD screens when NVR Doorbell settings updates
+            if "doorbell_settings" in message.changed_data:
+                _LOGGER.error(
+                    "Doorbell settings updated. Restart Home Assistant to update Viewport select options"
+                )
         # trigger updates for camera that the event references
         elif isinstance(message.new_obj, Event) and message.new_obj.camera is not None:
             self.async_signal_device_id_update(message.new_obj.camera.id)
@@ -101,11 +114,6 @@ class UnifiProtectData:
             _LOGGER.error(
                 "Liveviews updated. Restart Home Assistant to update Viewport select options"
             )
-        # trigger update for all Cameras with LCD screens when NVR Doorbell settings updates
-        elif "doorbell_settings" in message.changed_data:
-            _LOGGER.error(
-                "Doorbell settings updated. Restart Home Assistant to update Viewport select options"
-            )
 
     @callback
     def _async_process_updates(self, updates: Bootstrap | None) -> None:
@@ -115,9 +123,10 @@ class UnifiProtectData:
         if updates is None:
             return
 
-        for device_type in DEVICES_WITH_ENTITIES:
+        self.async_signal_device_id_update(self._protect.bootstrap.nvr.id)
+        for device_type in DEVICES_THAT_ADOPT:
             attr = f"{device_type.value}s"
-            devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
+            devices: dict[str, ProtectDeviceModel] = getattr(
                 self._protect.bootstrap, attr
             )
             for device_id in devices.keys():

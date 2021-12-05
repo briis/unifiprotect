@@ -14,16 +14,19 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import (
+    Camera,
     DoorbellMessageType,
     IRLEDMode,
+    Light,
     LightModeEnableType,
     LightModeType,
+    Liveview,
     ModelType,
     RecordingMode,
+    Viewer,
 )
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Camera, Light, Viewer
-from pyunifiprotect.data.nvr import DoorbellMessage, Liveview
+from pyunifiprotect.data.base import ProtectDeviceModel
+from pyunifiprotect.data.nvr import DoorbellMessage
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN, TYPE_EMPTY_VALUE
 from .data import UnifiProtectData
@@ -204,7 +207,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
         description: UnifiProtectSelectEntityDescription,
         options: list[dict[str, Any]] | None,
     ):

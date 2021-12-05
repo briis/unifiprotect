@@ -35,7 +35,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DEVICE_TYPE_CAMERA,
     DEVICES_FOR_SUBSCRIBE,
-    DEVICES_WITH_ENTITIES,
+    DEVICES_THAT_ADOPT,
     DOMAIN,
     DOORBELL_TEXT_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
@@ -85,7 +85,7 @@ async def _async_migrate_data(
     mac_to_id: dict[str, str] = {}
     mac_to_channel_id: dict[str, str] = {}
     bootstrap = await protect.get_bootstrap()
-    for model in DEVICES_WITH_ENTITIES:
+    for model in DEVICES_THAT_ADOPT:
         attr = model.value + "s"
         for device in getattr(bootstrap, attr).values():
             mac_to_id[device.mac] = device.id
@@ -219,8 +219,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
     )
 
-    await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
-
     if above_ha_version(2021, 12):
         hass.config_entries.async_setup_platforms(entry, PLATFORMS_NEXT)
     else:
@@ -257,22 +255,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     return True
-
-
-async def _async_get_or_create_nvr_device_in_registry(
-    hass: HomeAssistant, entry: ConfigEntry, nvr: NVR
-) -> None:
-    device_registry = await dr.async_get_registry(hass)
-    device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        connections={(dr.CONNECTION_NETWORK_MAC, nvr.mac)},
-        identifiers={(DOMAIN, nvr.mac)},
-        manufacturer=DEFAULT_BRAND,
-        name=entry.data[CONF_ID],
-        model=nvr.type,
-        sw_version=str(nvr.version),
-        configuration_url=nvr.api.base_url,
-    )
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:

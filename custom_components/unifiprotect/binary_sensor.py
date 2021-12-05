@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from copy import copy
 from dataclasses import dataclass
 from datetime import datetime
 import itertools
@@ -13,17 +14,22 @@ from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_DOOR,
     DEVICE_CLASS_MOTION,
     DEVICE_CLASS_OCCUPANCY,
+    DEVICE_CLASS_PROBLEM,
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_LAST_TRIP_TIME, ENTITY_CATEGORY_DIAGNOSTIC
+from homeassistant.const import (
+    ATTR_LAST_TRIP_TIME,
+    ATTR_MODEL,
+    ENTITY_CATEGORY_DIAGNOSTIC,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Camera, Light, Sensor
-from pyunifiprotect.data.types import ModelType
+from pyunifiprotect.data import Camera, Light, ModelType, Sensor
+from pyunifiprotect.data.base import ProtectDeviceModel
+from pyunifiprotect.data.nvr import NVR
 from pyunifiprotect.utils import utc_now
 
 from .const import ATTR_EVENT_OBJECT, ATTR_EVENT_SCORE, DOMAIN, RING_INTERVAL
@@ -47,7 +53,7 @@ class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_required_field: str | None
-    ufp_value: str
+    ufp_value: str | None
 
 
 @dataclass
@@ -62,6 +68,7 @@ _KEY_MOTION = "motion"
 _KEY_DOOR = "door"
 _KEY_DARK = "dark"
 _KEY_BATTERY_LOW = "battery_low"
+_KEY_DISK_HEALTH = "disk_health"
 
 
 SENSE_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
@@ -131,6 +138,17 @@ LIGHT_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
     ),
 )
 
+DISK_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
+    UnifiProtectBinaryEntityDescription(
+        key=_KEY_DISK_HEALTH,
+        name="Disk {index} Health",
+        device_class=DEVICE_CLASS_PROBLEM,
+        entity_registry_enabled_default=False,
+        ufp_required_field=None,
+        ufp_value=None,
+    ),
+)
+
 
 DEVICE_TYPE_TO_DESCRIPTION = {
     ModelType.CAMERA: CAMERA_SENSORS,
@@ -146,6 +164,38 @@ async def async_setup_entry(
 ) -> None:
     """Set up binary sensors for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    entities = _async_device_entities(entry_data)
+    entities = _async_nvr_entities(entry_data)
+
+    async_add_entities(entities)
+
+
+def _async_nvr_entities(
+    entry_data: UnifiProtectEntryData,
+) -> list[UnifiProtectBinarySensor]:
+    protect = entry_data.protect
+    protect_data = entry_data.protect_data
+
+    entities = []
+    device = protect.bootstrap.nvr
+    for index, _ in enumerate(device.system_info.storage.devices):
+        for description in DISK_SENSORS:
+            entities.append(
+                UnifiProtectBinarySensor(
+                    protect, protect_data, device, description, index=index
+                )
+            )
+            _LOGGER.debug(
+                "Adding binary sensor entity %s",
+                (description.name or "{index}").format(index=index),
+            )
+
+    return entities
+
+
+def _async_device_entities(
+    entry_data: UnifiProtectEntryData,
+) -> list[UnifiProtectBinarySensor]:
     protect = entry_data.protect
     protect_data = entry_data.protect_data
 
@@ -181,7 +231,7 @@ async def async_setup_entry(
                 device.name,
             )
 
-    async_add_entities(entities)
+    return entities
 
 
 class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
@@ -191,12 +241,19 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
         description: UnifiProtectBinaryEntityDescription,
+        index: int | None = None,
     ) -> None:
         """Initialize the Binary Sensor."""
-        assert isinstance(device, (Camera, Light, Sensor))
-        self.device: Camera | Light | Sensor = device
+        if index is not None:
+            description = copy(description)
+            description.key = f"{description.key}_{index}"
+            description.name = (description.name or "{index}").format(index=index)
+        self._index = index
+
+        assert isinstance(device, (Camera, Light, Sensor, NVR))
+        self.device: Camera | Light | Sensor | NVR = device
         self.entity_description: UnifiProtectBinaryEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         name = description.name or ""
@@ -268,6 +325,20 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
 
+        if self.entity_description.key.startswith(_KEY_DISK_HEALTH):
+            assert isinstance(self.device, NVR)
+            assert self._index is not None
+
+            disks = self.device.system_info.storage.devices
+            self._attr_available = self._attr_available and len(disks) > self._index
+            if self._attr_available:
+                disk = disks[self._index]
+                self._attr_is_on = not disk.healthy
+
+                self._extra_state_attributes = {ATTR_MODEL: disk.model}
+            return
+
+        assert self.entity_description.ufp_value is not None
         if self.entity_description.key == _KEY_DOORBELL:
             last_ring = get_nested_attr(self.device, self.entity_description.ufp_value)
             now = utc_now()

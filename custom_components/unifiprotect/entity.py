@@ -8,7 +8,9 @@ from homeassistant.core import callback
 import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyunifiprotect import ProtectApiClient
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
+from pyunifiprotect.data.nvr import NVR
+from pyunifiprotect.data.types import ModelType
 
 from .const import ATTR_DEVICE_MODEL, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
 from .data import UnifiProtectData
@@ -21,7 +23,7 @@ class UnifiProtectEntity(Entity):
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
         description: EntityDescription | None,
     ) -> None:
         """Initialize the entity."""
@@ -31,22 +33,35 @@ class UnifiProtectEntity(Entity):
         if description and not hasattr(self, "entity_description"):
             self.entity_description = description
         if not hasattr(self, "device"):
-            self.device: ProtectAdoptableDeviceModel = device
+            self.device: ProtectDeviceModel = device
         self.protect: ProtectApiClient = protect
         self.protect_data: UnifiProtectData = protect_data
         if description is None:
             self._attr_unique_id = f"{self.device.id}"
         else:
             self._attr_unique_id = f"{self.device.id}_{description.key}"
-        self._attr_device_info = DeviceInfo(
-            name=self.device.name,
-            manufacturer=DEFAULT_BRAND,
-            model=self.device.type,
-            via_device=(DOMAIN, self.protect.bootstrap.nvr.mac),
-            sw_version=self.device.firmware_version,
-            connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
-            configuration_url=self.device.protect_url,
-        )
+
+        if isinstance(self.device, NVR):
+            self._attr_device_info = DeviceInfo(
+                connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
+                identifiers={(DOMAIN, self.device.mac)},
+                manufacturer=DEFAULT_BRAND,
+                name=self.device.name,
+                model=self.device.type,
+                sw_version=str(self.device.version),
+                configuration_url=self.device.api.base_url,
+            )
+        else:
+            assert isinstance(self.device, ProtectAdoptableDeviceModel)
+            self._attr_device_info = DeviceInfo(
+                name=self.device.name,
+                manufacturer=DEFAULT_BRAND,
+                model=self.device.type,
+                via_device=(DOMAIN, self.protect.bootstrap.nvr.mac),
+                sw_version=self.device.firmware_version,
+                connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
+                configuration_url=self.device.protect_url,
+            )
 
     async def async_update(self) -> None:
         """Update the entity.
@@ -66,13 +81,16 @@ class UnifiProtectEntity(Entity):
     @callback
     def _async_update_device_from_protect(self) -> None:
         if self.protect_data.last_update_success:
-            assert self.device.model
-            devices = getattr(self.protect.bootstrap, f"{self.device.model.value}s")
-            self.device = devices[self.device.id]
+            if self.device.model == ModelType.NVR:
+                self.device = self.protect.bootstrap.nvr
+            else:
+                assert self.device.model
+                devices = getattr(self.protect.bootstrap, f"{self.device.model.value}s")
+                self.device = devices[self.device.id]
 
-        self._attr_available = (
-            self.protect_data.last_update_success and self.device.is_connected
-        )
+        self._attr_available = self.protect_data.last_update_success
+        if isinstance(self.device, ProtectAdoptableDeviceModel):
+            self._attr_available = self._attr_available and self.device.is_connected
 
     @callback
     def _async_updated_event(self) -> None:

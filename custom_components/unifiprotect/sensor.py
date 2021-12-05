@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import logging
 from typing import Any, Callable, Sequence
 
@@ -18,14 +18,15 @@ from homeassistant.const import (
     ENTITY_CATEGORY_DIAGNOSTIC,
     TEMP_CELSIUS,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.typing import StateType
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Light, ModelType
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.data.base import ProtectDeviceModel
+from pyunifiprotect.data.nvr import NVR
 
-from .const import ATTR_ENABLED_AT, DEVICES_WITH_CAMERA, DEVICES_WITH_ENTITIES, DOMAIN
+from .const import ATTR_ENABLED_AT, DEVICES_THAT_ADOPT, DEVICES_WITH_CAMERA, DOMAIN
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -39,7 +40,8 @@ class UnifiprotectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_device_types: set[ModelType]
-    ufp_value: str
+    ufp_value: str | None
+    precision: int | None
 
 
 @dataclass
@@ -49,6 +51,16 @@ class UnifiProtectSensorEntityDescription(
     """Describes Unifi Protect Sensor entity."""
 
 
+_KEY_MEMORY = "memory_utilization"
+_KEY_DISK = "storage_utilization"
+_KEY_RECORD_ROTATE = "record_rotating"
+_KEY_RECORD_TIMELAPSE = "record_timelapse"
+_KEY_RECORD_DETECTIONS = "record_detections"
+_KEY_RES_HD = "resolution_HD"
+_KEY_RES_4K = "resolution_4K"
+_KEY_RES_FREE = "resolution_free"
+_KEY_CAPACITY = "record_capacity"
+
 SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
     UnifiProtectSensorEntityDescription(
         key="motion_recording",
@@ -57,6 +69,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_value="recording_settings.mode",
+        precision=None,
     ),
     UnifiProtectSensorEntityDescription(
         key="uptime",
@@ -65,8 +78,9 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_TIMESTAMP,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        ufp_device_types=DEVICES_WITH_ENTITIES,
+        ufp_device_types=DEVICES_THAT_ADOPT | {ModelType.NVR},
         ufp_value="up_since",
+        precision=None,
     ),
     UnifiProtectSensorEntityDescription(
         key="light_turn_on",
@@ -75,6 +89,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.LIGHT},
         ufp_value="light_mode_settings.mode",
+        precision=None,
     ),
     UnifiProtectSensorEntityDescription(
         key="battery_level",
@@ -84,6 +99,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.SENSOR},
         ufp_value="battery_status.percentage",
+        precision=None,
     ),
     UnifiProtectSensorEntityDescription(
         key="light_level",
@@ -93,6 +109,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.SENSOR},
         ufp_value="stats.light.value",
+        precision=None,
     ),
     UnifiProtectSensorEntityDescription(
         key="humidity_level",
@@ -102,6 +119,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.SENSOR},
         ufp_value="stats.humidity.value",
+        precision=None,
     ),
     UnifiProtectSensorEntityDescription(
         key="temperature_level",
@@ -111,6 +129,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.SENSOR},
         ufp_value="stats.temperature.value",
+        precision=None,
     ),
     UnifiProtectSensorEntityDescription(
         key="ble_signal",
@@ -121,6 +140,128 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.SENSOR},
         ufp_value="bluetooth_connection_state.signal_strength",
+        precision=None,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key="cpu_utilization",
+        name="CPU Utilization",
+        native_unit_of_measurement="%",
+        icon="mdi:speedometer",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="system_info.cpu.average_load",
+        precision=None,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key="cpu_temperature",
+        name="CPU Temperature",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        device_class=DEVICE_CLASS_TEMPERATURE,
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="system_info.cpu.temperature",
+        precision=None,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_MEMORY,
+        name="Memory Utilization",
+        native_unit_of_measurement="%",
+        icon="mdi:memory",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value=None,
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_DISK,
+        name="Storage Utilization",
+        native_unit_of_measurement="%",
+        icon="mdi:harddisk",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.utilization",
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_RECORD_TIMELAPSE,
+        name="Type: Timelapse Video",
+        native_unit_of_measurement="%",
+        icon="mdi:server",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.storage_distribution.timelapse_recordings.percentage",
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_RECORD_ROTATE,
+        name="Type: Continuous Video",
+        native_unit_of_measurement="%",
+        icon="mdi:server",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.storage_distribution.continuous_recordings.percentage",
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_RECORD_DETECTIONS,
+        name="Type: Detections Video",
+        native_unit_of_measurement="%",
+        icon="mdi:server",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.storage_distribution.detections_recordings.percentage",
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_RES_HD,
+        name="Resolution: HD Video",
+        native_unit_of_measurement="%",
+        icon="mdi:cctv",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.storage_distribution.hd_usage.percentage",
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_RES_4K,
+        name="Resolution: 4K Video",
+        native_unit_of_measurement="%",
+        icon="mdi:cctv",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.storage_distribution.uhd_usage.percentage",
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_RES_FREE,
+        name="Resolution: Free Space",
+        native_unit_of_measurement="%",
+        icon="mdi:cctv",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.storage_distribution.free.percentage",
+        precision=3,
+    ),
+    UnifiProtectSensorEntityDescription(
+        key=_KEY_CAPACITY,
+        name="Recording Capcity",
+        native_unit_of_measurement="s",
+        icon="mdi:record-rec",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_device_types={ModelType.NVR},
+        ufp_value="storage_stats.capacity",
+        precision=3,
     ),
 )
 
@@ -157,7 +298,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
         description: UnifiProtectSensorEntityDescription,
     ):
         """Initialize an Unifi Protect sensor."""
@@ -165,15 +306,46 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
 
+    @callback
+    def _async_nvr_value(self) -> float:
+        assert isinstance(self.device, NVR)
+        if self.entity_description.key == _KEY_MEMORY:
+            memory = self.device.system_info.memory
+            value = (1 - memory.available / memory.total) * 100
+        else:
+            record_type, subtype = self.entity_description.key.split("_")
+            if record_type == "record":
+                record_type_attr = "recording_type_distributions"
+                subtype_attr = "recording_type"
+            else:
+                record_type_attr = "resolution_distributions"
+                subtype_attr = "resolution"
+
+            distributions = self.device.storage_stats.storage_distribution
+            for item in getattr(distributions, record_type_attr):
+                if getattr(item, subtype_attr) == subtype:
+                    value = getattr(item, "percentage")
+                    break
+        return value
+
     @property
     def native_value(self) -> StateType | date | datetime:
         """Return the state of the sensor."""
-        value = get_nested_attr(self.device, self.entity_description.ufp_value)
+
+        if self.entity_description.ufp_value is None:
+            value = self._async_nvr_value()
+        else:
+            value = get_nested_attr(self.device, self.entity_description.ufp_value)
+
+        if isinstance(value, timedelta):
+            value = value.total_seconds()
 
         assert isinstance(value, (str, int, float, datetime)) or value is None
         if isinstance(value, datetime) and not above_ha_version(2021, 12):
             return value.replace(microsecond=0).isoformat()
 
+        if isinstance(value, float) and self.entity_description.precision:
+            value = round(value, self.entity_description.precision)
         return value
 
     @property

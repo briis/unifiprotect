@@ -15,9 +15,8 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Light
-from pyunifiprotect.data.types import LightModeEnableType, LightModeType
+from pyunifiprotect.data import Light, LightModeEnableType, LightModeType
+from pyunifiprotect.data.base import ProtectDeviceModel
 
 from .const import (
     ATTR_ONLINE,
@@ -82,7 +81,7 @@ class UnifiProtectLight(UnifiProtectEntity, LightEntity):
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
     ):
         """Initialize an Unifi light."""
         assert isinstance(device, Light)

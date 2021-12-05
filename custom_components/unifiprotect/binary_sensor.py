@@ -170,6 +170,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
+@callback
 def _async_nvr_entities(
     entry_data: UnifiProtectEntryData,
 ) -> list[UnifiProtectBinarySensor]:
@@ -193,6 +194,7 @@ def _async_nvr_entities(
     return entities
 
 
+@callback
 def _async_device_entities(
     entry_data: UnifiProtectEntryData,
 ) -> list[UnifiProtectBinarySensor]:
@@ -330,8 +332,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             assert self._index is not None
 
             disks = self.device.system_info.storage.devices
-            self._attr_available = self._attr_available and len(disks) > self._index
-            if self._attr_available:
+            disk_available = len(disks) > self._index
+            self._attr_available = self._attr_available and disk_available
+            if disk_available:
                 disk = disks[self._index]
                 self._attr_is_on = not disk.healthy
 

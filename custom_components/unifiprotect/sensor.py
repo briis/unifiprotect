@@ -24,6 +24,7 @@ from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Light, ModelType
 from pyunifiprotect.data.base import ProtectDeviceModel
 from pyunifiprotect.data.nvr import NVR
+from voluptuous.validators import Boolean
 
 from .const import ATTR_ENABLED_AT, DEVICES_THAT_ADOPT, DEVICES_WITH_CAMERA, DOMAIN
 from .data import UnifiProtectData
@@ -306,45 +307,31 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
 
     @callback
-    def _async_nvr_value(self) -> float:
-        assert isinstance(self.device, NVR)
-        if self.entity_description.key == _KEY_MEMORY:
-            memory = self.device.system_info.memory
-            value = (1 - memory.available / memory.total) * 100
-        else:
-            record_type, subtype = self.entity_description.key.split("_")
-            if record_type == "record":
-                record_type_attr = "recording_type_distributions"
-                subtype_attr = "recording_type"
-            else:
-                record_type_attr = "resolution_distributions"
-                subtype_attr = "resolution"
+    def _async_time_has_changed(self, new_time: datetime) -> bool:
+        if not hasattr(self, "_attr_native_value") or not self._attr_native_value:
+            return True
 
-            distributions = self.device.storage_stats.storage_distribution
-            for item in getattr(distributions, record_type_attr):
-                if getattr(item, subtype_attr) == subtype:
-                    value = getattr(item, "percentage")
-                    break
-        return value
+        assert isinstance(self._attr_native_value, float)
+        return abs((self._attr_native_value - new_value).total_seconds()) > 5
 
     @callback
     def _async_update_device_from_protect(self) -> None:
+        # protection to prevent uptime from changing if UniFi Protect changes values slightly
         super()._async_update_device_from_protect()
 
         if self.entity_description.ufp_value is None:
-            new_value = self._async_nvr_value()
-        else:
-            new_value = get_nested_attr(self.device, self.entity_description.ufp_value)
+            assert isinstance(self.device, NVR)
+            memory = self.device.system_info.memory
+            self._attr_native_value = (1 - memory.available / memory.total) * 100
+            return
 
+        new_value = get_nested_attr(self.device, self.entity_description.ufp_value)
         if isinstance(new_value, timedelta):
             new_value = new_value.total_seconds()
 
         if isinstance(new_value, datetime):
-            # protection to prevent uptime from changing if UniFi Protect changes values slightly
-            if hasattr(self, "_attr_native_value") and self._attr_native_value:
-                diff = abs((self._attr_native_value - new_value).total_seconds())
-                if diff < 5:
-                    return
+            if not self._async_time_has_changed(new_value):
+                return
 
             if not above_ha_version(2021, 12):
                 new_value = new_value.isoformat()

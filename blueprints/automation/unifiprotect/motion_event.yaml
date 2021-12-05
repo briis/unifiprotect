@@ -25,11 +25,11 @@ blueprint:
 
     - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
     - The [unifiprotect][8] integration
-    - A UniFi camera pair with your NVR 
+    - A UniFi camera pair with your NVR
       - If you want to filter smart detections, you need a Smart Detection capable camera. This is any G4 series camera _except_ the EA G4 Instant.
     - A valid HTTPS certificate and public facing Home Assistant instance
       - If you do not have these, the actionable notifications and images will not appear in the notifications.
-      - You do not need your _whole_ Home Assistant to be publically accessible. Only the paths `/api/camera_proxy/*` and `/api/webhook/*` need to be accessible outside of your network.
+      - You do not need your _whole_ Home Assistant to be publicly accessible. Only the paths `/api/camera_proxy/*` and `/api/webhook/*` need to be accessible outside of your network.
 
     [1]: https://www.home-assistant.io/integrations/html5
     [2]: https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
@@ -57,7 +57,7 @@ blueprint:
     objects:
       name: (Optional) Smart Detections
       description: >
-        Smart Detections to filter on. List should be comma seperated. If left empty, 
+        Smart Detections to filter on. List should be comma separated. If left empty,
         will trigger on all motion events.
         Possible objects: person, vehicle
       default: ""
@@ -81,7 +81,7 @@ blueprint:
     send_html5:
       name: (Optional) Send HTML5 Notifications
       description: >
-        Send HTML5 push notifications. Requires you to have configured push 
+        Send HTML5 push notifications. Requires you to have configured push
         notifications on at least one device.
       default: false
       selector:
@@ -98,7 +98,7 @@ blueprint:
     channel:
       name: (Optional) Notification Channel
       description: >
-        Notification channel/tag to use. Will automatically be prepended with 
+        Notification channel/tag to use. Will automatically be prepended with
         "Manual " if action is triggered manually.
         https://companion.home-assistant.io/docs/notifications/notifications-basic#notification-channels
       default: Doorbell
@@ -135,8 +135,8 @@ blueprint:
     base_image_url:
       name: (Optional) Base Image URL
       description: >
-        Publically accesible base URL for your Home Assistant instance. May be different 
-        from your Base Home Assistant URL if your HA instance not publically accessible.
+        Publicly accessible base URL for your Home Assistant instance. May be different
+        from your Base Home Assistant URL if your HA instance not publicly accessible.
         Must be an HTTPS URL with a valid certificate.
       default: ""
       selector:
@@ -152,7 +152,7 @@ blueprint:
     debug_enabled:
       name: (Optional) Debug
       description: >
-        Enable debugging for automation. If enabled, will send persistent notifications 
+        Enable debugging for automation. If enabled, will send persistent notifications
         with extra data.
       default: false
       selector:

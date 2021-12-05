@@ -306,16 +306,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
 
     @callback
-    def _async_time_has_changed(self, new_time: datetime) -> bool:
-        if not hasattr(self, "_attr_native_value") or not self._attr_native_value:
-            return True
-
-        assert isinstance(self._attr_native_value, datetime)
-        return abs((self._attr_native_value - new_time).total_seconds()) > 5
-
-    @callback
     def _async_update_device_from_protect(self) -> None:
-        # protection to prevent uptime from changing if UniFi Protect changes values slightly
         super()._async_update_device_from_protect()
 
         if self.entity_description.ufp_value is None:
@@ -328,8 +319,9 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         if isinstance(new_value, timedelta):
             new_value = new_value.total_seconds()
         elif isinstance(new_value, datetime):
-            if not self._async_time_has_changed(new_value):
-                return
+            # UniFi Protect value can vary slightly over time
+            # truncate to ensure no extra state_change events fire
+            new_value = new_value.replace(second=0, microsecond=0)
             if not above_ha_version(2021, 12):
                 new_value = new_value.isoformat()
 

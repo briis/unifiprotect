@@ -321,22 +321,20 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         if self.entity_description.ufp_value is None:
             assert isinstance(self.device, NVR)
             memory = self.device.system_info.memory
-            self._attr_native_value = (1 - memory.available / memory.total) * 100
-            return
+            new_value = (1 - memory.available / memory.total) * 100
+        else:
+            new_value = get_nested_attr(self.device, self.entity_description.ufp_value)
 
-        new_value = get_nested_attr(self.device, self.entity_description.ufp_value)
         if isinstance(new_value, timedelta):
             new_value = new_value.total_seconds()
-
-        if isinstance(new_value, datetime):
+        elif isinstance(new_value, datetime):
             if not self._async_time_has_changed(new_value):
                 return
-
             if not above_ha_version(2021, 12):
                 new_value = new_value.isoformat()
-        elif isinstance(new_value, float) and self.entity_description.precision:
-            new_value = round(new_value, self.entity_description.precision)
 
+        if isinstance(new_value, float) and self.entity_description.precision:
+            new_value = round(new_value, self.entity_description.precision)
         self._attr_native_value = new_value
 
     @property

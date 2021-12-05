@@ -1,8 +1,11 @@
 """Constant definitions for Unifi Protect Integration."""
 
 # from typing_extensions import Required
-from homeassistant.const import ATTR_ENTITY_ID
+from datetime import timedelta
+
+from homeassistant.const import ATTR_ENTITY_ID, CONF_DEVICE_ID
 from homeassistant.helpers import config_validation as cv
+from pyunifiprotect.data.types import ModelType, Version
 import voluptuous as vol
 
 DOMAIN = "unifiprotect"
@@ -25,6 +28,11 @@ ATTR_VIEWPORT_ID = "viewport_id"
 ATTR_VIEW_ID = "view_id"
 ATTR_WDR_VALUE = "wdr_value"
 ATTR_ZOOM_POSITION = "zoom_position"
+ATTR_WIDTH = "width"
+ATTR_HEIGHT = "height"
+ATTR_FPS = "fps"
+ATTR_BITRATE = "bitrate"
+ATTR_CHANNEL_ID = "channel_id"
 
 CONF_RECORDING_MODE = "recording_mode"
 CONF_CHIME_ON = "chime_on"
@@ -45,9 +53,10 @@ CONF_PRIVACY_MODE = "privacy_mode"
 CONF_POSITION = "position"
 CONF_SENSITIVITY = "sensitivity"
 CONF_VALUE = "value"
+CONF_ALL_UPDATES = "all_updates"
 
 CONFIG_OPTIONS = [
-    CONF_DOORBELL_TEXT,
+    CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
 ]
 CUSTOM_MESSAGE = "CUSTOM_MESSAGE"
@@ -58,6 +67,8 @@ DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_SCAN_INTERVAL = 2
 DEFAULT_VERIFY_SSL = False
 
+RING_INTERVAL = timedelta(seconds=3)
+
 DEVICE_TYPE_CAMERA = "camera"
 DEVICE_TYPE_LIGHT = "light"
 DEVICE_TYPE_DOORBELL = "doorbell"
@@ -66,20 +77,24 @@ DEVICE_TYPE_VIEWPORT = "viewer"
 DEVICE_TYPE_SENSOR = "sensor"
 DEVICE_TYPE_DARK = "is dark"
 
-DEVICES_WITH_DOORBELL = (DEVICE_TYPE_DOORBELL,)
-DEVICES_WITH_CAMERA = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL)
-DEVICES_WITH_SENSE = (DEVICE_TYPE_SENSOR,)
-DEVICES_WITH_MOTION = (DEVICE_TYPE_CAMERA, DEVICE_TYPE_DOORBELL, DEVICE_TYPE_SENSOR)
-
-ENTITY_CATEGORY_CONFIG = (
-    "config"  # Replace with value from HA Core when more people are on 2021.11
+DEVICES_WITH_CAMERA = {ModelType.CAMERA}
+DEVICES_WITH_STATUS_LIGHT = {ModelType.CAMERA, ModelType.LIGHT}
+DEVICES_WITH_SENSOR = {ModelType.CAMERA, ModelType.LIGHT, ModelType.SENSOR}
+DEVICES_WITH_SELECT = {ModelType.CAMERA, ModelType.LIGHT, ModelType.VIEWPORT}
+DEVICES_WITH_ENTITIES = (
+    DEVICES_WITH_CAMERA
+    | DEVICES_WITH_STATUS_LIGHT
+    | DEVICES_WITH_SENSOR
+    | DEVICES_WITH_SELECT
 )
-ENTITY_CATEGORY_DIAGNOSTIC = (
-    "diagnostic"  # Replace with value from HA Core when more people are on 2021.11
-)
+DEVICES_FOR_SUBSCRIBE = DEVICES_WITH_ENTITIES | {ModelType.NVR, ModelType.EVENT}
 
-MIN_REQUIRED_PROTECT_V = "1.20.0"
+MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 
+SERVICE_PROFILE_WS = "profile_ws_messages"
+SERVICE_ADD_DOORBELL_TEXT = "add_doorbell_text"
+SERVICE_REMOVE_DOORBELL_TEXT = "remove_doorbell_text"
+SERVICE_SET_DEFAULT_DOORBELL_TEXT = "set_default_doorbell_text"
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"
@@ -106,6 +121,7 @@ TYPE_INFRARED_OFF = "off"
 TYPE_INFRARED_ON = "on"
 TYPE_HIGH_FPS_ON = "highFps"
 TYPE_HIGH_FPS_OFF = "default"
+TYPE_EMPTY_VALUE = ""
 
 PLATFORMS = [
     "camera",
@@ -115,6 +131,10 @@ PLATFORMS = [
     "light",
     "select",
     "number",
+    "media_player",
+]
+PLATFORMS_NEXT = PLATFORMS + [
+    "button",
 ]
 VALID_INFRARED_MODES = [
     TYPE_INFRARED_AUTO,
@@ -141,6 +161,16 @@ LIGHT_SETTINGS_SCHEMA = vol.Schema(
     }
 )
 
+DOORBELL_TEXT_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            **cv.ENTITY_SERVICE_FIELDS,
+            vol.Required(CONF_MESSAGE): cv.string,
+        },
+    ),
+    cv.has_at_least_one_key(CONF_DEVICE_ID),
+)
+
 SET_RECORDING_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
@@ -148,6 +178,15 @@ SET_RECORDING_MODE_SCHEMA = vol.Schema(
             VALID_RECORDING_MODES
         ),
     }
+)
+PROFILE_WS_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            **cv.ENTITY_SERVICE_FIELDS,
+            vol.Required(CONF_DURATION): vol.Coerce(int),
+        },
+    ),
+    cv.has_at_least_one_key(CONF_DEVICE_ID),
 )
 
 SET_IR_MODE_SCHEMA = vol.Schema(

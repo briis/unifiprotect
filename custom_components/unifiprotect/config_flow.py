@@ -17,13 +17,13 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from pyunifiprotect import NotAuthorized, NvrError, UpvServer
-from pyunifiprotect.const import SERVER_ID, SERVER_NAME
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data.nvr import NVR
 import voluptuous as vol
 
 from .const import (
+    CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
-    CONF_DOORBELL_TEXT,
     DEFAULT_PORT,
     DEFAULT_VERIFY_SSL,
     DOMAIN,
@@ -38,8 +38,8 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 2
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
 
         self.entry: config_entries.ConfigEntry | None = None
 
@@ -52,13 +52,13 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
     @callback
-    async def _async_create_entry(self, title: str, data: dict[str, Any]):
+    async def _async_create_entry(self, title: str, data: dict[str, Any]) -> FlowResult:
         return self.async_create_entry(
             title=title,
             data={**data, CONF_ID: title},
             options={
                 CONF_DISABLE_RTSP: False,
-                CONF_DOORBELL_TEXT: "",
+                CONF_ALL_UPDATES: False,
             },
         )
 
@@ -66,7 +66,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _async_get_nvr_data(
         self,
         user_input: dict[str, Any],
-    ) -> tuple[dict[str, Any] | None, dict[str, str]]:
+    ) -> tuple[NVR | None, dict[str, str]]:
         session = async_create_clientsession(
             self.hass, cookie_jar=CookieJar(unsafe=True)
         )
@@ -78,7 +78,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             return None, {}
 
-        protect = UpvServer(
+        protect = ProtectApiClient(
             session=session,
             host=host,
             port=port,
@@ -90,7 +90,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         nvr_data = None
         try:
-            nvr_data = await protect.server_information()
+            nvr_data = await protect.get_nvr()
         except NotAuthorized as ex:
             _LOGGER.debug(ex)
             errors[CONF_PASSWORD] = "invalid_auth"
@@ -98,7 +98,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.debug(ex)
             errors["base"] = "nvr_error"
         else:
-            if nvr_data["server_version"] < MIN_REQUIRED_PROTECT_V:
+            if nvr_data.version < MIN_REQUIRED_PROTECT_V:
                 _LOGGER.debug("UniFi Protect Version not supported")
                 errors["base"] = "protect_version"
 
@@ -114,7 +114,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
 
-        errors = {}
+        errors: dict[str, str] = {}
         assert self.entry is not None
 
         # prepopulate fields
@@ -123,7 +123,7 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             form_data.update(user_input)
 
             # validate login data
-            nvr_data, errors = await self._async_get_nvr_data(form_data)
+            _, errors = await self._async_get_nvr_data(form_data)
             if not errors:
                 self.hass.config_entries.async_update_entry(self.entry, data=form_data)
                 await self.hass.config_entries.async_reload(self.entry.entry_id)
@@ -147,15 +147,15 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle a flow initiated by the user."""
 
-        errors = {}
+        errors: dict[str, str] = {}
         if user_input is not None:
             nvr_data, errors = await self._async_get_nvr_data(user_input)
 
-            if not errors:
-                await self.async_set_unique_id(nvr_data[SERVER_ID])
+            if nvr_data and not errors:
+                await self.async_set_unique_id(nvr_data.mac)
                 self._abort_if_unique_id_configured()
 
-                return await self._async_create_entry(nvr_data[SERVER_NAME], user_input)
+                return await self._async_create_entry(nvr_data.name, user_input)
 
         user_input = user_input or {}
         return self.async_show_form(
@@ -183,11 +183,13 @@ class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options."""
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
@@ -197,12 +199,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(
-                        CONF_DOORBELL_TEXT,
-                        default=self.config_entry.options.get(CONF_DOORBELL_TEXT, ""),
-                    ): str,
-                    vol.Optional(
                         CONF_DISABLE_RTSP,
                         default=self.config_entry.options.get(CONF_DISABLE_RTSP, False),
+                    ): bool,
+                    vol.Optional(
+                        CONF_ALL_UPDATES,
+                        default=self.config_entry.options.get(CONF_ALL_UPDATES, False),
                     ): bool,
                 }
             ),

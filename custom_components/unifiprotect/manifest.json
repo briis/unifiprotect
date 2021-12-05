@@ -5,12 +5,14 @@
   "issue_tracker": "https://github.com/briis/unifiprotect/issues",
   "config_flow": true,
   "requirements": [
-    "pyunifiprotect==1.0.5"
+    "pyunifiprotect==1.2.1"
   ],
   "dependencies": [],
   "version": "0.10.0",
   "codeowners": [
-    "@briis"
+    "@briis",
+    "@AngellusMortis",
+    "@bdraco"
   ],
   "iot_class": "local_push"
 }

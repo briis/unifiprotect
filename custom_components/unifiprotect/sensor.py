@@ -328,25 +328,31 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
                     break
         return value
 
-    @property
-    def native_value(self) -> StateType | date | datetime:
-        """Return the state of the sensor."""
+    @callback
+    def _async_update_device_from_protect(self) -> None:
+        super()._async_update_device_from_protect()
 
         if self.entity_description.ufp_value is None:
-            value = self._async_nvr_value()
+            new_value = self._async_nvr_value()
         else:
-            value = get_nested_attr(self.device, self.entity_description.ufp_value)
+            new_value = get_nested_attr(self.device, self.entity_description.ufp_value)
 
-        if isinstance(value, timedelta):
-            value = value.total_seconds()
+        if isinstance(new_value, timedelta):
+            new_value = new_value.total_seconds()
 
-        assert isinstance(value, (str, int, float, datetime)) or value is None
-        if isinstance(value, datetime) and not above_ha_version(2021, 12):
-            return value.replace(microsecond=0).isoformat()
+        if isinstance(new_value, datetime):
+            # protection to prevent uptime from changing if UniFi Protect changes values slightly
+            if hasattr(self, "_attr_native_value") and self._attr_native_value:
+                diff = abs((self._attr_native_value - new_value).total_seconds())
+                if diff < 5:
+                    return
 
-        if isinstance(value, float) and self.entity_description.precision:
-            value = round(value, self.entity_description.precision)
-        return value
+            if not above_ha_version(2021, 12):
+                new_value = new_value.isoformat()
+        elif isinstance(new_value, float) and self.entity_description.precision:
+            new_value = round(new_value, self.entity_description.precision)
+
+        self._attr_native_value = new_value
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

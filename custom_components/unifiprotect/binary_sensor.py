@@ -165,7 +165,7 @@ async def async_setup_entry(
     """Set up binary sensors for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     entities = _async_device_entities(entry_data)
-    entities = _async_nvr_entities(entry_data)
+    entities += _async_nvr_entities(entry_data)
 
     async_add_entities(entities)
 

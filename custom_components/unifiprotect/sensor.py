@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 import logging
 from typing import Any, Callable, Sequence
 
@@ -20,7 +20,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.typing import StateType
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Light, ModelType
 from pyunifiprotect.data.base import ProtectDeviceModel

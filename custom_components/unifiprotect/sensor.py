@@ -172,7 +172,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value=None,
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_DISK,
@@ -183,7 +183,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.utilization",
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_RECORD_TIMELAPSE,

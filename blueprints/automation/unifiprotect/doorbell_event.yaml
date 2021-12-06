@@ -13,6 +13,7 @@ blueprint:
 
       - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2]
       - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
+      - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
       - Cooldown before sending another notification
       - Silence timer for muting notifications via Actionable Notification (docs: [HTML5][6], [Mobile][7])
       - Configurable HA Internal / External Base URLs
@@ -103,6 +104,17 @@ blueprint:
       default: Doorbell
       selector:
         text:
+    time_format:
+      name: (Optional) Time Format String
+      description: >
+        Python datetime format code string for the event trigger time. This string is
+        the actual time the doorbell event was triggered in case the automation or
+        notification is delayed. Manual triggers will cause this to always be the time
+        of the previous event.
+        https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+      default: "%I:%M %p"
+      selector:
+        text:
     cooldown:
       name: (Optional) Cooldown
       description: >
@@ -175,6 +187,7 @@ variables:
   input_lock_entity: !input lock_entity
   input_send_mobile: !input send_mobile
   input_send_html5: !input send_html5
+  input_time_format: !input time_format
   # itermediate variables
   raw_area_ids: |
     {% if 'area_id' not in input_device_filter %}
@@ -224,7 +237,7 @@ variables:
     {% if states[trigger_entity_id] == None %}
       None
     {% else %}
-      {{ as_local(states[trigger_entity_id].last_changed).strftime('%I:%M %p') }}
+      {{ as_local(states[trigger_entity_id].last_changed).strftime(input_time_format) }}
     {% endif %}
   notification_channel: |
     {% if "event" in trigger %}

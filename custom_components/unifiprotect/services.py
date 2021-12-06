@@ -10,58 +10,11 @@ from pydantic import ValidationError
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.exceptions import BadRequest
 
-from .const import CONF_DURATION, CONF_MESSAGE, DOMAIN
-from .models import UnifiProtectEntryData
-from .utils import profile_ws_messages
-
-
-def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
-    """All active HomeKit instances."""
-    return [
-        data.protect
-        for data in hass.data[DOMAIN].values()
-        if isinstance(data, UnifiProtectEntryData)
-    ]
+from .const import CONF_DURATION, CONF_MESSAGE
+from .utils import get_ufp_instance_from_device_id, profile_ws_messages
 
 
 @callback
-def _async_unifi_mac_from_hass(mac: str) -> str:
-    # MAC addresses in UFP are always caps
-    return mac.replace(":", "").upper()
-
-
-@callback
-def _async_get_macs_for_device(device_entry: dr.DeviceEntry) -> list[str]:
-    return [
-        _async_unifi_mac_from_hass(cval)
-        for ctype, cval in device_entry.connections
-        if ctype == dr.CONNECTION_NETWORK_MAC
-    ]
-
-
-def _async_get_ufp_instances(
-    hass: HomeAssistant, device_id: str
-) -> tuple[dr.DeviceEntry, ProtectApiClient]:
-    device_registry = dr.async_get(hass)
-    if not (device_entry := device_registry.async_get(device_id)):
-        raise HomeAssistantError(f"No device found for device id: {device_id}")
-
-    if device_entry.via_device_id is not None:
-        return _async_get_ufp_instances(hass, device_entry.via_device_id)
-
-    macs = _async_get_macs_for_device(device_entry)
-    ufp_instances = [
-        i for i in _async_all_ufp_instances(hass) if i.bootstrap.nvr.mac in macs
-    ]
-
-    if not ufp_instances:
-        raise HomeAssistantError(
-            f"No UniFi Protect NVR found for device ID: {device_id}"
-        )
-
-    return device_entry, ufp_instances[0]
-
-
 def _async_get_protect_from_call(
     hass: HomeAssistant, call: ServiceCall
 ) -> list[tuple[dr.DeviceEntry, ProtectApiClient]]:
@@ -69,11 +22,12 @@ def _async_get_protect_from_call(
 
     instances: list[tuple[dr.DeviceEntry, ProtectApiClient]] = []
     for device_id in referenced.referenced_devices:
-        instances.append(_async_get_ufp_instances(hass, device_id))
+        instances.append(get_ufp_instance_from_device_id(hass, device_id))
 
     return instances
 
 
+@callback
 async def _async_call_nvr(
     instances: list[tuple[dr.DeviceEntry, ProtectApiClient]],
     method: str,

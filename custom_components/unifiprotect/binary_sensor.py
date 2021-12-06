@@ -27,16 +27,22 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import Camera, Light, ModelType, Sensor
+from pyunifiprotect.data import NVR, Camera, Event, Light, ModelType, Sensor
 from pyunifiprotect.data.base import ProtectDeviceModel
-from pyunifiprotect.data.nvr import NVR
 from pyunifiprotect.utils import utc_now
 
-from .const import ATTR_EVENT_OBJECT, ATTR_EVENT_SCORE, DOMAIN, RING_INTERVAL
+from .const import (
+    ATTR_EVENT_OBJECT,
+    ATTR_EVENT_SCORE,
+    ATTR_EVENT_THUMB,
+    DOMAIN,
+    RING_INTERVAL,
+)
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
 from .utils import get_nested_attr
+from .views import ThumbnailProxyView
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -291,6 +297,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             return attrs
 
         # Camera motion sensors with object detection
+        event: Event | None = None
         score = 0
         if (
             self.device.is_smart_detected
@@ -298,6 +305,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             and len(self.device.last_smart_detect_event.smart_detect_types) > 0
         ):
             score = self.device.last_smart_detect_event.score
+            event = self.device.last_smart_detect_event
             detected_object: str | None = (
                 self.device.last_smart_detect_event.smart_detect_types[0].value
             )
@@ -313,12 +321,22 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
             ):
                 score = self.device.last_motion_event.score
             detected_object = None
+            event = self.device.last_motion_event
+
+        thumb_url: str | None = None
+        if event is not None:
+            assert self.device_info is not None
+            # thumbnail_id is never updated via WS, but it is always e-{event.id}
+            thumb_url = ThumbnailProxyView.url.format(
+                entity_id=self.entity_id, event_id=f"e-{event.id}"
+            )
 
         attrs.update(
             {
                 ATTR_LAST_TRIP_TIME: self.device.last_motion,
                 ATTR_EVENT_SCORE: score,
                 ATTR_EVENT_OBJECT: detected_object,
+                ATTR_EVENT_THUMB: thumb_url,
             }
         )
 

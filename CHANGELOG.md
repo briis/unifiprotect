@@ -4,6 +4,10 @@
 
 * `CHANGE`: Allows `device_id` parameter for global service calls to be any device from a UniFi Protect instance
 
+* `NEW`: Adds event thumbnail proxy view. URL is `/api/ufp/thumbnail/{entity_id}/{thumb_id}`. `entity_id` is the Home Assistant Entity ID for any device on your UniFi Protect instance (to be able to reverse the event back to your instance in case you have multiple). `thumb_id` is the ID of the thumbnail from UniFi Protect. Also accepts `w` and `h` query string params for thumbnail resizing.
+
+* `NEW`: Adds `event_thumbnail` attribute to Motion binary sensor that uses above mentioned event thumbnail proxy view.
+
 * `NEW`: Adds NVR sensors. All of them are disabled by default. All of the sensors will only update every ~15 minutes unless the "Realtime metrics" config option is turned on. List of all sensors:
     * Disk Health (one per disk)
     * System Info: CPU Temp, CPU, Memory and Storage Utilization

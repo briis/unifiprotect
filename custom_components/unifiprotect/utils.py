@@ -117,6 +117,15 @@ def get_macs_for_device(device_entry: dr.DeviceEntry) -> list[str]:
 
 
 @callback
+def get_ufp_instance_from_nvr_id(hass: HomeAssistant, nvr_id: str) -> ProtectApiClient:
+    for instance in get_all_ufp_instances(hass):
+        if instance.bootstrap.nvr.id == nvr_id:
+            return instance
+
+    raise HomeAssistantError(f"No UniFi Protect instance with nvr ID: {nvr_id}")
+
+
+@callback
 def get_ufp_instance_from_device_id(
     hass: HomeAssistant, device_id: str
 ) -> tuple[dr.DeviceEntry, ProtectApiClient]:

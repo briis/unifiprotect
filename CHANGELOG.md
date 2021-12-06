@@ -4,7 +4,10 @@
 
 * `CHANGE`: Allows `device_id` parameter for global service calls to be any device from a UniFi Protect instance
 
-* `NEW`: Adds event thumbnail proxy view. URL is `/api/ufp/thumbnail/{entity_id}/{thumb_id}`. `entity_id` is the Home Assistant Entity ID for any device on your UniFi Protect instance (to be able to reverse the event back to your instance in case you have multiple). `thumb_id` is the ID of the thumbnail from UniFi Protect. Also accepts `w` and `h` query string params for thumbnail resizing.
+* `NEW`: Adds event thumbnail proxy view.
+  * URL is `/api/ufp/thumbnail/{thumb_id}`. `thumb_id` is the ID of the thumbnail from UniFi Protect.
+  * `entity_id`, `device_id` or `nvr_id` are mutually exclusive required query parameters. One of the 3 must be provided to retrieve the NVR instance. `entity_id` or `device_id` can be for any Home Assistant from a UniFi Protect instance. `nvr_id` must be the NVR id directly from UniFi Protect. it is for future usage / debugging for quickly generating thumbnail URLs.
+  * `w` and `h` are optional query string params for thumbnail resizing.
 
 * `NEW`: Adds `event_thumbnail` attribute to Motion binary sensor that uses above mentioned event thumbnail proxy view.
 

@@ -327,8 +327,9 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         if event is not None:
             assert self.device_info is not None
             # thumbnail_id is never updated via WS, but it is always e-{event.id}
-            thumb_url = ThumbnailProxyView.url.format(
-                entity_id=self.entity_id, event_id=f"e-{event.id}"
+            thumb_url = (
+                ThumbnailProxyView.url.format(event_id=f"e-{event.id}")
+                + f"?entity_id={self.entity_id}"
             )
 
         attrs.update(

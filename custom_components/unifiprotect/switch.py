@@ -11,11 +11,10 @@ from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import Camera, Light, ModelType, VideoMode
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.types import RecordingMode
+from pyunifiprotect.data import Camera, Light, ModelType, RecordingMode, VideoMode
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
 
-from .const import DEVICES_WITH_CAMERA, DEVICES_WITH_ENTITIES, DOMAIN
+from .const import DEVICES_THAT_ADOPT, DEVICES_WITH_CAMERA, DOMAIN
 from .data import UnifiProtectData
 from .entity import UnifiProtectEntity
 from .models import UnifiProtectEntryData
@@ -98,7 +97,7 @@ SWITCH_TYPES: tuple[UnifiProtectSwitchEntityDescription, ...] = (
         icon="mdi:lock",
         entity_registry_enabled_default=False,
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types=DEVICES_WITH_ENTITIES,
+        ufp_device_types=DEVICES_THAT_ADOPT,
         ufp_required_field=None,
         ufp_value="is_ssh_enabled",
     ),
@@ -147,10 +146,12 @@ class UnifiProtectSwitch(UnifiProtectEntity, SwitchEntity):
         self,
         protect: ProtectApiClient,
         protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
+        device: ProtectDeviceModel,
         description: UnifiProtectSwitchEntityDescription,
     ):
         """Initialize an Unifi Protect Switch."""
+        assert isinstance(device, ProtectAdoptableDeviceModel)
+        self.device: ProtectAdoptableDeviceModel = device
         self.entity_description: UnifiProtectSwitchEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"

@@ -6,7 +6,8 @@
 
 * `NEW`: Adds event thumbnail proxy view.
   * URL is `/api/ufp/thumbnail/{thumb_id}`. `thumb_id` is the ID of the thumbnail from UniFi Protect.
-  * `entity_id`, `device_id` or `nvr_id` are mutually exclusive required query parameters. One of the 3 must be provided to retrieve the NVR instance. `entity_id` or `device_id` can be for any Home Assistant from a UniFi Protect instance. `nvr_id` must be the NVR id directly from UniFi Protect. it is for future usage / debugging for quickly generating thumbnail URLs.
+  * `device_id` is a required query parameters. `device_id` must be the UniFi Protect device ID for Camera entity
+  * `token` is a required query parameter is you are _not_ authenticated. It is an attribute on the motion sensor for the Camera
   * `w` and `h` are optional query string params for thumbnail resizing.
 
 * `NEW`: Adds `event_thumbnail` attribute to Motion binary sensor that uses above mentioned event thumbnail proxy view.

@@ -1,7 +1,11 @@
 """Shared Entity definition for Unifi Protect Integration."""
 from __future__ import annotations
 
-from typing import Any
+import collections
+from datetime import timedelta
+import hashlib
+from random import SystemRandom
+from typing import Any, Final
 
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import callback
@@ -14,6 +18,9 @@ from pyunifiprotect.data.types import ModelType
 
 from .const import ATTR_DEVICE_MODEL, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
 from .data import UnifiProtectData
+
+TOKEN_CHANGE_INTERVAL: Final = timedelta(minutes=5)
+_RND: Final = SystemRandom()
 
 
 class UnifiProtectEntity(Entity):
@@ -104,3 +111,25 @@ class UnifiProtectEntity(Entity):
                 self.device.id, self._async_updated_event
             )
         )
+
+
+class AccessTokenMixin(Entity):
+    def __init__(self, *args, **kwargs) -> None:
+        self.access_tokens: collections.deque = collections.deque([], 2)
+        self.async_update_token()
+
+    @callback
+    def async_update_token(self) -> None:
+        """Update the used token."""
+        self.access_tokens.append(
+            hashlib.sha256(_RND.getrandbits(256).to_bytes(32, "little")).hexdigest()
+        )
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the extra state attributes."""
+        attrs = super().extra_state_attributes or {}
+        return {
+            **attrs,
+            "access_token": self.access_tokens[-1],
+        }

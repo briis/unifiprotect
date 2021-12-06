@@ -304,6 +304,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
         self.entity_description: UnifiProtectSensorEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
+        self._async_update_device_from_protect()
 
     @callback
     def _async_update_device_from_protect(self) -> None:

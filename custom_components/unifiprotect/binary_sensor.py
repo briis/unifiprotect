@@ -143,6 +143,7 @@ DISK_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
         key=_KEY_DISK_HEALTH,
         name="Disk {index} Health",
         device_class=DEVICE_CLASS_PROBLEM,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         entity_registry_enabled_default=False,
         ufp_required_field=None,
         ufp_value=None,

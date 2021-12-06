@@ -7,7 +7,9 @@
   "requirements": [
     "pyunifiprotect==1.2.2"
   ],
-  "dependencies": [],
+  "dependencies": [
+    "http"
+  ],
   "version": "0.10.0",
   "codeowners": [
     "@briis",

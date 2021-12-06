@@ -194,7 +194,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.storage_distribution.timelapse_recordings.percentage",
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_RECORD_ROTATE,
@@ -205,7 +205,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.storage_distribution.continuous_recordings.percentage",
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_RECORD_DETECTIONS,
@@ -216,7 +216,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.storage_distribution.detections_recordings.percentage",
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_RES_HD,
@@ -227,7 +227,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.storage_distribution.hd_usage.percentage",
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_RES_4K,
@@ -238,7 +238,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.storage_distribution.uhd_usage.percentage",
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_RES_FREE,
@@ -249,7 +249,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.storage_distribution.free.percentage",
-        precision=3,
+        precision=2,
     ),
     UnifiProtectSensorEntityDescription(
         key=_KEY_CAPACITY,
@@ -260,7 +260,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_device_types={ModelType.NVR},
         ufp_value="storage_stats.capacity",
-        precision=3,
+        precision=None,
     ),
 )
 
@@ -318,7 +318,7 @@ class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
             new_value = get_nested_attr(self.device, self.entity_description.ufp_value)
 
         if isinstance(new_value, timedelta):
-            new_value = new_value.total_seconds()
+            new_value = int(new_value.total_seconds())
         elif isinstance(new_value, datetime):
             # UniFi Protect value can vary slightly over time
             # truncate to ensure no extra state_change events fire

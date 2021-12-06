@@ -102,6 +102,8 @@ DEVICES_WITH_ENTITIES = (
 )
 DEVICES_FOR_SUBSCRIBE = DEVICES_WITH_ENTITIES | {ModelType.EVENT}
 
+EVENT_UPDATE_TOKENS = "unifiprotect_update_tokens"
+
 MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 
 SERVICE_PROFILE_WS = "profile_ws_messages"

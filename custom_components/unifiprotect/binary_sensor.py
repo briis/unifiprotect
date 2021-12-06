@@ -39,7 +39,7 @@ from .const import (
     RING_INTERVAL,
 )
 from .data import UnifiProtectData
-from .entity import TOKEN_CHANGE_INTERVAL, AccessTokenMixin, UnifiProtectEntity
+from .entity import AccessTokenMixin, UnifiProtectEntity
 from .models import UnifiProtectEntryData
 from .utils import get_nested_attr
 from .views import ThumbnailProxyView
@@ -202,16 +202,6 @@ def _async_motion_entities(
                 description.name,
                 device.name,
             )
-
-    @callback
-    def update_tokens(time: datetime) -> None:
-        """Update tokens of the entities."""
-        for entity in entities:
-            entity.async_update_token()
-            entity.async_write_ha_state()
-
-    entry_data.protect_data.async_add_access_token_entities(entities)
-    hass.helpers.event.async_track_time_interval(update_tokens, TOKEN_CHANGE_INTERVAL)
 
     return entities
 
@@ -503,8 +493,10 @@ class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenM
             # thumbnail_id is never updated via WS, but it is always e-{event.id}
             thumb_url = (
                 ThumbnailProxyView.url.format(event_id=f"e-{event.id}")
-                + f"?device_id={self.device.id}&token={self.access_tokens[-1]}"
+                + f"?device_id={self.device.id}"
             )
+            _LOGGER.debug("Event thumbnail URL for %s: %s", self.entity_id, thumb_url)
+            thumb_url += f"&token={self.access_tokens[-1]}"
 
         attrs.update(
             {

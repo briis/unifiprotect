@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
-from typing import TYPE_CHECKING, Any, Generator, Iterable, Sequence
+from typing import TYPE_CHECKING, Any, Generator, Iterable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -21,7 +21,7 @@ from pyunifiprotect.data.base import ProtectDeviceModel
 from .const import DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
 
 if TYPE_CHECKING:
-    from .entity import AccessTokenMixin
+    from .entity import AccessTokenMixin, UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -174,12 +174,9 @@ class UnifiProtectData:
             update_callback()
 
     @callback
-    def async_add_access_token_entities(
-        self, entities: Sequence[AccessTokenMixin]
-    ) -> None:
-        for entity in entities:
-            # these entities will _always_ be UnifiProtectEntities
-            self._access_token_entities[entity.device.id] = entity  # type: ignore
+    def async_add_access_token_entity(self, entity: AccessTokenMixin) -> None:
+        # AccessTokenMixin is always an instance of UnifiProtectEntity
+        self._access_token_entities[entity.device.id] = entity  # type: ignore
 
     @callback
     def async_get_access_tokens_entity(self, entity_id: str) -> AccessTokenMixin | None:

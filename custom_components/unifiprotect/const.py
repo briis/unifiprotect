@@ -19,6 +19,7 @@ ATTR_ENABLED_AT = "enabled_at"
 ATTR_EVENT_SCORE = "event_score"
 ATTR_EVENT_LENGTH = "event_length"
 ATTR_EVENT_OBJECT = "event_object"
+ATTR_EVENT_THUMB = "event_thumbnail"
 ATTR_IS_DARK = "is_dark"
 ATTR_MIC_SENSITIVITY = "mic_sensitivity"
 ATTR_ONLINE = "online"
@@ -100,6 +101,8 @@ DEVICES_WITH_ENTITIES = (
     | DEVICES_THAT_ADOPT
 )
 DEVICES_FOR_SUBSCRIBE = DEVICES_WITH_ENTITIES | {ModelType.EVENT}
+
+EVENT_UPDATE_TOKENS = "unifiprotect_update_tokens"
 
 MIN_REQUIRED_PROTECT_V = Version("1.20.0")
 

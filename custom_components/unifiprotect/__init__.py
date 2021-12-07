@@ -56,6 +56,7 @@ from .services import (
     set_default_doorbell_text,
 )
 from .utils import above_ha_version
+from .views import ThumbnailProxyView
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -248,6 +249,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         functools.partial(profile_ws, hass),
         PROFILE_WS_SCHEMA,
     )
+
+    hass.http.register_view(ThumbnailProxyView(hass))
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(

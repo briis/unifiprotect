@@ -1,9 +1,10 @@
 """Base class for protect data."""
 from __future__ import annotations
 
+import collections
 from datetime import timedelta
 import logging
-from typing import Any, Generator, Iterable
+from typing import TYPE_CHECKING, Any, Generator, Iterable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -19,6 +20,9 @@ from pyunifiprotect.data import (
 from pyunifiprotect.data.base import ProtectDeviceModel
 
 from .const import DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
+
+if TYPE_CHECKING:
+    from .entity import AccessTokenMixin, UnifiProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +49,7 @@ class UnifiProtectData:
         self._unsub_websocket: CALLBACK_TYPE | None = None
 
         self.last_update_success = False
+        self.access_tokens: dict[str, collections.deque] = {}
 
     def get_by_types(
         self, device_types: Iterable[ModelType]
@@ -168,3 +173,10 @@ class UnifiProtectData:
 
         for update_callback in self._subscriptions[device_id]:
             update_callback()
+
+    @callback
+    def async_get_or_create_access_tokens(self, entity_id: str) -> collections.deque:
+        """Wrapper around access_tokens to automatically create underlaying data structure if missing."""
+        if entity_id not in self.access_tokens:
+            self.access_tokens[entity_id] = collections.deque([], 2)
+        return self.access_tokens[entity_id]

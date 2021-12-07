@@ -1,4 +1,4 @@
-"""This component provides binary sensors for Unifi Protect."""
+"""This component provides binary sensors for UniFi Protect."""
 from __future__ import annotations
 
 import asyncio
@@ -8,6 +8,7 @@ from datetime import datetime
 import itertools
 import logging
 from typing import TYPE_CHECKING, Any, Callable, Sequence
+from urllib.parse import urlencode
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY,
@@ -27,16 +28,22 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import Camera, Light, ModelType, Sensor
+from pyunifiprotect.data import NVR, Camera, Event, Light, ModelType, Sensor
 from pyunifiprotect.data.base import ProtectDeviceModel
-from pyunifiprotect.data.nvr import NVR
 from pyunifiprotect.utils import utc_now
 
-from .const import ATTR_EVENT_OBJECT, ATTR_EVENT_SCORE, DOMAIN, RING_INTERVAL
+from .const import (
+    ATTR_EVENT_OBJECT,
+    ATTR_EVENT_SCORE,
+    ATTR_EVENT_THUMB,
+    DOMAIN,
+    RING_INTERVAL,
+)
 from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
+from .entity import AccessTokenMixin, UnifiProtectEntity
 from .models import UnifiProtectEntryData
 from .utils import get_nested_attr
+from .views import ThumbnailProxyView
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -96,6 +103,16 @@ SENSE_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
     ),
 )
 
+MOTION_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
+    UnifiProtectBinaryEntityDescription(
+        key=_KEY_MOTION,
+        name="Motion",
+        device_class=DEVICE_CLASS_MOTION,
+        ufp_required_field=None,
+        ufp_value="is_motion_detected",
+    ),
+)
+
 CAMERA_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
     UnifiProtectBinaryEntityDescription(
         key=_KEY_DOORBELL,
@@ -111,13 +128,6 @@ CAMERA_SENSORS: tuple[UnifiProtectBinaryEntityDescription, ...] = (
         icon="mdi:brightness-6",
         ufp_required_field=None,
         ufp_value="is_dark",
-    ),
-    UnifiProtectBinaryEntityDescription(
-        key=_KEY_MOTION,
-        name="Motion",
-        device_class=DEVICE_CLASS_MOTION,
-        ufp_required_field=None,
-        ufp_value="is_motion_detected",
     ),
 )
 
@@ -165,10 +175,36 @@ async def async_setup_entry(
 ) -> None:
     """Set up binary sensors for UniFi Protect integration."""
     entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    entities = _async_device_entities(entry_data)
+    entities: list[UnifiProtectBinarySensor] = _async_device_entities(entry_data)
     entities += _async_nvr_entities(entry_data)
+    entities += _async_motion_entities(hass, entry_data)
 
     async_add_entities(entities)
+
+
+@callback
+def _async_motion_entities(
+    hass: HomeAssistant,
+    entry_data: UnifiProtectEntryData,
+) -> list[UnifiProtectAccessTokenBinarySensor]:
+    protect = entry_data.protect
+    protect_data = entry_data.protect_data
+
+    entities = []
+    for device in protect_data.get_by_types({ModelType.CAMERA}):
+        for description in MOTION_SENSORS:
+            entities.append(
+                UnifiProtectAccessTokenBinarySensor(
+                    protect, protect_data, device, description
+                )
+            )
+            _LOGGER.debug(
+                "Adding binary sensor entity %s for %s",
+                description.name,
+                device.name,
+            )
+
+    return entities
 
 
 @callback
@@ -265,7 +301,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self._doorbell_callback: TaskClass | None = None
 
     @callback
-    def _async_get_extra_attrs(self) -> dict[str, Any]:
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
         attrs: dict[str, Any] = {}
         key = self.entity_description.key
 
@@ -286,41 +322,6 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         elif isinstance(self.device, Light):
             if key == _KEY_MOTION:
                 attrs[ATTR_LAST_TRIP_TIME] = self.device.last_motion
-
-        if not isinstance(self.device, Camera):
-            return attrs
-
-        # Camera motion sensors with object detection
-        score = 0
-        if (
-            self.device.is_smart_detected
-            and self.device.last_smart_detect_event is not None
-            and len(self.device.last_smart_detect_event.smart_detect_types) > 0
-        ):
-            score = self.device.last_smart_detect_event.score
-            detected_object: str | None = (
-                self.device.last_smart_detect_event.smart_detect_types[0].value
-            )
-            _LOGGER.debug(
-                "OBJECTS: %s on %s",
-                self.device.last_smart_detect_event.smart_detect_types,
-                self._attr_name,
-            )
-        else:
-            if (
-                self.device.is_motion_detected
-                and self.device.last_motion_event is not None
-            ):
-                score = self.device.last_motion_event.score
-            detected_object = None
-
-        attrs.update(
-            {
-                ATTR_LAST_TRIP_TIME: self.device.last_motion,
-                ATTR_EVENT_SCORE: score,
-                ATTR_EVENT_OBJECT: detected_object,
-            }
-        )
 
         return attrs
 
@@ -360,7 +361,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 self.device, self.entity_description.ufp_value
             )
 
-        self._extra_state_attributes = self._async_get_extra_attrs()
+        self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 
     @callback
     async def _async_wait_for_doorbell(self, end_time: datetime) -> None:
@@ -409,7 +410,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def _async_fire_motion_event(self) -> None:
         """Fire events on motion.
 
-        Remove this before merging to core.
+        CORE: Remove this before merging to core.
         """
 
         assert isinstance(self.device, (Camera, Light))
@@ -441,3 +442,60 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the extra state attributes."""
         return {**super().extra_state_attributes, **self._extra_state_attributes}
+
+
+class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenMixin):
+    def __init__(
+        self,
+        protect: ProtectApiClient,
+        protect_data: UnifiProtectData,
+        device: ProtectDeviceModel,
+        description: UnifiProtectBinaryEntityDescription,
+        index: int | None = None,
+    ) -> None:
+        assert isinstance(device, Camera)
+        self.device: Camera = device
+        super().__init__(protect, protect_data, device, description, index)
+
+    @callback
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
+        # Camera motion sensors with object detection
+        event: Event | None = None
+        score = 0
+        if (
+            self.device.is_smart_detected
+            and self.device.last_smart_detect_event is not None
+            and len(self.device.last_smart_detect_event.smart_detect_types) > 0
+        ):
+            score = self.device.last_smart_detect_event.score
+            event = self.device.last_smart_detect_event
+            detected_object: str | None = (
+                self.device.last_smart_detect_event.smart_detect_types[0].value
+            )
+        else:
+            if (
+                self.device.is_motion_detected
+                and self.device.last_motion_event is not None
+            ):
+                score = self.device.last_motion_event.score
+            detected_object = None
+            event = self.device.last_motion_event
+
+        thumb_url: str | None = None
+        if event is not None:
+            assert self.device_info is not None
+            # thumbnail_id is never updated via WS, but it is always e-{event.id}
+            params = urlencode(
+                {"entity_id": self.entity_id, "token": self.access_tokens[-1]}
+            )
+            thumb_url = (
+                ThumbnailProxyView.url.format(event_id=f"e-{event.id}") + f"?{params}"
+            )
+
+        return {
+            **super()._async_update_extra_attrs_from_protect(),
+            ATTR_LAST_TRIP_TIME: self.device.last_motion,
+            ATTR_EVENT_SCORE: score,
+            ATTR_EVENT_OBJECT: detected_object,
+            ATTR_EVENT_THUMB: thumb_url,
+        }

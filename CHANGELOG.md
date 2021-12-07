@@ -4,6 +4,14 @@
 
 * `CHANGE`: Allows `device_id` parameter for global service calls to be any device from a UniFi Protect instance
 
+* `NEW`: Adds event thumbnail proxy view.
+  * URL is `/api/ufp/thumbnail/{thumb_id}`. `thumb_id` is the ID of the thumbnail from UniFi Protect.
+  * `entity_id` is a required query parameters. `entity_id` be for an sensor that has event thumbnails on it (like the Motion binary sensor)
+  * `token` is a required query parameter is you are _not_ authenticated. It is an attribute on the motion sensor for the Camera
+  * `w` and `h` are optional query string params for thumbnail resizing.
+
+* `NEW`: Adds `event_thumbnail` attribute to Motion binary sensor that uses above mentioned event thumbnail proxy view.
+
 * `NEW`: Adds NVR sensors. All of them are disabled by default. All of the sensors will only update every ~15 minutes unless the "Realtime metrics" config option is turned on. List of all sensors:
     * Disk Health (one per disk)
     * System Info: CPU Temp, CPU, Memory and Storage Utilization

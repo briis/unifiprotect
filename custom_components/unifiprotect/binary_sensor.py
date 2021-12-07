@@ -493,7 +493,7 @@ class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenM
             # thumbnail_id is never updated via WS, but it is always e-{event.id}
             thumb_url = (
                 ThumbnailProxyView.url.format(event_id=f"e-{event.id}")
-                + f"?device_id={self.device.id}"
+                + f"?entity_id={self.entity_id}"
             )
             _LOGGER.debug("Event thumbnail URL for %s: %s", self.entity_id, thumb_url)
             thumb_url += f"&token={self.access_tokens[-1]}"

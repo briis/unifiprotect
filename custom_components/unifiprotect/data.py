@@ -1,6 +1,7 @@
 """Base class for protect data."""
 from __future__ import annotations
 
+import collections
 from datetime import timedelta
 import logging
 from typing import TYPE_CHECKING, Any, Generator, Iterable
@@ -44,11 +45,11 @@ class UnifiProtectData:
         self._hass = hass
         self._update_interval = update_interval
         self._subscriptions: dict[str, list[CALLBACK_TYPE]] = {}
-        self._access_token_entities: dict[str, AccessTokenMixin] = {}
         self._unsub_interval: CALLBACK_TYPE | None = None
         self._unsub_websocket: CALLBACK_TYPE | None = None
 
         self.last_update_success = False
+        self.access_tokens: dict[str, collections.deque] = {}
 
     def get_by_types(
         self, device_types: Iterable[ModelType]
@@ -174,10 +175,7 @@ class UnifiProtectData:
             update_callback()
 
     @callback
-    def async_add_access_token_entity(self, entity: AccessTokenMixin) -> None:
-        # AccessTokenMixin is always an instance of UnifiProtectEntity
-        self._access_token_entities[entity.device.id] = entity  # type: ignore
-
-    @callback
-    def async_get_access_tokens_entity(self, entity_id: str) -> AccessTokenMixin | None:
-        return self._access_token_entities.get(entity_id)
+    def async_get_or_create_access_tokens(self, entity_id: str) -> collections.deque:
+        if entity_id not in self.access_tokens:
+            self.access_tokens[entity_id] = collections.deque([], 2)
+        return self.access_tokens[entity_id]

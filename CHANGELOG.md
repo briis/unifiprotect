@@ -6,7 +6,7 @@
 
 * `NEW`: Adds event thumbnail proxy view.
   * URL is `/api/ufp/thumbnail/{thumb_id}`. `thumb_id` is the ID of the thumbnail from UniFi Protect.
-  * `device_id` is a required query parameters. `device_id` must be the UniFi Protect device ID for Camera entity
+  * `entity_id` is a required query parameters. `entity_id` be for an sensor that has event thumbnails on it (like the Motion binary sensor)
   * `token` is a required query parameter is you are _not_ authenticated. It is an attribute on the motion sensor for the Camera
   * `w` and `h` are optional query string params for thumbnail resizing.
 

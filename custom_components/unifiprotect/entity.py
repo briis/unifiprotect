@@ -129,9 +129,10 @@ class UnifiProtectEntity(Entity):
 
 
 class AccessTokenMixin(Entity):
-    def __init__(self, *args, **kwargs) -> None:
-        self.access_tokens: collections.deque = collections.deque([], 2)
-        self.async_update_token()
+    @property
+    def access_tokens(self) -> collections.deque[str]:
+        assert isinstance(self, UnifiProtectEntity)
+        return self.protect_data.async_get_or_create_access_tokens(self.entity_id)
 
     @callback
     def _async_update_and_write_token(self):
@@ -160,18 +161,18 @@ class AccessTokenMixin(Entity):
         assert isinstance(self, UnifiProtectEntity)
         async_dispatcher_send(
             self.hass,
-            f"{EVENT_UPDATE_TOKENS}-{self.entity_description.key}-{self.device.id}",
+            f"{EVENT_UPDATE_TOKENS}-{self.entity_description.key}-{self.entity_id}",
         )
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         assert isinstance(self, UnifiProtectEntity)
 
-        self.protect_data.async_add_access_token_entity(self)
+        self.async_update_token()
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,
-                f"{EVENT_UPDATE_TOKENS}-{self.entity_description.key}-{self.device.id}",
+                f"{EVENT_UPDATE_TOKENS}-{self.entity_id}",
                 self._async_update_and_write_token,
             )
         )

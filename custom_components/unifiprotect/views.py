@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 from http import HTTPStatus
 import logging
 from typing import Any
@@ -11,7 +12,6 @@ from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.exceptions import NvrError
 
 from .const import DOMAIN
-from .entity import AccessTokenMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,16 +27,13 @@ class ThumbnailProxyView(HomeAssistantView):
         self.hass = hass
         self.data = hass.data[DOMAIN]
 
-    def _get_entity(
-        self, device_id: str
-    ) -> tuple[AccessTokenMixin, ProtectApiClient] | None:
+    def _get_access_tokens(
+        self, entity_id: str
+    ) -> tuple[collections.deque, ProtectApiClient] | None:
 
         for entry in self.data.values():
-            if (
-                entity := entry.protect_data.async_get_access_tokens_entity(device_id)
-            ) is not None:
-                return entity, entry.protect
-
+            if entity_id in entry.protect_data.access_tokens:
+                return entry.protect_data.access_tokens[entity_id], entry.protect
         return None
 
     def _404(self, message: Any) -> web.Response:
@@ -46,7 +43,7 @@ class ThumbnailProxyView(HomeAssistantView):
     async def get(self, request: web.Request, event_id: str) -> web.Response:
         """Start a get request."""
 
-        device_id: str | None = request.query.get("device_id")
+        entity_id: str | None = request.query.get("entity_id")
         width: int | str | None = request.query.get("w")
         height: int | str | None = request.query.get("h")
 
@@ -62,12 +59,12 @@ class ThumbnailProxyView(HomeAssistantView):
                 return self._404("Invalid height param")
 
         access_tokens: list[str] = []
-        if device_id is not None:
-            items = self._get_entity(device_id)
+        if entity_id is not None:
+            items = self._get_access_tokens(entity_id)
             if items is None:
-                return self._404(f"Could not find entity with device_id {device_id}")
+                return self._404(f"Could not find entity with device_id {entity_id}")
 
-            access_tokens = list(items[0].access_tokens)
+            access_tokens = list(items[0])
             instance = items[1]
 
         authenticated = (

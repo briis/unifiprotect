@@ -459,8 +459,6 @@ class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenM
 
     @callback
     def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
-        attrs = super()._async_update_extra_attrs_from_protect()
-
         # Camera motion sensors with object detection
         event: Event | None = None
         score = 0
@@ -494,13 +492,10 @@ class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenM
                 ThumbnailProxyView.url.format(event_id=f"e-{event.id}") + f"?{params}"
             )
 
-        attrs.update(
-            {
-                ATTR_LAST_TRIP_TIME: self.device.last_motion,
-                ATTR_EVENT_SCORE: score,
-                ATTR_EVENT_OBJECT: detected_object,
-                ATTR_EVENT_THUMB: thumb_url,
-            }
-        )
-
-        return attrs
+        return {
+            **super()._async_update_extra_attrs_from_protect(),
+            ATTR_LAST_TRIP_TIME: self.device.last_motion,
+            ATTR_EVENT_SCORE: score,
+            ATTR_EVENT_OBJECT: detected_object,
+            ATTR_EVENT_THUMB: thumb_url,
+        }

@@ -134,6 +134,7 @@ class AccessTokenMixin(Entity):
     @property
     def access_tokens(self) -> collections.deque[str]:
         """Get valid access_tokens for current entity"""
+        assert isinstance(self, UnifiProtectEntity)
         return self.protect_data.async_get_or_create_access_tokens(self.entity_id)
 
     @callback

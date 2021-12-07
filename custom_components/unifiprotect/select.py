@@ -26,7 +26,7 @@ from pyunifiprotect.data import (
     Viewer,
 )
 from pyunifiprotect.data.base import ProtectDeviceModel
-from pyunifiprotect.data.nvr import DoorbellMessage
+from pyunifiprotect.data.devices import LCDMessage
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN, TYPE_EMPTY_VALUE
 from .data import UnifiProtectData
@@ -284,7 +284,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             if unifi_value is None:
                 unifi_value = TYPE_EMPTY_VALUE
             else:
-                assert isinstance(unifi_value, DoorbellMessage)
+                assert isinstance(unifi_value, LCDMessage)
                 return unifi_value.text
         return self._unifi_to_hass_options[unifi_value]
 

@@ -8,6 +8,7 @@ from datetime import datetime
 import itertools
 import logging
 from typing import TYPE_CHECKING, Any, Callable, Sequence
+from urllib.parse import urlencode
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY,
@@ -409,7 +410,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
     def _async_fire_motion_event(self) -> None:
         """Fire events on motion.
 
-        Remove this before merging to core.
+        CORE: Remove this before merging to core.
         """
 
         assert isinstance(self.device, (Camera, Light))
@@ -473,11 +474,6 @@ class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenM
             detected_object: str | None = (
                 self.device.last_smart_detect_event.smart_detect_types[0].value
             )
-            _LOGGER.debug(
-                "OBJECTS: %s on %s",
-                self.device.last_smart_detect_event.smart_detect_types,
-                self._attr_name,
-            )
         else:
             if (
                 self.device.is_motion_detected
@@ -491,12 +487,12 @@ class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenM
         if event is not None:
             assert self.device_info is not None
             # thumbnail_id is never updated via WS, but it is always e-{event.id}
-            thumb_url = (
-                ThumbnailProxyView.url.format(event_id=f"e-{event.id}")
-                + f"?entity_id={self.entity_id}"
+            params = urlencode(
+                {"entity_id": self.entity_id, "token": self.access_tokens[-1]}
             )
-            _LOGGER.debug("Event thumbnail URL for %s: %s", self.entity_id, thumb_url)
-            thumb_url += f"&token={self.access_tokens[-1]}"
+            thumb_url = (
+                ThumbnailProxyView.url.format(event_id=f"e-{event.id}") + f"?{params}"
+            )
 
         attrs.update(
             {

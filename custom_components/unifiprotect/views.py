@@ -23,7 +23,8 @@ class ThumbnailProxyView(HomeAssistantView):
     url = "/api/ufp/thumbnail/{event_id}"
     name = "api:ufp_thumbnail"
 
-    def __init__(self, hass: HomeAssistant):
+    def __init__(self, hass: HomeAssistant) -> None:
+        """Initialize a thumbnail proxy view"""
         self.hass = hass
         self.data = hass.data[DOMAIN]
 
@@ -46,6 +47,7 @@ class ThumbnailProxyView(HomeAssistantView):
         entity_id: str | None = request.query.get("entity_id")
         width: int | str | None = request.query.get("w")
         height: int | str | None = request.query.get("h")
+        token: str | None = request.query.get("token")
 
         if width is not None:
             try:
@@ -67,9 +69,7 @@ class ThumbnailProxyView(HomeAssistantView):
             access_tokens = list(items[0])
             instance = items[1]
 
-        authenticated = (
-            request[KEY_AUTHENTICATED] or request.query.get("token") in access_tokens
-        )
+        authenticated = request[KEY_AUTHENTICATED] or token in access_tokens
         if not authenticated:
             raise web.HTTPUnauthorized()
 

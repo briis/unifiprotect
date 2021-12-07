@@ -129,9 +129,11 @@ class UnifiProtectEntity(Entity):
 
 
 class AccessTokenMixin(Entity):
+    """Adds access_token attribute and provides access tokens for use for anonymous views."""
+
     @property
     def access_tokens(self) -> collections.deque[str]:
-        assert isinstance(self, UnifiProtectEntity)
+        """Get valid access_tokens for current entity"""
         return self.protect_data.async_get_or_create_access_tokens(self.entity_id)
 
     @callback
@@ -165,8 +167,11 @@ class AccessTokenMixin(Entity):
         )
 
     async def async_added_to_hass(self) -> None:
+        """Run when entity about to be added to hass.
+
+        Injects callbacks to update access tokens automatically
+        """
         await super().async_added_to_hass()
-        assert isinstance(self, UnifiProtectEntity)
 
         self.async_update_token()
         self.async_on_remove(

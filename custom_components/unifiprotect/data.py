@@ -176,6 +176,7 @@ class UnifiProtectData:
 
     @callback
     def async_get_or_create_access_tokens(self, entity_id: str) -> collections.deque:
+        """Wrapper around access_tokens to automatically create underlaying data structure if missing"""
         if entity_id not in self.access_tokens:
             self.access_tokens[entity_id] = collections.deque([], 2)
         return self.access_tokens[entity_id]

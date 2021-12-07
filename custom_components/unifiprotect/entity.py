@@ -1,4 +1,4 @@
-"""Shared Entity definition for Unifi Protect Integration."""
+"""Shared Entity definition for UniFi Protect Integration."""
 from __future__ import annotations
 
 import collections
@@ -28,20 +28,20 @@ from .const import (
     DOMAIN,
     EVENT_UPDATE_TOKENS,
 )
-from .data import UnifiProtectData
+from .data import ProtectData
 
 TOKEN_CHANGE_INTERVAL: Final = timedelta(minutes=1)
 _RND: Final = SystemRandom()
 _LOGGER = logging.getLogger(__name__)
 
 
-class UnifiProtectEntity(Entity):
+class ProtectEntity(Entity):
     """Base class for unifi protect entities."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        protect_data: ProtectData,
         device: ProtectDeviceModel,
         description: EntityDescription | None,
     ) -> None:
@@ -54,7 +54,7 @@ class UnifiProtectEntity(Entity):
         if not hasattr(self, "device"):
             self.device: ProtectDeviceModel = device
         self.protect: ProtectApiClient = protect
-        self.protect_data: UnifiProtectData = protect_data
+        self.protect_data: ProtectData = protect_data
         if description is None:
             self._attr_unique_id = f"{self.device.id}"
         else:
@@ -134,7 +134,7 @@ class AccessTokenMixin(Entity):
     @property
     def access_tokens(self) -> collections.deque[str]:
         """Get valid access_tokens for current entity"""
-        assert isinstance(self, UnifiProtectEntity)
+        assert isinstance(self, ProtectEntity)
         return self.protect_data.async_get_or_create_access_tokens(self.entity_id)
 
     @callback
@@ -152,7 +152,7 @@ class AccessTokenMixin(Entity):
 
     @callback
     def _trigger_update_tokens(self, *args, **kwargs):
-        assert isinstance(self, UnifiProtectEntity)
+        assert isinstance(self, ProtectEntity)
         async_dispatcher_send(
             self.hass,
             f"{EVENT_UPDATE_TOKENS}-{self.entity_description.key}-{self.entity_id}",

@@ -6,7 +6,7 @@
     "configurations": [
         // Run "Start Home Assistant" task + `debugpy.start` HA service first
         {
-            "name": "Python: Debug Unifi Protect",
+            "name": "Python: Debug UniFi Protect",
             "type": "python",
             "request": "attach",
             "justMyCode": false,

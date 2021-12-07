@@ -1,4 +1,4 @@
-"""This component provides number entities for Unifi Protect."""
+"""This component provides number entities for UniFi Protect."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -16,9 +16,9 @@ from pyunifiprotect.data import ModelType
 from pyunifiprotect.data.base import ProtectDeviceModel
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectEntity
+from .models import ProtectEntryData
 from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ _KEY_CHIME = "chime_duration"
 
 
 @dataclass
-class UnifiprotectRequiredKeysMixin:
+class ProtectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_max: int
@@ -45,14 +45,12 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectNumberEntityDescription(
-    NumberEntityDescription, UnifiprotectRequiredKeysMixin
-):
-    """Describes Unifi Protect Number entity."""
+class ProtectNumberEntityDescription(NumberEntityDescription, ProtectRequiredKeysMixin):
+    """Describes UniFi Protect Number entity."""
 
 
-NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
-    UnifiProtectNumberEntityDescription(
+NUMBER_TYPES: tuple[ProtectNumberEntityDescription, ...] = (
+    ProtectNumberEntityDescription(
         key=_KEY_WDR,
         name="Wide Dynamic Range",
         icon="mdi:state-machine",
@@ -65,7 +63,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_value="isp_settings.wdr",
         ufp_set_function="set_wdr_level",
     ),
-    UnifiProtectNumberEntityDescription(
+    ProtectNumberEntityDescription(
         key=_KEY_MIC_LEVEL,
         name="Microphone Level",
         icon="mdi:microphone",
@@ -78,7 +76,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_value="mic_volume",
         ufp_set_function="set_mic_volume",
     ),
-    UnifiProtectNumberEntityDescription(
+    ProtectNumberEntityDescription(
         key=_KEY_ZOOM_POS,
         name="Zoom Position",
         icon="mdi:magnify-plus-outline",
@@ -91,7 +89,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_value="isp_settings.zoom_position",
         ufp_set_function="set_camera_zoom",
     ),
-    UnifiProtectNumberEntityDescription(
+    ProtectNumberEntityDescription(
         key=_KEY_SENSITIVITY,
         name="Motion Sensitivity",
         icon="mdi:walk",
@@ -104,7 +102,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_value="light_device_settings.pir_sensitivity",
         ufp_set_function="set_sensitivity",
     ),
-    UnifiProtectNumberEntityDescription(
+    ProtectNumberEntityDescription(
         key=_KEY_DURATION,
         name="Duration",
         icon="mdi:camera-timer",
@@ -117,7 +115,7 @@ NUMBER_TYPES: tuple[UnifiProtectNumberEntityDescription, ...] = (
         ufp_value="light_device_settings.pir_duration",
         ufp_set_function="set_duration",
     ),
-    UnifiProtectNumberEntityDescription(
+    ProtectNumberEntityDescription(
         key=_KEY_CHIME,
         name="Duration",
         icon="mdi:camera-timer",
@@ -139,7 +137,7 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up Select entities for UniFi Protect integration."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
 
@@ -153,7 +151,7 @@ async def async_setup_entry(
                     continue
 
             entities.append(
-                UnifiProtectNumbers(
+                ProtectNumbers(
                     protect,
                     protect_data,
                     device,
@@ -172,18 +170,18 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class UnifiProtectNumbers(UnifiProtectEntity, NumberEntity):
-    """A Unifi Protect Number Entity."""
+class ProtectNumbers(ProtectEntity, NumberEntity):
+    """A UniFi Protect Number Entity."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        protect_data: ProtectData,
         device: ProtectDeviceModel,
-        description: UnifiProtectNumberEntityDescription,
+        description: ProtectNumberEntityDescription,
     ) -> None:
         """Initialize the Number Entities."""
-        self.entity_description: UnifiProtectNumberEntityDescription = description
+        self.entity_description: ProtectNumberEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._attr_max_value = self.entity_description.ufp_max

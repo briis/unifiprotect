@@ -150,15 +150,6 @@ class AccessTokenMixin(Entity):
             hashlib.sha256(_RND.getrandbits(256).to_bytes(32, "little")).hexdigest()
         )
 
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the extra state attributes."""
-        attrs = super().extra_state_attributes or {}
-        return {
-            **attrs,
-            "access_token": self.access_tokens[-1],
-        }
-
     @callback
     def _trigger_update_tokens(self, *args, **kwargs):
         assert isinstance(self, UnifiProtectEntity)

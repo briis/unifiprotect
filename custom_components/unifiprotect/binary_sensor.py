@@ -301,7 +301,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
         self._doorbell_callback: TaskClass | None = None
 
     @callback
-    def _async_get_extra_attrs(self) -> dict[str, Any]:
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
         attrs: dict[str, Any] = {}
         key = self.entity_description.key
 
@@ -361,7 +361,7 @@ class UnifiProtectBinarySensor(UnifiProtectEntity, BinarySensorEntity):
                 self.device, self.entity_description.ufp_value
             )
 
-        self._extra_state_attributes = self._async_get_extra_attrs()
+        self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 
     @callback
     async def _async_wait_for_doorbell(self, end_time: datetime) -> None:
@@ -458,8 +458,8 @@ class UnifiProtectAccessTokenBinarySensor(UnifiProtectBinarySensor, AccessTokenM
         super().__init__(protect, protect_data, device, description, index)
 
     @callback
-    def _async_get_extra_attrs(self) -> dict[str, Any]:
-        attrs = super()._async_get_extra_attrs()
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
+        attrs = super()._async_update_extra_attrs_from_protect()
 
         # Camera motion sensors with object detection
         event: Event | None = None

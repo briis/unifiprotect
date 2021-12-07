@@ -1,4 +1,4 @@
-"""Support for Ubiquiti's Unifi Protect NVR."""
+"""Support for Ubiquiti's UniFi Protect NVR."""
 from __future__ import annotations
 
 import logging
@@ -25,9 +25,9 @@ from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Camera
 
 from .const import DOMAIN
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectEntity
+from .models import ProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,14 +37,14 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
-    """Discover cameras with speakers on a Unifi Protect NVR."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    """Discover cameras with speakers on a UniFi Protect NVR."""
+    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
 
     async_add_entities(
         [
-            UnifiProtectMediaPlayer(
+            ProtectMediaPlayer(
                 protect,
                 protect_data,
                 camera,
@@ -55,13 +55,13 @@ async def async_setup_entry(
     )
 
 
-class UnifiProtectMediaPlayer(UnifiProtectEntity, MediaPlayerEntity):
+class ProtectMediaPlayer(ProtectEntity, MediaPlayerEntity):
     """A Ubiquiti UniFi Protect Speaker."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        protect_data: ProtectData,
         camera: Camera,
     ) -> None:
         """Initialize an UniFi speaker."""

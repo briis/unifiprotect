@@ -22,12 +22,12 @@ from pyunifiprotect.data.base import ProtectDeviceModel
 from .const import DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
 
 if TYPE_CHECKING:
-    from .entity import AccessTokenMixin, UnifiProtectEntity
+    from .entity import AccessTokenMixin, ProtectEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class UnifiProtectData:
+class ProtectData:
     """Coordinate updates."""
 
     def __init__(

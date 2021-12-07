@@ -1,4 +1,4 @@
-"""Constant definitions for Unifi Protect Integration."""
+"""Constant definitions for UniFi Protect Integration."""
 
 # from typing_extensions import Required
 from datetime import timedelta

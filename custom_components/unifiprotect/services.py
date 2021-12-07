@@ -11,7 +11,7 @@ from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.exceptions import BadRequest
 
 from .const import CONF_DURATION, CONF_MESSAGE, DOMAIN
-from .models import UnifiProtectEntryData
+from .models import ProtectEntryData
 from .utils import profile_ws_messages
 
 
@@ -20,7 +20,7 @@ def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
     return [
         data.protect
         for data in hass.data[DOMAIN].values()
-        if isinstance(data, UnifiProtectEntryData)
+        if isinstance(data, ProtectEntryData)
     ]
 
 

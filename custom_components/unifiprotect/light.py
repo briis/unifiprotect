@@ -1,4 +1,4 @@
-"""This component provides Lights for Unifi Protect."""
+"""This component provides Lights for UniFi Protect."""
 from __future__ import annotations
 
 from datetime import timedelta
@@ -25,9 +25,9 @@ from .const import (
     LIGHT_SETTINGS_SCHEMA,
     SERVICE_LIGHT_SETTINGS,
 )
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectEntity
+from .models import ProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,12 +40,12 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up lights for UniFi Protect integration."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
 
     entities = [
-        UnifiProtectLight(
+        ProtectLight(
             protect,
             protect_data,
             device,
@@ -74,16 +74,16 @@ def hass_to_unifi_brightness(value: int) -> int:
     return max(1, round((value / 255) * 6))
 
 
-class UnifiProtectLight(UnifiProtectEntity, LightEntity):
-    """A Ubiquiti Unifi Protect Light Entity."""
+class ProtectLight(ProtectEntity, LightEntity):
+    """A Ubiquiti UniFi Protect Light Entity."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        protect_data: ProtectData,
         device: ProtectDeviceModel,
     ):
-        """Initialize an Unifi light."""
+        """Initialize an UniFi light."""
         assert isinstance(device, Light)
         self.device: Light = device
         super().__init__(protect, protect_data, device, None)

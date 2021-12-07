@@ -1,4 +1,4 @@
-"""This component provides select entities for Unifi Protect."""
+"""This component provides select entities for UniFi Protect."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -29,9 +29,9 @@ from pyunifiprotect.data.base import ProtectDeviceModel
 from pyunifiprotect.data.devices import LCDMessage
 
 from .const import DEVICES_WITH_CAMERA, DOMAIN, TYPE_EMPTY_VALUE
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectEntity
+from .models import ProtectEntryData
 from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ DEVICE_RECORDING_MODES = [
 
 
 @dataclass
-class UnifiprotectRequiredKeysMixin:
+class ProtectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_device_types: set[ModelType]
@@ -91,14 +91,12 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectSelectEntityDescription(
-    SelectEntityDescription, UnifiprotectRequiredKeysMixin
-):
-    """Describes Unifi Protect Sensor entity."""
+class ProtectSelectEntityDescription(SelectEntityDescription, ProtectRequiredKeysMixin):
+    """Describes UniFi Protect Sensor entity."""
 
 
-SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
-    UnifiProtectSelectEntityDescription(
+SELECT_TYPES: tuple[ProtectSelectEntityDescription, ...] = (
+    ProtectSelectEntityDescription(
         key=_KEY_REC_MODE,
         name="Recording Mode",
         icon="mdi:video-outline",
@@ -110,7 +108,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_value="recording_settings.mode",
         ufp_set_function="set_recording_mode",
     ),
-    UnifiProtectSelectEntityDescription(
+    ProtectSelectEntityDescription(
         key=_KEY_VIEWER,
         name="Viewer",
         icon="mdi:view-dashboard",
@@ -121,7 +119,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_value="liveview",
         ufp_set_function="set_liveview",
     ),
-    UnifiProtectSelectEntityDescription(
+    ProtectSelectEntityDescription(
         key=_KEY_LIGHT_MOTION,
         name="Lighting",
         icon="mdi:spotlight",
@@ -133,7 +131,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_value="light_mode_settings.mode",
         ufp_set_function=None,
     ),
-    UnifiProtectSelectEntityDescription(
+    ProtectSelectEntityDescription(
         key=_KEY_IR,
         name="Infrared",
         icon="mdi:circle-opacity",
@@ -145,7 +143,7 @@ SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
         ufp_value="isp_settings.ir_led_mode",
         ufp_set_function="set_ir_led_model",
     ),
-    UnifiProtectSelectEntityDescription(
+    ProtectSelectEntityDescription(
         key=_KEY_DOORBELL_TEXT,
         name="Doorbell Text",
         icon="mdi:card-text",
@@ -166,7 +164,7 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up Select entities for UniFi Protect integration."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
 
@@ -179,7 +177,7 @@ async def async_setup_entry(
                     continue
 
             entities.append(
-                UnifiProtectSelects(
+                ProtectSelects(
                     protect,
                     protect_data,
                     device,
@@ -200,21 +198,21 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
-    """A Unifi Protect Select Entity."""
+class ProtectSelects(ProtectEntity, SelectEntity):
+    """A UniFi Protect Select Entity."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        protect_data: ProtectData,
         device: ProtectDeviceModel,
-        description: UnifiProtectSelectEntityDescription,
+        description: ProtectSelectEntityDescription,
         options: list[dict[str, Any]] | None,
     ):
         """Initialize the unifi protect select entity."""
         assert isinstance(device, (Camera, Viewer, Light))
         self.device: Camera | Viewer | Light = device
-        self.entity_description: UnifiProtectSelectEntityDescription = description
+        self.entity_description: ProtectSelectEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._data_key = description.ufp_value

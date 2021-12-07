@@ -1,4 +1,4 @@
-"""Support for Ubiquiti's Unifi Protect NVR."""
+"""Support for Ubiquiti's UniFi Protect NVR."""
 from __future__ import annotations
 
 import logging
@@ -12,9 +12,9 @@ from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
 
 from .const import DEVICES_THAT_ADOPT, DOMAIN
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectEntity
+from .models import ProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,13 +25,13 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Discover devices on a UniFi Protect NVR."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
 
     async_add_entities(
         [
-            UnifiProtectButton(
+            ProtectButton(
                 protect,
                 protect_data,
                 device,
@@ -41,16 +41,16 @@ async def async_setup_entry(
     )
 
 
-class UnifiProtectButton(UnifiProtectEntity, ButtonEntity):
+class ProtectButton(ProtectEntity, ButtonEntity):
     """A Ubiquiti UniFi Protect Reboot button."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        protect_data: ProtectData,
         device: ProtectDeviceModel,
     ):
-        """Initialize an Unifi camera."""
+        """Initialize an UniFi camera."""
         assert isinstance(device, ProtectAdoptableDeviceModel)
         self.device: ProtectAdoptableDeviceModel = device
         super().__init__(protect, protect_data, device, None)

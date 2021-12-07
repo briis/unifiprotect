@@ -1,4 +1,4 @@
-"""Unifi Protect Platform."""
+"""UniFi Protect Platform."""
 from __future__ import annotations
 
 import asyncio
@@ -47,8 +47,8 @@ from .const import (
     SERVICE_REMOVE_DOORBELL_TEXT,
     SERVICE_SET_DEFAULT_DOORBELL_TEXT,
 )
-from .data import UnifiProtectData
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .models import ProtectEntryData
 from .services import (
     add_doorbell_text,
     profile_ws,
@@ -171,7 +171,7 @@ def _async_import_options_from_data_if_missing(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up the Unifi Protect config entries."""
+    """Set up the UniFi Protect config entries."""
     _async_import_options_from_data_if_missing(hass, entry)
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
@@ -186,7 +186,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ignore_stats=not entry.options.get(CONF_ALL_UPDATES, False),
     )
     _LOGGER.debug("Connect to UniFi Protect")
-    protect_data = UnifiProtectData(hass, protect, SCAN_INTERVAL, entry)
+    protect_data = ProtectData(hass, protect, SCAN_INTERVAL, entry)
 
     try:
         nvr_info = await protect.get_nvr()
@@ -214,7 +214,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not protect_data.last_update_success:
         raise ConfigEntryNotReady
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = UnifiProtectEntryData(
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ProtectEntryData(
         protect_data=protect_data,
         protect=protect,
         disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
@@ -266,9 +266,9 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload Unifi Protect config entry."""
+    """Unload UniFi Protect config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+        data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
         await data.protect_data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
     return bool(unload_ok)

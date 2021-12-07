@@ -5,13 +5,13 @@ from dataclasses import dataclass
 
 from pyunifiprotect import ProtectApiClient
 
-from .data import UnifiProtectData
+from .data import ProtectData
 
 
 @dataclass
-class UnifiProtectEntryData:
+class ProtectEntryData:
     """Data for the unifiprotect integration."""
 
-    protect_data: UnifiProtectData
+    protect_data: ProtectData
     protect: ProtectApiClient
     disable_stream: bool

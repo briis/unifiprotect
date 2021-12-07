@@ -1,4 +1,4 @@
-"""Support for Ubiquiti's Unifi Protect NVR."""
+"""Support for Ubiquiti's UniFi Protect NVR."""
 from __future__ import annotations
 
 from datetime import timedelta
@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import Camera as UnifiCamera
+from pyunifiprotect.data import Camera as ProtectCamera
 from pyunifiprotect.data.devices import CameraChannel
 from pyunifiprotect.data.types import (
     DoorbellMessageType,
@@ -61,16 +61,16 @@ from .const import (
     SET_ZOOM_POSITION_SCHEMA,
     TYPE_RECORD_NOTSET,
 )
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectEntity
+from .models import ProtectEntryData
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def get_camera_channels(
     protect: ProtectApiClient,
-) -> Generator[tuple[UnifiCamera, CameraChannel, bool], None, None]:
+) -> Generator[tuple[ProtectCamera, CameraChannel, bool], None, None]:
 
     for camera in protect.bootstrap.cameras.values():
         is_default = True
@@ -89,8 +89,8 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
-    """Discover cameras on a Unifi Protect NVR."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    """Discover cameras on a UniFi Protect NVR."""
+    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
     disable_stream = entry_data.disable_stream
@@ -99,7 +99,7 @@ async def async_setup_entry(
     for camera, channel, is_default in get_camera_channels(protect):
         if channel.is_rtsp_enabled:
             items.append(
-                UnifiProtectCamera(
+                ProtectCamera(
                     protect,
                     protect_data,
                     camera,
@@ -110,7 +110,7 @@ async def async_setup_entry(
                 )
             )
             items.append(
-                UnifiProtectCamera(
+                ProtectCamera(
                     protect,
                     protect_data,
                     camera,
@@ -122,7 +122,7 @@ async def async_setup_entry(
             )
         else:
             items.append(
-                UnifiProtectCamera(
+                ProtectCamera(
                     protect,
                     protect_data,
                     camera,
@@ -190,21 +190,21 @@ async def async_setup_entry(
     )
 
 
-class UnifiProtectCamera(UnifiProtectEntity, Camera):
-    """A Ubiquiti Unifi Protect Camera."""
+class ProtectCamera(ProtectEntity, Camera):
+    """A Ubiquiti UniFi Protect Camera."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
-        camera: UnifiCamera,
+        protect_data: ProtectData,
+        camera: ProtectCamera,
         channel: CameraChannel,
         is_default: bool,
         secure: bool,
         disable_stream: bool,
     ) -> None:
-        """Initialize an Unifi camera."""
-        self.device: UnifiCamera = camera
+        """Initialize an UniFi camera."""
+        self.device: ProtectCamera = camera
         super().__init__(protect, protect_data, camera, None)
         self.channel = channel
         self._secure = secure

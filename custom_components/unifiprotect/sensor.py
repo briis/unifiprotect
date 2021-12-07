@@ -1,4 +1,4 @@
-"""This component provides sensors for Unifi Protect."""
+"""This component provides sensors for UniFi Protect."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -26,16 +26,16 @@ from pyunifiprotect.data.base import ProtectDeviceModel
 from pyunifiprotect.data.nvr import NVR
 
 from .const import ATTR_ENABLED_AT, DEVICES_THAT_ADOPT, DEVICES_WITH_CAMERA, DOMAIN
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectEntity
+from .models import ProtectEntryData
 from .utils import above_ha_version, get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class UnifiprotectRequiredKeysMixin:
+class ProtectRequiredKeysMixin:
     """Mixin for required keys."""
 
     ufp_device_types: set[ModelType]
@@ -44,10 +44,8 @@ class UnifiprotectRequiredKeysMixin:
 
 
 @dataclass
-class UnifiProtectSensorEntityDescription(
-    SensorEntityDescription, UnifiprotectRequiredKeysMixin
-):
-    """Describes Unifi Protect Sensor entity."""
+class ProtectSensorEntityDescription(SensorEntityDescription, ProtectRequiredKeysMixin):
+    """Describes UniFi Protect Sensor entity."""
 
 
 _KEY_MEMORY = "memory_utilization"
@@ -60,8 +58,8 @@ _KEY_RES_4K = "resolution_4K"
 _KEY_RES_FREE = "resolution_free"
 _KEY_CAPACITY = "record_capacity"
 
-SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
-    UnifiProtectSensorEntityDescription(
+SENSOR_TYPES: tuple[ProtectSensorEntityDescription, ...] = (
+    ProtectSensorEntityDescription(
         key="motion_recording",
         name="Motion Recording",
         icon="mdi:video-outline",
@@ -70,7 +68,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="recording_settings.mode",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="uptime",
         name="Uptime",
         icon="mdi:clock",
@@ -81,7 +79,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="up_since",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="light_turn_on",
         name="Light Turn On",
         icon="mdi:leak",
@@ -90,7 +88,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="light_mode_settings.mode",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="battery_level",
         name="Battery Level",
         native_unit_of_measurement="%",
@@ -100,7 +98,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="battery_status.percentage",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="light_level",
         name="Light Level",
         native_unit_of_measurement="lx",
@@ -110,7 +108,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="stats.light.value",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="humidity_level",
         name="Humidity Level",
         native_unit_of_measurement="%",
@@ -120,7 +118,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="stats.humidity.value",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="temperature_level",
         name="Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -130,7 +128,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="stats.temperature.value",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="ble_signal",
         name="Bluetooth Signal Strength",
         native_unit_of_measurement="dB",
@@ -141,7 +139,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="bluetooth_connection_state.signal_strength",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="cpu_utilization",
         name="CPU Utilization",
         native_unit_of_measurement="%",
@@ -152,7 +150,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="system_info.cpu.average_load",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key="cpu_temperature",
         name="CPU Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
@@ -163,7 +161,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="system_info.cpu.temperature",
         precision=None,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_MEMORY,
         name="Memory Utilization",
         native_unit_of_measurement="%",
@@ -174,7 +172,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value=None,
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_DISK,
         name="Storage Utilization",
         native_unit_of_measurement="%",
@@ -185,7 +183,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="storage_stats.utilization",
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_RECORD_TIMELAPSE,
         name="Type: Timelapse Video",
         native_unit_of_measurement="%",
@@ -196,7 +194,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="storage_stats.storage_distribution.timelapse_recordings.percentage",
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_RECORD_ROTATE,
         name="Type: Continuous Video",
         native_unit_of_measurement="%",
@@ -207,7 +205,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="storage_stats.storage_distribution.continuous_recordings.percentage",
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_RECORD_DETECTIONS,
         name="Type: Detections Video",
         native_unit_of_measurement="%",
@@ -218,7 +216,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="storage_stats.storage_distribution.detections_recordings.percentage",
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_RES_HD,
         name="Resolution: HD Video",
         native_unit_of_measurement="%",
@@ -229,7 +227,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="storage_stats.storage_distribution.hd_usage.percentage",
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_RES_4K,
         name="Resolution: 4K Video",
         native_unit_of_measurement="%",
@@ -240,7 +238,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="storage_stats.storage_distribution.uhd_usage.percentage",
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_RES_FREE,
         name="Resolution: Free Space",
         native_unit_of_measurement="%",
@@ -251,7 +249,7 @@ SENSOR_TYPES: tuple[UnifiProtectSensorEntityDescription, ...] = (
         ufp_value="storage_stats.storage_distribution.free.percentage",
         precision=2,
     ),
-    UnifiProtectSensorEntityDescription(
+    ProtectSensorEntityDescription(
         key=_KEY_CAPACITY,
         name="Recording Capcity",
         native_unit_of_measurement="s",
@@ -271,16 +269,14 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up sensors for UniFi Protect integration."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
+    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
     protect = entry_data.protect
     protect_data = entry_data.protect_data
 
     sensors = []
     for description in SENSOR_TYPES:
         for device in protect_data.get_by_types(description.ufp_device_types):
-            sensors.append(
-                UnifiProtectSensor(protect, protect_data, device, description)
-            )
+            sensors.append(ProtectSensor(protect, protect_data, device, description))
             _LOGGER.debug(
                 "Adding sensor entity %s for %s",
                 description.name,
@@ -290,18 +286,18 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class UnifiProtectSensor(UnifiProtectEntity, SensorEntity):
-    """A Ubiquiti Unifi Protect Sensor."""
+class ProtectSensor(ProtectEntity, SensorEntity):
+    """A Ubiquiti UniFi Protect Sensor."""
 
     def __init__(
         self,
         protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        protect_data: ProtectData,
         device: ProtectDeviceModel,
-        description: UnifiProtectSensorEntityDescription,
+        description: ProtectSensorEntityDescription,
     ):
-        """Initialize an Unifi Protect sensor."""
-        self.entity_description: UnifiProtectSensorEntityDescription = description
+        """Initialize an UniFi Protect sensor."""
+        self.entity_description: ProtectSensorEntityDescription = description
         super().__init__(protect, protect_data, device, description)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._async_update_device_from_protect()

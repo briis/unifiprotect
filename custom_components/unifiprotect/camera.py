@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import Camera as ProtectCamera
+from pyunifiprotect.data import Camera as UFPCamera
 from pyunifiprotect.data.devices import CameraChannel
 from pyunifiprotect.data.types import (
     DoorbellMessageType,
@@ -70,7 +70,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_camera_channels(
     protect: ProtectApiClient,
-) -> Generator[tuple[ProtectCamera, CameraChannel, bool], None, None]:
+) -> Generator[tuple[UFPCamera, CameraChannel, bool], None, None]:
 
     for camera in protect.bootstrap.cameras.values():
         is_default = True
@@ -197,14 +197,14 @@ class ProtectCamera(ProtectEntity, Camera):
         self,
         protect: ProtectApiClient,
         protect_data: ProtectData,
-        camera: ProtectCamera,
+        camera: UFPCamera,
         channel: CameraChannel,
         is_default: bool,
         secure: bool,
         disable_stream: bool,
     ) -> None:
         """Initialize an UniFi camera."""
-        self.device: ProtectCamera = camera
+        self.device: UFPCamera = camera
         super().__init__(protect, protect_data, camera, None)
         self.channel = channel
         self._secure = secure

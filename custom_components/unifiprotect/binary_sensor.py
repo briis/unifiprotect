@@ -348,14 +348,16 @@ class ProtectBinarySensor(ProtectEntity, BinarySensorEntity):
             last_ring = get_nested_attr(self.device, self.entity_description.ufp_value)
             now = utc_now()
 
-            self._attr_is_on = (now - last_ring) < RING_INTERVAL
-
-            if self._attr_is_on:
+            is_ringing = (
+                False if last_ring is None else (now - last_ring) < RING_INTERVAL
+            )
+            if is_ringing:
                 if self._doorbell_callback is not None:
                     self._doorbell_callback.cancel()
                 self._doorbell_callback = asyncio.ensure_future(
                     self._async_wait_for_doorbell(last_ring + RING_INTERVAL)
                 )
+            self._attr_is_on = is_ringing
         else:
             self._attr_is_on = get_nested_attr(
                 self.device, self.entity_description.ufp_value
@@ -482,7 +484,7 @@ class ProtectAccessTokenBinarySensor(ProtectBinarySensor, AccessTokenMixin):
             event = self.device.last_motion_event
 
         thumb_url: str | None = None
-        if event is not None:
+        if event is not None and len(self.access_tokens) > 0:
             assert self.device_info is not None
             # thumbnail_id is never updated via WS, but it is always e-{event.id}
             params = urlencode(

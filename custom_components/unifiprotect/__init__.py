@@ -22,8 +22,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.data.nvr import NVR
-from pyunifiprotect.data.types import ModelType
+from pyunifiprotect.data import ModelType
 
 from .const import (
     CONF_ALL_UPDATES,
@@ -218,10 +217,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
     )
 
+    platforms = PLATFORMS
     if above_ha_version(2021, 12):
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS_NEXT)
-    else:
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+        platforms = PLATFORMS_NEXT
+    hass.config_entries.async_setup_platforms(entry, platforms)
 
     services = [
         (
@@ -263,7 +262,11 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload UniFi Protect config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+    platforms = PLATFORMS
+    if above_ha_version(2021, 12):
+        platforms = PLATFORMS_NEXT
+
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, platforms):
         data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
         await data.protect_data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)

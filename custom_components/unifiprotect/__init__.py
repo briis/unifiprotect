@@ -8,10 +8,9 @@ import logging
 
 from aiohttp import CookieJar
 from aiohttp.client_exceptions import ServerDisconnectedError
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import (
     CONF_HOST,
-    CONF_ID,
     CONF_PASSWORD,
     CONF_PORT,
     CONF_USERNAME,
@@ -20,18 +19,16 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.data.nvr import NVR
-from pyunifiprotect.data.types import ModelType
+from pyunifiprotect.data import ModelType
 
 from .const import (
     CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
     CONFIG_OPTIONS,
-    DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
     DEVICE_TYPE_CAMERA,
     DEVICES_FOR_SUBSCRIBE,
@@ -220,35 +217,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
     )
 
+    platforms = PLATFORMS
     if above_ha_version(2021, 12):
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS_NEXT)
-    else:
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+        platforms = PLATFORMS_NEXT
+    hass.config_entries.async_setup_platforms(entry, platforms)
 
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_ADD_DOORBELL_TEXT,
-        functools.partial(add_doorbell_text, hass),
-        DOORBELL_TEXT_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_REMOVE_DOORBELL_TEXT,
-        functools.partial(remove_doorbell_text, hass),
-        DOORBELL_TEXT_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_SET_DEFAULT_DOORBELL_TEXT,
-        functools.partial(set_default_doorbell_text, hass),
-        DOORBELL_TEXT_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_PROFILE_WS,
-        functools.partial(profile_ws, hass),
-        PROFILE_WS_SCHEMA,
-    )
+    services = [
+        (
+            SERVICE_ADD_DOORBELL_TEXT,
+            functools.partial(add_doorbell_text, hass),
+            DOORBELL_TEXT_SCHEMA,
+        ),
+        (
+            SERVICE_REMOVE_DOORBELL_TEXT,
+            functools.partial(remove_doorbell_text, hass),
+            DOORBELL_TEXT_SCHEMA,
+        ),
+        (
+            SERVICE_SET_DEFAULT_DOORBELL_TEXT,
+            functools.partial(set_default_doorbell_text, hass),
+            DOORBELL_TEXT_SCHEMA,
+        ),
+        (SERVICE_PROFILE_WS, functools.partial(profile_ws, hass), PROFILE_WS_SCHEMA),
+    ]
+    for name, method, schema in services:
+        if hass.services.has_service(DOMAIN, name):
+            continue
+        hass.services.async_register(DOMAIN, name, method, schema=schema)
 
     hass.http.register_view(ThumbnailProxyView(hass))
 
@@ -267,10 +262,32 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload UniFi Protect config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+    platforms = PLATFORMS
+    if above_ha_version(2021, 12):
+        platforms = PLATFORMS_NEXT
+
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, platforms):
         data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
         await data.protect_data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
+
+    loaded_entries = [
+        entry
+        for entry in hass.config_entries.async_entries(DOMAIN)
+        if entry.state == ConfigEntryState.LOADED
+    ]
+    if len(loaded_entries) == 1:
+        all_services = [
+            SERVICE_ADD_DOORBELL_TEXT,
+            SERVICE_REMOVE_DOORBELL_TEXT,
+            SERVICE_SET_DEFAULT_DOORBELL_TEXT,
+            SERVICE_PROFILE_WS,
+        ]
+        # If this is the last loaded instance of RainMachine, deregister any services
+        # defined during integration setup:
+        for name in all_services:
+            hass.services.async_remove(DOMAIN, name)
+
     return bool(unload_ok)
 
 

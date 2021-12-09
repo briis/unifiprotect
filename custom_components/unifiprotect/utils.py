@@ -79,6 +79,10 @@ async def profile_ws_messages(
 
 
 def above_ha_version(major: int, minor: int) -> bool:
+    """Checks if current Home Assistant version if above a specificed one
+
+    CORE: Remove this before merging to core.
+    """
     if MAJOR_VERSION > major:
         return True
     if MAJOR_VERSION < major:

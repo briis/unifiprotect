@@ -9,7 +9,6 @@ from pyunifiprotect.data.types import ModelType, Version
 import voluptuous as vol
 
 DOMAIN = "unifiprotect"
-UNIQUE_ID = "unique_id"
 
 ATTR_CAMERA_ID = "camera_id"
 ATTR_CHIME_ENABLED = "chime_enabled"
@@ -17,7 +16,6 @@ ATTR_CHIME_DURATION = "chime_duration"
 ATTR_DEVICE_MODEL = "device_model"
 ATTR_ENABLED_AT = "enabled_at"
 ATTR_EVENT_SCORE = "event_score"
-ATTR_EVENT_LENGTH = "event_length"
 ATTR_EVENT_OBJECT = "event_object"
 ATTR_EVENT_THUMB = "event_thumbnail"
 ATTR_IS_DARK = "is_dark"
@@ -25,7 +23,6 @@ ATTR_MIC_SENSITIVITY = "mic_sensitivity"
 ATTR_ONLINE = "online"
 ATTR_PRIVACY_MODE = "privacy_mode"
 ATTR_UP_SINCE = "up_since"
-ATTR_VIEWPORT_ID = "viewport_id"
 ATTR_VIEW_ID = "view_id"
 ATTR_WDR_VALUE = "wdr_value"
 ATTR_ZOOM_POSITION = "zoom_position"
@@ -36,7 +33,6 @@ ATTR_BITRATE = "bitrate"
 ATTR_CHANNEL_ID = "channel_id"
 
 CONF_RECORDING_MODE = "recording_mode"
-CONF_CHIME_ON = "chime_on"
 CONF_CHIME_DURATION = "chime_duration"
 CONF_DOORBELL_TEXT = "doorbell_text"
 CONF_DISABLE_RTSP = "disable_rtsp"
@@ -71,13 +67,6 @@ DEFAULT_VERIFY_SSL = False
 RING_INTERVAL = timedelta(seconds=3)
 
 DEVICE_TYPE_CAMERA = "camera"
-DEVICE_TYPE_LIGHT = "light"
-DEVICE_TYPE_DOORBELL = "doorbell"
-DEVICE_TYPE_MOTION = "motion"
-DEVICE_TYPE_VIEWPORT = "viewer"
-DEVICE_TYPE_SENSOR = "sensor"
-DEVICE_TYPE_DARK = "is dark"
-
 DEVICES_WITH_CAMERA = {ModelType.CAMERA}
 DEVICES_WITH_STATUS_LIGHT = {ModelType.CAMERA, ModelType.LIGHT}
 DEVICES_WITH_SENSOR = {
@@ -148,6 +137,7 @@ PLATFORMS = [
     "number",
     "media_player",
 ]
+# CORE: Remove this before merging to core.
 PLATFORMS_NEXT = PLATFORMS + [
     "button",
 ]
@@ -204,6 +194,7 @@ PROFILE_WS_SCHEMA = vol.All(
     cv.has_at_least_one_key(CONF_DEVICE_ID),
 )
 
+# CORE: Remove this before merging to core.
 SET_IR_MODE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
@@ -278,12 +269,5 @@ SET_DOORBELL_CHIME_DURATION_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Required(CONF_CHIME_DURATION, default=300): vol.Coerce(int),
-    }
-)
-
-SET_VIEW_PORT_VIEW_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTITY_ID): cv.string,
-        vol.Required(ATTR_VIEW_ID): cv.string,
     }
 )

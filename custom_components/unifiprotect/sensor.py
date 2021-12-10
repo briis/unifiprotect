@@ -5,7 +5,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 import logging
 from typing import Any, Callable, Sequence
+from urllib.parse import urlencode
 
+from homeassistant.components.binary_sensor import DEVICE_CLASS_OCCUPANCY
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -20,17 +22,23 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.data import Light
+from pyunifiprotect.data import NVR, Camera, Event, Light
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.nvr import NVR
 
-from .const import ATTR_ENABLED_AT, DOMAIN
+from .const import ATTR_ENABLED_AT, ATTR_EVENT_SCORE, ATTR_EVENT_THUMB, DOMAIN
 from .data import ProtectData
-from .entity import ProtectDeviceEntity, ProtectNVREntity, async_all_device_entities
+from .entity import (
+    AccessTokenMixin,
+    ProtectDeviceEntity,
+    ProtectNVREntity,
+    async_all_device_entities,
+)
 from .models import ProtectRequiredKeysMixin
 from .utils import above_ha_version, get_nested_attr
+from .views import ThumbnailProxyView
 
 _LOGGER = logging.getLogger(__name__)
+DETECTED_OBJECT_NONE = "none"
 
 
 @dataclass
@@ -49,6 +57,7 @@ _KEY_RES_HD = "resolution_HD"
 _KEY_RES_4K = "resolution_4K"
 _KEY_RES_FREE = "resolution_free"
 _KEY_CAPACITY = "record_capacity"
+_KEY_OBJECT = "detected_object"
 
 ALL_DEVICES_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
     ProtectSensorEntityDescription(
@@ -264,6 +273,14 @@ NVR_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
     ),
 )
 
+MOTION_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
+    ProtectSensorEntityDescription(
+        key=_KEY_OBJECT,
+        name="Detected Object",
+        device_class=DEVICE_CLASS_OCCUPANCY,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -281,6 +298,7 @@ async def async_setup_entry(
         sense_descs=SENSE_SENSORS,
     )
     entities += _async_nvr_entities(data)
+    entities += _async_motion_entities(data)
 
     async_add_entities(entities)
 
@@ -294,6 +312,26 @@ def _async_nvr_entities(
     for description in NVR_SENSORS:
         entities.append(ProtectNVRSensor(data, device, description))
         _LOGGER.debug("Adding NVR sensor entity %s", description.name)
+
+    return entities
+
+
+@callback
+def _async_motion_entities(
+    data: ProtectData,
+) -> list[ProtectDeviceEntity]:
+    entities: list[ProtectDeviceEntity] = []
+    for device in data.api.bootstrap.cameras.values():
+        if not device.feature_flags.has_smart_detect:
+            continue
+
+        for description in MOTION_SENSORS:
+            entities.append(ProtectAccessTokenSensor(data, device, description))
+            _LOGGER.debug(
+                "Adding sensor entity %s for %s",
+                description.name,
+                device.name,
+            )
 
     return entities
 
@@ -373,3 +411,59 @@ class ProtectNVRSensor(SensorValueMixin, ProtectNVREntity, SensorEntity):
             value = get_nested_attr(self.device, self.entity_description.ufp_value)
 
         self._attr_native_value = self._clean_sensor_value(value)
+
+
+class ProtectAccessTokenSensor(ProtectDeviceSensor, AccessTokenMixin):
+    """A UniFi Protect Device Sensor with access tokens."""
+
+    def __init__(
+        self,
+        data: ProtectData,
+        device: Camera,
+        description: ProtectSensorEntityDescription,
+    ) -> None:
+        self.device: Camera = device
+        super().__init__(data, device, description)
+        self._event: Event | None = None
+
+    @callback
+    def _async_update_device_from_protect(self) -> None:
+        self._event = None
+        if (
+            self.device.is_smart_detected
+            and self.device.last_smart_detect_event is not None
+            and len(self.device.last_smart_detect_event.smart_detect_types) > 0
+        ):
+            self._event = self.device.last_smart_detect_event
+        super()._async_update_device_from_protect()
+
+        if self._event is None:
+            self._attr_native_value = DETECTED_OBJECT_NONE
+        else:
+            self._attr_native_value = self._event.smart_detect_types[0].value
+
+    @callback
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
+        if self._event is None:
+            return {
+                ATTR_EVENT_SCORE: 0,
+                ATTR_EVENT_THUMB: None,
+            }
+
+        thumb_url: str | None = None
+        if len(self.access_tokens) > 0:
+            assert self.device_info is not None
+            # thumbnail_id is never updated via WS, but it is always e-{event.id}
+            params = urlencode(
+                {"entity_id": self.entity_id, "token": self.access_tokens[-1]}
+            )
+            thumb_url = (
+                ThumbnailProxyView.url.format(event_id=f"e-{self._event.id}")
+                + f"?{params}"
+            )
+
+        return {
+            **super()._async_update_extra_attrs_from_protect(),
+            ATTR_EVENT_SCORE: self._event.score,
+            ATTR_EVENT_THUMB: thumb_url,
+        }

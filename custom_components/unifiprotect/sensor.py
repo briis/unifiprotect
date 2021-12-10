@@ -60,6 +60,35 @@ ALL_DEVICES_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
         ufp_value="up_since",
     ),
+    ProtectSensorEntityDescription(
+        key="ble_signal",
+        name="Bluetooth Signal Strength",
+        native_unit_of_measurement="dB",
+        device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_value="bluetooth_connection_state.signal_strength",
+        ufp_required_field="bluetooth_connection_state.signal_strength",
+    ),
+    ProtectSensorEntityDescription(
+        key="phy_rate",
+        name="Link Speed",
+        native_unit_of_measurement="Mbps",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_value="wired_connection_state.phy_rate",
+        ufp_required_field="wired_connection_state.phy_rate",
+    ),
+    ProtectSensorEntityDescription(
+        key="wifi_signal",
+        name="WiFi Signal Strength",
+        native_unit_of_measurement="dB",
+        device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_value="wifi_connection_state.signal_strength",
+        ufp_required_field="wifi_connection_state.signal_strength",
+    ),
 )
 
 CAMERA_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
@@ -114,15 +143,6 @@ SENSE_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_TEMPERATURE,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ufp_value="stats.temperature.value",
-    ),
-    ProtectSensorEntityDescription(
-        key="ble_signal",
-        name="Bluetooth Signal Strength",
-        native_unit_of_measurement="dB",
-        device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
-        entity_registry_enabled_default=False,
-        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_value="bluetooth_connection_state.signal_strength",
     ),
 )
 

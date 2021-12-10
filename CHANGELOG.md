@@ -2,6 +2,10 @@
 
 ## 0.11.0-dev (master)
 
+* `NEW`: Adds `phy_rate` and `wifi_signal` sensors so all connection states (BLE, WiFi and Wired) should have a diagnostic sensor
+
+## 0.11.0-beta.2
+
 * `CHANGE`: Allows `device_id` parameter for global service calls to be any device from a UniFi Protect instance
 
 * `NEW`: Adds event thumbnail proxy view.

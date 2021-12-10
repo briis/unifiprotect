@@ -4,7 +4,7 @@ from __future__ import annotations
 import collections
 from datetime import timedelta
 import logging
-from typing import TYPE_CHECKING, Any, Generator, Iterable
+from typing import Any, Generator, Iterable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -17,12 +17,9 @@ from pyunifiprotect.data import (
     ModelType,
     WSSubscriptionMessage,
 )
-from pyunifiprotect.data.base import ProtectDeviceModel
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
 
-from .const import DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
-
-if TYPE_CHECKING:
-    from .entity import AccessTokenMixin, ProtectEntity
+from .const import CONF_DISABLE_RTSP, DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,8 +36,8 @@ class ProtectData:
     ):
         """Initialize an subscriber."""
         super().__init__()
+
         self._hass = hass
-        self._protect = protect
         self._entry = entry
         self._hass = hass
         self._update_interval = update_interval
@@ -50,27 +47,28 @@ class ProtectData:
 
         self.last_update_success = False
         self.access_tokens: dict[str, collections.deque] = {}
+        self.api = protect
+
+    @property
+    def disable_stream(self) -> bool:
+        return self._entry.options.get(CONF_DISABLE_RTSP, False)
 
     def get_by_types(
         self, device_types: Iterable[ModelType]
-    ) -> Generator[ProtectDeviceModel, None, None]:
+    ) -> Generator[ProtectAdoptableDeviceModel, None, None]:
         """Get all devices matching types."""
 
         for device_type in device_types:
-            if device_type == ModelType.NVR:
-                yield self._protect.bootstrap.nvr
-                continue
-
             attr = f"{device_type.value}s"
-            devices: dict[str, ProtectDeviceModel] = getattr(
-                self._protect.bootstrap, attr
+            devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
+                self.api.bootstrap, attr
             )
             for device in devices.values():
                 yield device
 
     async def async_setup(self) -> None:
         """Subscribe and do the refresh."""
-        self._unsub_websocket = self._protect.subscribe_websocket(
+        self._unsub_websocket = self.api.subscribe_websocket(
             self._async_process_ws_message
         )
         await self.async_refresh()
@@ -83,12 +81,12 @@ class ProtectData:
         if self._unsub_interval:
             self._unsub_interval()
             self._unsub_interval = None
-        await self._protect.async_disconnect_ws()
+        await self.api.async_disconnect_ws()
 
     async def async_refresh(self, *_: Any, force: bool = False) -> None:
         """Update the data."""
         try:
-            self._async_process_updates(await self._protect.update(force=force))
+            self._async_process_updates(await self.api.update(force=force))
             self.last_update_success = True
         except NvrError:
             if self.last_update_success:
@@ -113,7 +111,7 @@ class ProtectData:
         elif isinstance(message.new_obj, Event) and message.new_obj.camera is not None:
             self.async_signal_device_id_update(message.new_obj.camera.id)
         # trigger update for all viewports when a liveview updates
-        elif len(self._protect.bootstrap.viewers) > 0 and isinstance(
+        elif len(self.api.bootstrap.viewers) > 0 and isinstance(
             message.new_obj, Liveview
         ):
             _LOGGER.error(
@@ -128,12 +126,10 @@ class ProtectData:
         if updates is None:
             return
 
-        self.async_signal_device_id_update(self._protect.bootstrap.nvr.id)
+        self.async_signal_device_id_update(self.api.bootstrap.nvr.id)
         for device_type in DEVICES_THAT_ADOPT:
             attr = f"{device_type.value}s"
-            devices: dict[str, ProtectDeviceModel] = getattr(
-                self._protect.bootstrap, attr
-            )
+            devices: dict[str, ProtectDeviceModel] = getattr(self.api.bootstrap, attr)
             for device_id in devices.keys():
                 self.async_signal_device_id_update(device_id)
 

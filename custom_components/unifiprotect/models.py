@@ -3,15 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from pyunifiprotect import ProtectApiClient
-
-from .data import ProtectData
-
 
 @dataclass
-class ProtectEntryData:
-    """Data for the unifiprotect integration."""
+class ProtectRequiredKeysMixin:
+    """Mixin for required keys."""
 
-    protect_data: ProtectData
-    protect: ProtectApiClient
-    disable_stream: bool
+    ufp_required_field: str | None = None
+    ufp_value: str | None = None

@@ -8,13 +8,11 @@ from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect import ProtectApiClient
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
 from .const import DEVICES_THAT_ADOPT, DOMAIN
 from .data import ProtectData
-from .entity import ProtectEntity
-from .models import ProtectEntryData
+from .entity import ProtectDeviceEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,35 +23,29 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Discover devices on a UniFi Protect NVR."""
-    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities(
         [
             ProtectButton(
-                protect,
-                protect_data,
+                data,
                 device,
             )
-            for device in protect_data.get_by_types(DEVICES_THAT_ADOPT)
+            for device in data.get_by_types(DEVICES_THAT_ADOPT)
         ]
     )
 
 
-class ProtectButton(ProtectEntity, ButtonEntity):
+class ProtectButton(ProtectDeviceEntity, ButtonEntity):
     """A Ubiquiti UniFi Protect Reboot button."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: ProtectData,
-        device: ProtectDeviceModel,
+        data: ProtectData,
+        device: ProtectAdoptableDeviceModel,
     ):
         """Initialize an UniFi camera."""
-        assert isinstance(device, ProtectAdoptableDeviceModel)
-        self.device: ProtectAdoptableDeviceModel = device
-        super().__init__(protect, protect_data, device, None)
+        super().__init__(data, device)
         self._attr_name = f"{self.device.name} Reboot Device"
         self._attr_entity_registry_enabled_default = False
         self._attr_device_class = ButtonDeviceClass.RESTART

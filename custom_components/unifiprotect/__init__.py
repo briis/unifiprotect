@@ -26,7 +26,6 @@ from pyunifiprotect.data import ModelType
 
 from .const import (
     CONF_ALL_UPDATES,
-    CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
     CONFIG_OPTIONS,
     DEFAULT_SCAN_INTERVAL,
@@ -45,7 +44,6 @@ from .const import (
     SERVICE_SET_DEFAULT_DOORBELL_TEXT,
 )
 from .data import ProtectData
-from .models import ProtectEntryData
 from .services import (
     add_doorbell_text,
     profile_ws,
@@ -183,7 +181,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ignore_stats=not entry.options.get(CONF_ALL_UPDATES, False),
     )
     _LOGGER.debug("Connect to UniFi Protect")
-    protect_data = ProtectData(hass, protect, SCAN_INTERVAL, entry)
+    data_service = ProtectData(hass, protect, SCAN_INTERVAL, entry)
 
     try:
         nvr_info = await protect.get_nvr()
@@ -207,15 +205,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if entry.unique_id is None:
         hass.config_entries.async_update_entry(entry, unique_id=nvr_info.mac)
 
-    await protect_data.async_setup()
-    if not protect_data.last_update_success:
+    await data_service.async_setup()
+    if not data_service.last_update_success:
         raise ConfigEntryNotReady
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ProtectEntryData(
-        protect_data=protect_data,
-        protect=protect,
-        disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
-    )
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = data_service
 
     platforms = PLATFORMS
     if above_ha_version(2021, 12):
@@ -249,7 +243,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, protect_data.async_stop)
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, data_service.async_stop)
     )
 
     return True
@@ -267,8 +261,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         platforms = PLATFORMS_NEXT
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, platforms):
-        data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-        await data.protect_data.async_stop()
+        data: ProtectData = hass.data[DOMAIN][entry.entry_id]
+        await data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     loaded_entries = [

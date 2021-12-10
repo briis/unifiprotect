@@ -62,8 +62,7 @@ from .const import (
     TYPE_RECORD_NOTSET,
 )
 from .data import ProtectData
-from .entity import ProtectEntity
-from .models import ProtectEntryData
+from .entity import ProtectDeviceEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -90,18 +89,15 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Discover cameras on a UniFi Protect NVR."""
-    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
-    disable_stream = entry_data.disable_stream
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
+    disable_stream = data.disable_stream
 
     items = []
-    for camera, channel, is_default in get_camera_channels(protect):
+    for camera, channel, is_default in get_camera_channels(data.api):
         if channel.is_rtsp_enabled:
             items.append(
                 ProtectCamera(
-                    protect,
-                    protect_data,
+                    data,
                     camera,
                     channel,
                     is_default,
@@ -111,8 +107,7 @@ async def async_setup_entry(
             )
             items.append(
                 ProtectCamera(
-                    protect,
-                    protect_data,
+                    data,
                     camera,
                     channel,
                     is_default,
@@ -123,8 +118,7 @@ async def async_setup_entry(
         else:
             items.append(
                 ProtectCamera(
-                    protect,
-                    protect_data,
+                    data,
                     camera,
                     channel,
                     is_default,
@@ -190,13 +184,12 @@ async def async_setup_entry(
     )
 
 
-class ProtectCamera(ProtectEntity, Camera):
+class ProtectCamera(ProtectDeviceEntity, Camera):
     """A Ubiquiti UniFi Protect Camera."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: ProtectData,
+        data: ProtectData,
         camera: UFPCamera,
         channel: CameraChannel,
         is_default: bool,
@@ -205,22 +198,20 @@ class ProtectCamera(ProtectEntity, Camera):
     ) -> None:
         """Initialize an UniFi camera."""
         self.device: UFPCamera = camera
-        super().__init__(protect, protect_data, camera, None)
         self.channel = channel
         self._secure = secure
         self._disable_stream = disable_stream
         self._last_image: bytes | None = None
-        self._async_set_stream_source()
+        super().__init__(data)
+
         if self._secure:
             self._attr_unique_id = f"{self.device.id}_{self.channel.id}"
-        else:
-            self._attr_unique_id = f"{self.device.id}_{self.channel.id}_insecure"
-        # only the default (first) channel is enabled by default
-        self._attr_entity_registry_enabled_default = is_default and secure
-        if self._secure:
             self._attr_name = f"{self.device.name} {self.channel.name}"
         else:
+            self._attr_unique_id = f"{self.device.id}_{self.channel.id}_insecure"
             self._attr_name = f"{self.device.name} {self.channel.name} Insecure"
+        # only the default (first) channel is enabled by default
+        self._attr_entity_registry_enabled_default = is_default and secure
 
     @callback
     def _async_set_stream_source(self) -> None:
@@ -232,7 +223,10 @@ class ProtectCamera(ProtectEntity, Camera):
         if self._secure:
             rtsp_url = self.channel.rtsps_url
 
-        self._stream_source = None if disable_stream else rtsp_url
+        # _async_set_stream_source called by __init__
+        self._stream_source = (  # pylint: disable=attribute-defined-outside-init
+            None if disable_stream else rtsp_url
+        )
         self._attr_supported_features: int = (
             SUPPORT_STREAM if self._stream_source else 0
         )
@@ -242,6 +236,26 @@ class ProtectCamera(ProtectEntity, Camera):
         super()._async_update_device_from_protect()
         self.channel = self.device.channels[self.channel.id]
         self._async_set_stream_source()
+
+    @callback
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
+        """Add additional Attributes to Camera."""
+        return {
+            ATTR_UP_SINCE: self.device.up_since,
+            ATTR_CAMERA_ID: self.device.id,
+            ATTR_CHIME_ENABLED: self.device.feature_flags.has_chime,
+            ATTR_CHIME_DURATION: self.device.chime_duration,
+            ATTR_IS_DARK: self.device.is_dark,
+            ATTR_MIC_SENSITIVITY: self.device.mic_volume,
+            ATTR_PRIVACY_MODE: self.device.is_privacy_on,
+            ATTR_WDR_VALUE: self.device.isp_settings.wdr,
+            ATTR_ZOOM_POSITION: self.device.isp_settings.zoom_position,
+            ATTR_WIDTH: self.channel.width,
+            ATTR_HEIGHT: self.channel.height,
+            ATTR_FPS: self.channel.fps,
+            ATTR_BITRATE: self.channel.bitrate,
+            ATTR_CHANNEL_ID: self.channel.id,
+        }
 
     @property
     def supported_features(self) -> int:
@@ -260,28 +274,6 @@ class ProtectCamera(ProtectEntity, Camera):
     def is_recording(self) -> bool:
         """Return true if the device is recording."""
         return self.device.is_connected and self.device.is_recording
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Add additional Attributes to Camera."""
-
-        return {
-            **super().extra_state_attributes,
-            ATTR_UP_SINCE: self.device.up_since,
-            ATTR_CAMERA_ID: self.device.id,
-            ATTR_CHIME_ENABLED: self.device.feature_flags.has_chime,
-            ATTR_CHIME_DURATION: self.device.chime_duration,
-            ATTR_IS_DARK: self.device.is_dark,
-            ATTR_MIC_SENSITIVITY: self.device.mic_volume,
-            ATTR_PRIVACY_MODE: self.device.is_privacy_on,
-            ATTR_WDR_VALUE: self.device.isp_settings.wdr,
-            ATTR_ZOOM_POSITION: self.device.isp_settings.zoom_position,
-            ATTR_WIDTH: self.channel.width,
-            ATTR_HEIGHT: self.channel.height,
-            ATTR_FPS: self.channel.fps,
-            ATTR_BITRATE: self.channel.bitrate,
-            ATTR_CHANNEL_ID: self.channel.id,
-        }
 
     async def async_set_recording_mode(self, recording_mode: str) -> None:
         """Set Camera Recording Mode."""

@@ -6,7 +6,7 @@ from datetime import timedelta
 import hashlib
 import logging
 from random import SystemRandom
-from typing import Any, Final
+from typing import Any, Final, Sequence
 
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import callback
@@ -16,8 +16,8 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
-from pyunifiprotect import ProtectApiClient
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
 from pyunifiprotect.data.nvr import NVR
 from pyunifiprotect.data.types import ModelType
 
@@ -29,92 +29,161 @@ from .const import (
     EVENT_UPDATE_TOKENS,
 )
 from .data import ProtectData
+from .models import ProtectRequiredKeysMixin
+from .utils import get_nested_attr
 
 TOKEN_CHANGE_INTERVAL: Final = timedelta(minutes=1)
 _RND: Final = SystemRandom()
 _LOGGER = logging.getLogger(__name__)
 
 
-class ProtectEntity(Entity):
+@callback
+def _async_device_entities(
+    data: ProtectData,
+    klass: type[ProtectDeviceEntity],
+    model_type: ModelType,
+    descs: Sequence[ProtectRequiredKeysMixin],
+) -> list[ProtectDeviceEntity]:
+    if len(descs) == 0:
+        return []
+
+    entities: list[ProtectDeviceEntity] = []
+    for device in data.get_by_types({model_type}):
+        assert isinstance(device, (Camera, Light, Sensor, Viewer))
+        for description in descs:
+            assert isinstance(description, EntityDescription)
+            if description.ufp_required_field:
+                required_field = get_nested_attr(device, description.ufp_required_field)
+                if not required_field:
+                    continue
+
+            entities.append(
+                klass(
+                    data,
+                    device=device,
+                    description=description,
+                )
+            )
+            _LOGGER.debug(
+                "Adding %s entity %s for %s",
+                klass.__name__,
+                description.name,
+                device.name,
+            )
+
+    return entities
+
+
+@callback
+def async_all_device_entities(
+    data: ProtectData,
+    klass: type[ProtectDeviceEntity],
+    camera_descs: Sequence[ProtectRequiredKeysMixin] | None = None,
+    light_descs: Sequence[ProtectRequiredKeysMixin] | None = None,
+    sense_descs: Sequence[ProtectRequiredKeysMixin] | None = None,
+    viewport_descs: Sequence[ProtectRequiredKeysMixin] | None = None,
+    all_descs: Sequence[ProtectRequiredKeysMixin] | None = None,
+) -> list[ProtectDeviceEntity]:
+
+    all_descs = list(all_descs or [])
+    camera_descs = list(camera_descs or []) + all_descs
+    light_descs = list(light_descs or []) + all_descs
+    sense_descs = list(sense_descs or []) + all_descs
+    viewport_descs = list(viewport_descs or []) + all_descs
+
+    return (
+        _async_device_entities(data, klass, ModelType.CAMERA, camera_descs)
+        + _async_device_entities(data, klass, ModelType.LIGHT, light_descs)
+        + _async_device_entities(data, klass, ModelType.SENSOR, sense_descs)
+        + _async_device_entities(data, klass, ModelType.VIEWPORT, viewport_descs)
+    )
+
+
+class ProtectDeviceEntity(Entity):
     """Base class for unifi protect entities."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: ProtectData,
-        device: ProtectDeviceModel,
-        description: EntityDescription | None,
+        data: ProtectData,
+        device: ProtectAdoptableDeviceModel | None = None,
+        description: EntityDescription | None = None,
     ) -> None:
         """Initialize the entity."""
         super().__init__()
         self._attr_should_poll = False
 
+        self.data: ProtectData = data
+
+        if device and not hasattr(self, "device"):
+            self.device: ProtectAdoptableDeviceModel = device
+
         if description and not hasattr(self, "entity_description"):
             self.entity_description = description
-        if not hasattr(self, "device"):
-            self.device: ProtectDeviceModel = device
-        self.protect: ProtectApiClient = protect
-        self.protect_data: ProtectData = protect_data
+        elif hasattr(self, "entity_description"):
+            description = self.entity_description
+
         if description is None:
             self._attr_unique_id = f"{self.device.id}"
+            self._attr_name = f"{self.device.name}"
         else:
             self._attr_unique_id = f"{self.device.id}_{description.key}"
+            name = description.name or ""
+            self._attr_name = f"{self.device.name} {name.title()}"
 
-        if isinstance(self.device, NVR):
-            self._attr_device_info = DeviceInfo(
-                connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
-                identifiers={(DOMAIN, self.device.mac)},
-                manufacturer=DEFAULT_BRAND,
-                name=self.device.name,
-                model=self.device.type,
-                sw_version=str(self.device.version),
-                configuration_url=self.device.api.base_url,
-            )
-        else:
-            assert isinstance(self.device, ProtectAdoptableDeviceModel)
-            self._attr_device_info = DeviceInfo(
-                name=self.device.name,
-                manufacturer=DEFAULT_BRAND,
-                model=self.device.type,
-                via_device=(DOMAIN, self.protect.bootstrap.nvr.mac),
-                sw_version=self.device.firmware_version,
-                connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
-                configuration_url=self.device.protect_url,
-            )
+        self._async_set_device_info()
+        self._async_update_device_from_protect()
 
     async def async_update(self) -> None:
         """Update the entity.
 
         Only used by the generic entity update service.
         """
-        await self.protect_data.async_refresh()
+        await self.data.async_refresh()
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return common attributes"""
+        """Return UniFi Protect device attributes"""
         attrs = super().extra_state_attributes or {}
         return {
             **attrs,
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
             ATTR_DEVICE_MODEL: self.device.type,
+            **self._extra_state_attributes,
         }
 
     @callback
-    def _async_update_device_from_protect(self) -> None:
-        if self.protect_data.last_update_success:
-            if self.device.model == ModelType.NVR:
-                self.device = self.protect.bootstrap.nvr
-            else:
-                assert self.device.model
-                devices = getattr(self.protect.bootstrap, f"{self.device.model.value}s")
-                self.device = devices[self.device.id]
+    def _async_set_device_info(self) -> None:
+        self._attr_device_info = DeviceInfo(
+            name=self.device.name,
+            manufacturer=DEFAULT_BRAND,
+            model=self.device.type,
+            via_device=(DOMAIN, self.data.api.bootstrap.nvr.mac),
+            sw_version=self.device.firmware_version,
+            connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
+            configuration_url=self.device.protect_url,
+        )
 
-        self._attr_available = self.protect_data.last_update_success
-        if isinstance(self.device, ProtectAdoptableDeviceModel):
-            self._attr_available = self._attr_available and self.device.is_connected
+    @callback
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
+        """Method called as part of update to calculate extra state attributes"""
+        return {}
+
+    @callback
+    def _async_update_device_from_protect(self) -> None:
+        """Method called as part of update to update Entity object from Protect device"""
+        if self.data.last_update_success:
+            assert self.device.model
+            devices = getattr(self.data.api.bootstrap, f"{self.device.model.value}s")
+            self.device = devices[self.device.id]
+
+        self._attr_available = (
+            self.data.last_update_success and self.device.is_connected
+        )
+        self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 
     @callback
     def _async_updated_event(self) -> None:
+        """Method called when update is available for Entity object"""
         self._async_update_device_from_protect()
         self.async_write_ha_state()
 
@@ -122,10 +191,45 @@ class ProtectEntity(Entity):
         """When entity is added to hass."""
         await super().async_added_to_hass()
         self.async_on_remove(
-            self.protect_data.async_subscribe_device_id(
+            self.data.async_subscribe_device_id(
                 self.device.id, self._async_updated_event
             )
         )
+
+
+class ProtectNVREntity(ProtectDeviceEntity):
+    """Base class for unifi protect entities."""
+
+    def __init__(
+        self,
+        entry: ProtectData,
+        device: NVR,
+        description: EntityDescription | None = None,
+    ) -> None:
+        """Initialize the entity."""
+        # ProtectNVREntity is intentionally a separate base class
+        self.device: NVR = device  # type: ignore
+        super().__init__(entry, description=description)
+
+    @callback
+    def _async_set_device_info(self) -> None:
+        self._attr_device_info = DeviceInfo(
+            connections={(dr.CONNECTION_NETWORK_MAC, self.device.mac)},
+            identifiers={(DOMAIN, self.device.mac)},
+            manufacturer=DEFAULT_BRAND,
+            name=self.device.name,
+            model=self.device.type,
+            sw_version=str(self.device.version),
+            configuration_url=self.device.api.base_url,
+        )
+
+    @callback
+    def _async_update_device_from_protect(self) -> None:
+        if self.data.last_update_success:
+            self.device = self.data.api.bootstrap.nvr
+
+        self._attr_available = self.data.last_update_success
+        self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 
 
 class AccessTokenMixin(Entity):
@@ -134,8 +238,8 @@ class AccessTokenMixin(Entity):
     @property
     def access_tokens(self) -> collections.deque[str]:
         """Get valid access_tokens for current entity"""
-        assert isinstance(self, ProtectEntity)
-        return self.protect_data.async_get_or_create_access_tokens(self.entity_id)
+        assert isinstance(self, ProtectDeviceEntity)
+        return self.data.async_get_or_create_access_tokens(self.entity_id)
 
     @callback
     def _async_update_and_write_token(self):
@@ -152,7 +256,7 @@ class AccessTokenMixin(Entity):
 
     @callback
     def _trigger_update_tokens(self, *args, **kwargs):
-        assert isinstance(self, ProtectEntity)
+        assert isinstance(self, ProtectDeviceEntity)
         async_dispatcher_send(
             self.hass,
             f"{EVENT_UPDATE_TOKENS}-{self.entity_description.key}-{self.entity_id}",

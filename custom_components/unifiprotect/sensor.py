@@ -12,10 +12,8 @@ from homeassistant.components.sensor import SensorEntity, SensorEntityDescriptio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     DATA_BYTES,
-    DATA_MEGABYTES,
     DATA_RATE_BYTES_PER_SECOND,
     DATA_RATE_MEGABITS_PER_SECOND,
-    DATA_RATE_MEGABYTES_PER_SECOND,
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_ILLUMINANCE,
@@ -23,12 +21,10 @@ from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_TIMESTAMP,
     DEVICE_CLASS_VOLTAGE,
-    ELECTRIC_POTENTIAL_VOLT,
     ENTITY_CATEGORY_DIAGNOSTIC,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS,
     TEMP_CELSIUS,
-    TIME_DAYS,
     TIME_SECONDS,
 )
 from homeassistant.core import HomeAssistant, callback

@@ -273,6 +273,13 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
                 )
                 return
 
+            unifi_value = self._hass_to_unifi_options[option]
+            if self.entity_description.key == _KEY_PAIRED_CAMERA:
+                camera = self.data.api.bootstrap.cameras.get(unifi_value)
+                await self.device.set_paired_camera(camera)
+                _LOGGER.debug("Changed Paired Camera to to: %s", option)
+                return
+
         unifi_value = self._hass_to_unifi_options[option]
         if isinstance(self.device, Camera):
             if self.entity_description.key == _KEY_DOORBELL_TEXT:
@@ -288,12 +295,7 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
                 _LOGGER.debug("Changed Doorbell LCD Text to: %s", option)
                 return
 
-        if self.entity_description.key == _KEY_PAIRED_CAMERA:
-            camera = self.data.api.bootstrap.cameras.get(unifi_value)
-            await self.device.set_paired_camera(camera)
-            _LOGGER.debug("Changed Paired Camera to to: %s", option)
-            return
-        elif self.entity_description.ufp_enum_type is not None:
+        if self.entity_description.ufp_enum_type is not None:
             unifi_value = self.entity_description.ufp_enum_type(unifi_value)
         elif self.entity_description.key == _KEY_VIEWER:
             unifi_value = self.data.api.bootstrap.liveviews[unifi_value]

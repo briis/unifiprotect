@@ -10,7 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.data import Camera, Light, RecordingMode, VideoMode, devices
+from pyunifiprotect.data import Camera, RecordingMode, VideoMode
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
 from .const import DOMAIN
@@ -222,6 +222,7 @@ class ProtectSwitch(ProtectDeviceEntity, SwitchEntity):
             await getattr(self.device, self.entity_description.ufp_set_function)(True)
             return
 
+        assert isinstance(self.device, Camera)
         if self._switch_type == _KEY_HIGH_FPS:
             _LOGGER.debug("Turning on High FPS mode")
             await self.device.set_video_mode(VideoMode.HIGH_FPS)
@@ -239,6 +240,7 @@ class ProtectSwitch(ProtectDeviceEntity, SwitchEntity):
             await getattr(self.device, self.entity_description.ufp_set_function)(False)
             return
 
+        assert isinstance(self.device, Camera)
         if self._switch_type == _KEY_HIGH_FPS:
             _LOGGER.debug("Turning off High FPS mode")
             await self.device.set_video_mode(VideoMode.DEFAULT)

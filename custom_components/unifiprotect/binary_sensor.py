@@ -5,7 +5,6 @@ import asyncio
 from copy import copy
 from dataclasses import dataclass
 from datetime import datetime
-import itertools
 import logging
 from typing import TYPE_CHECKING, Any, Callable, Sequence
 from urllib.parse import urlencode
@@ -27,9 +26,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import NVR, Camera, Event, Light, ModelType, Sensor
-from pyunifiprotect.data.base import ProtectDeviceModel
+from pyunifiprotect.data import NVR, Camera, Event, Light, Sensor
 from pyunifiprotect.utils import utc_now
 
 from .const import (
@@ -40,8 +37,13 @@ from .const import (
     RING_INTERVAL,
 )
 from .data import ProtectData
-from .entity import AccessTokenMixin, ProtectEntity
-from .models import ProtectEntryData
+from .entity import (
+    AccessTokenMixin,
+    ProtectDeviceEntity,
+    ProtectNVREntity,
+    async_all_device_entities,
+)
+from .models import ProtectRequiredKeysMixin
 from .utils import get_nested_attr
 from .views import ThumbnailProxyView
 
@@ -56,16 +58,8 @@ else:
 
 
 @dataclass
-class ProtectRequiredKeysMixin:
-    """Mixin for required keys."""
-
-    ufp_required_field: str | None
-    ufp_value: str | None
-
-
-@dataclass
 class ProtectBinaryEntityDescription(
-    BinarySensorEntityDescription, ProtectRequiredKeysMixin
+    ProtectRequiredKeysMixin, BinarySensorEntityDescription
 ):
     """Describes UniFi Protect Binary Sensor entity."""
 
@@ -76,42 +70,6 @@ _KEY_DOOR = "door"
 _KEY_DARK = "dark"
 _KEY_BATTERY_LOW = "battery_low"
 _KEY_DISK_HEALTH = "disk_health"
-
-
-SENSE_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
-    ProtectBinaryEntityDescription(
-        key=_KEY_DOOR,
-        name="Door",
-        device_class=DEVICE_CLASS_DOOR,
-        ufp_required_field=None,
-        ufp_value="is_opened",
-    ),
-    ProtectBinaryEntityDescription(
-        key=_KEY_BATTERY_LOW,
-        name="Battery low",
-        device_class=DEVICE_CLASS_BATTERY,
-        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_required_field=None,
-        ufp_value="battery_status.is_low",
-    ),
-    ProtectBinaryEntityDescription(
-        key=_KEY_MOTION,
-        name="Motion",
-        device_class=DEVICE_CLASS_MOTION,
-        ufp_required_field=None,
-        ufp_value="is_motion_detected",
-    ),
-)
-
-MOTION_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
-    ProtectBinaryEntityDescription(
-        key=_KEY_MOTION,
-        name="Motion",
-        device_class=DEVICE_CLASS_MOTION,
-        ufp_required_field=None,
-        ufp_value="is_motion_detected",
-    ),
-)
 
 CAMERA_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
     ProtectBinaryEntityDescription(
@@ -126,7 +84,6 @@ CAMERA_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
         key=_KEY_DARK,
         name="Is Dark",
         icon="mdi:brightness-6",
-        ufp_required_field=None,
         ufp_value="is_dark",
     ),
 )
@@ -136,15 +93,44 @@ LIGHT_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
         key=_KEY_DARK,
         name="Is Dark",
         icon="mdi:brightness-6",
-        ufp_required_field=None,
         ufp_value="is_dark",
     ),
     ProtectBinaryEntityDescription(
         key=_KEY_MOTION,
         name="Motion",
         device_class=DEVICE_CLASS_MOTION,
-        ufp_required_field=None,
         ufp_value="is_pir_motion_detected",
+    ),
+)
+
+SENSE_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
+    ProtectBinaryEntityDescription(
+        key=_KEY_DOOR,
+        name="Door",
+        device_class=DEVICE_CLASS_DOOR,
+        ufp_value="is_opened",
+    ),
+    ProtectBinaryEntityDescription(
+        key=_KEY_BATTERY_LOW,
+        name="Battery low",
+        device_class=DEVICE_CLASS_BATTERY,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ufp_value="battery_status.is_low",
+    ),
+    ProtectBinaryEntityDescription(
+        key=_KEY_MOTION,
+        name="Motion",
+        device_class=DEVICE_CLASS_MOTION,
+        ufp_value="is_motion_detected",
+    ),
+)
+
+MOTION_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
+    ProtectBinaryEntityDescription(
+        key=_KEY_MOTION,
+        name="Motion",
+        device_class=DEVICE_CLASS_MOTION,
+        ufp_value="is_motion_detected",
     ),
 )
 
@@ -155,17 +141,8 @@ DISK_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
         device_class=DEVICE_CLASS_PROBLEM,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        ufp_required_field=None,
-        ufp_value=None,
     ),
 )
-
-
-DEVICE_TYPE_TO_DESCRIPTION = {
-    ModelType.CAMERA: CAMERA_SENSORS,
-    ModelType.SENSOR: SENSE_SENSORS,
-    ModelType.LIGHT: LIGHT_SENSORS,
-}
 
 
 async def async_setup_entry(
@@ -174,30 +151,28 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up binary sensors for UniFi Protect integration."""
-    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    entities: list[ProtectBinarySensor] = _async_device_entities(entry_data)
-    entities += _async_nvr_entities(entry_data)
-    entities += _async_motion_entities(hass, entry_data)
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
+    entities: list[ProtectDeviceEntity] = async_all_device_entities(
+        data,
+        ProtectDeviceBinarySensor,
+        camera_descs=CAMERA_SENSORS,
+        light_descs=LIGHT_SENSORS,
+        sense_descs=SENSE_SENSORS,
+    )
+    entities += _async_nvr_entities(data)
+    entities += _async_motion_entities(data)
 
     async_add_entities(entities)
 
 
 @callback
 def _async_motion_entities(
-    hass: HomeAssistant,
-    entry_data: ProtectEntryData,
-) -> list[ProtectAccessTokenBinarySensor]:
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
-
-    entities = []
-    for device in protect_data.get_by_types({ModelType.CAMERA}):
+    data: ProtectData,
+) -> list[ProtectDeviceEntity]:
+    entities: list[ProtectDeviceEntity] = []
+    for device in data.api.bootstrap.cameras.values():
         for description in MOTION_SENSORS:
-            entities.append(
-                ProtectAccessTokenBinarySensor(
-                    protect, protect_data, device, description
-                )
-            )
+            entities.append(ProtectAccessTokenBinarySensor(data, device, description))
             _LOGGER.debug(
                 "Adding binary sensor entity %s for %s",
                 description.name,
@@ -209,19 +184,14 @@ def _async_motion_entities(
 
 @callback
 def _async_nvr_entities(
-    entry_data: ProtectEntryData,
-) -> list[ProtectBinarySensor]:
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
-
-    entities = []
-    device = protect.bootstrap.nvr
+    data: ProtectData,
+) -> list[ProtectDeviceEntity]:
+    entities: list[ProtectDeviceEntity] = []
+    device = data.api.bootstrap.nvr
     for index, _ in enumerate(device.system_info.storage.devices):
         for description in DISK_SENSORS:
             entities.append(
-                ProtectBinarySensor(
-                    protect, protect_data, device, description, index=index
-                )
+                ProtectDiskBinarySensor(data, device, description, index=index)
             )
             _LOGGER.debug(
                 "Adding binary sensor entity %s",
@@ -231,73 +201,21 @@ def _async_nvr_entities(
     return entities
 
 
-@callback
-def _async_device_entities(
-    entry_data: ProtectEntryData,
-) -> list[ProtectBinarySensor]:
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
-
-    wanted_types = set()
-    for device_type in DEVICE_TYPE_TO_DESCRIPTION:
-        wanted_types.add(device_type)
-
-    entities = []
-    for device in protect_data.get_by_types(wanted_types):
-        entity_descs = itertools.chain.from_iterable(
-            descriptions
-            for device_match, descriptions in DEVICE_TYPE_TO_DESCRIPTION.items()
-            if device.model is not None and device.model in device_match
-        )
-
-        for description in entity_descs:
-            if description.ufp_required_field:
-                required_field = get_nested_attr(device, description.ufp_required_field)
-                if not required_field:
-                    continue
-
-            entities.append(
-                ProtectBinarySensor(
-                    protect,
-                    protect_data,
-                    device,
-                    description,
-                )
-            )
-            _LOGGER.debug(
-                "Adding binary sensor entity %s for %s",
-                description.name,
-                device.name,
-            )
-
-    return entities
-
-
-class ProtectBinarySensor(ProtectEntity, BinarySensorEntity):
-    """A UniFi Protect Binary Sensor."""
+class ProtectDeviceBinarySensor(ProtectDeviceEntity, BinarySensorEntity):
+    """A UniFi Protect Device Binary Sensor."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: ProtectData,
-        device: ProtectDeviceModel,
+        data: ProtectData,
         description: ProtectBinaryEntityDescription,
-        index: int | None = None,
+        device: Camera | Light | Sensor | None = None,
     ) -> None:
         """Initialize the Binary Sensor."""
-        if index is not None:
-            description = copy(description)
-            description.key = f"{description.key}_{index}"
-            description.name = (description.name or "{index}").format(index=index)
-        self._index = index
 
-        assert isinstance(device, (Camera, Light, Sensor, NVR))
-        self.device: Camera | Light | Sensor | NVR = device
+        if device and not hasattr(self, "device"):
+            self.device: Camera | Light | Sensor = device
         self.entity_description: ProtectBinaryEntityDescription = description
-        super().__init__(protect, protect_data, device, description)
-        name = description.name or ""
-        self._attr_name = f"{self.device.name} {name.title()}"
-        self._async_update_device_from_protect()
+        super().__init__(data)
         self._doorbell_callback: TaskClass | None = None
 
     @callback
@@ -329,21 +247,9 @@ class ProtectBinarySensor(ProtectEntity, BinarySensorEntity):
     def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
 
-        if self.entity_description.key.startswith(_KEY_DISK_HEALTH):
-            assert isinstance(self.device, NVR)
-            assert self._index is not None
-
-            disks = self.device.system_info.storage.devices
-            disk_available = len(disks) > self._index
-            self._attr_available = self._attr_available and disk_available
-            if disk_available:
-                disk = disks[self._index]
-                self._attr_is_on = not disk.healthy
-
-                self._extra_state_attributes = {ATTR_MODEL: disk.model}
+        if self.entity_description.ufp_value is None:
             return
 
-        assert self.entity_description.ufp_value is not None
         if self.entity_description.key == _KEY_DOORBELL:
             last_ring = get_nested_attr(self.device, self.entity_description.ufp_value)
             now = utc_now()
@@ -362,8 +268,6 @@ class ProtectBinarySensor(ProtectEntity, BinarySensorEntity):
             self._attr_is_on = get_nested_attr(
                 self.device, self.entity_description.ufp_value
             )
-
-        self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 
     @callback
     async def _async_wait_for_doorbell(self, end_time: datetime) -> None:
@@ -440,24 +344,52 @@ class ProtectBinarySensor(ProtectEntity, BinarySensorEntity):
             },
         )
 
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the extra state attributes."""
-        return {**super().extra_state_attributes, **self._extra_state_attributes}
 
+class ProtectDiskBinarySensor(ProtectNVREntity, BinarySensorEntity):
+    """A UniFi Protect NVR Disk Binary Sensor."""
 
-class ProtectAccessTokenBinarySensor(ProtectBinarySensor, AccessTokenMixin):
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: ProtectData,
-        device: ProtectDeviceModel,
+        data: ProtectData,
+        device: NVR,
         description: ProtectBinaryEntityDescription,
-        index: int | None = None,
+        index: int,
     ) -> None:
-        assert isinstance(device, Camera)
+        """Initialize the Binary Sensor."""
+        description = copy(description)
+        description.key = f"{description.key}_{index}"
+        description.name = (description.name or "{index}").format(index=index)
+        self._index = index
+        self.entity_description: ProtectBinaryEntityDescription = description
+        super().__init__(data, device)
+
+    @callback
+    def _async_update_device_from_protect(self) -> None:
+        super()._async_update_device_from_protect()
+
+        if self.entity_description.key.startswith(_KEY_DISK_HEALTH):
+            disks = self.device.system_info.storage.devices
+            disk_available = len(disks) > self._index
+            self._attr_available = self._attr_available and disk_available
+            if disk_available:
+                disk = disks[self._index]
+                self._attr_is_on = not disk.healthy
+
+                self._extra_state_attributes = {ATTR_MODEL: disk.model}
+            return
+
+
+class ProtectAccessTokenBinarySensor(ProtectDeviceBinarySensor, AccessTokenMixin):
+    """A UniFi Protect Device Binary Sensor with access tokens."""
+
+    def __init__(
+        self,
+        data: ProtectData,
+        device: Camera,
+        description: ProtectBinaryEntityDescription,
+    ) -> None:
         self.device: Camera = device
-        super().__init__(protect, protect_data, device, description, index)
+        super().__init__(data, description=description)
 
     @callback
     def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:

@@ -10,30 +10,20 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.data import Camera, Light, ModelType, RecordingMode, VideoMode
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
+from pyunifiprotect.data import Camera, Light, RecordingMode, VideoMode
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
-from .const import DEVICES_THAT_ADOPT, DEVICES_WITH_CAMERA, DOMAIN
+from .const import DOMAIN
 from .data import ProtectData
-from .entity import ProtectEntity
-from .models import ProtectEntryData
+from .entity import ProtectDeviceEntity, async_all_device_entities
+from .models import ProtectRequiredKeysMixin
 from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class ProtectRequiredKeysMixin:
-    """Mixin for required keys."""
-
-    ufp_device_types: set[ModelType]
-    ufp_required_field: str | None
-    ufp_value: str
-
-
-@dataclass
-class ProtectSwitchEntityDescription(SwitchEntityDescription, ProtectRequiredKeysMixin):
+class ProtectSwitchEntityDescription(ProtectRequiredKeysMixin, SwitchEntityDescription):
     """Describes UniFi Protect Switch entity."""
 
 
@@ -43,31 +33,31 @@ _KEY_HIGH_FPS = "high_fps"
 _KEY_PRIVACY_MODE = "privacy_mode"
 _KEY_SSH = "ssh"
 
-SWITCH_TYPES: tuple[ProtectSwitchEntityDescription, ...] = (
+ALL_DEVICES_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
+    ProtectSwitchEntityDescription(
+        key=_KEY_SSH,
+        name="SSH Enabled",
+        icon="mdi:lock",
+        entity_registry_enabled_default=False,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_value="is_ssh_enabled",
+    ),
+)
+
+CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
     ProtectSwitchEntityDescription(
         key=_KEY_STATUS_LIGHT,
         name="Status Light On",
         icon="mdi:led-on",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field="feature_flags.has_led_status",
         ufp_value="led_settings.is_enabled",
-    ),
-    ProtectSwitchEntityDescription(
-        key=_KEY_STATUS_LIGHT,
-        name="Status Light On",
-        icon="mdi:led-on",
-        entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types={ModelType.LIGHT},
-        ufp_required_field=None,
-        ufp_value="light_device_settings.is_indicator_enabled",
     ),
     ProtectSwitchEntityDescription(
         key=_KEY_HDR_MODE,
         name="HDR Mode",
         icon="mdi:brightness-7",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field="feature_flags.has_hdr",
         ufp_value="hdr_mode",
     ),
@@ -76,7 +66,6 @@ SWITCH_TYPES: tuple[ProtectSwitchEntityDescription, ...] = (
         name="High FPS",
         icon="mdi:video-high-definition",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field="feature_flags.has_highfps",
         ufp_value="video_mode",
     ),
@@ -85,19 +74,19 @@ SWITCH_TYPES: tuple[ProtectSwitchEntityDescription, ...] = (
         name="Privacy Mode",
         icon="mdi:eye-settings",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_required_field="feature_flags.has_privacy_mask",
         ufp_value="is_privacy_on",
     ),
+)
+
+
+LIGHT_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
     ProtectSwitchEntityDescription(
-        key=_KEY_SSH,
-        name="SSH Enabled",
-        icon="mdi:lock",
-        entity_registry_enabled_default=False,
+        key=_KEY_STATUS_LIGHT,
+        name="Status Light On",
+        icon="mdi:led-on",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types=DEVICES_THAT_ADOPT,
-        ufp_required_field=None,
-        ufp_value="is_ssh_enabled",
+        ufp_value="light_device_settings.is_indicator_enabled",
     ),
 )
 
@@ -107,51 +96,30 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
-    """Set up switches for UniFi Protect integration."""
-    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
-
-    switches = []
-    for description in SWITCH_TYPES:
-        for device in protect_data.get_by_types(description.ufp_device_types):
-            if description.ufp_required_field:
-                required_field = get_nested_attr(device, description.ufp_required_field)
-                if not required_field:
-                    continue
-
-            switches.append(
-                ProtectSwitch(
-                    protect,
-                    protect_data,
-                    device,
-                    description,
-                )
-            )
-            _LOGGER.debug(
-                "Adding switch entity %s for %s",
-                description.name,
-                device.name,
-            )
-
-    async_add_entities(switches)
+    """Set up sensors for UniFi Protect integration."""
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
+    entities: list[ProtectDeviceEntity] = async_all_device_entities(
+        data,
+        ProtectSwitch,
+        all_descs=ALL_DEVICES_SWITCHES,
+        camera_descs=CAMERA_SWITCHES,
+        light_descs=LIGHT_SWITCHES,
+    )
+    async_add_entities(entities)
 
 
-class ProtectSwitch(ProtectEntity, SwitchEntity):
+class ProtectSwitch(ProtectDeviceEntity, SwitchEntity):
     """A UniFi Protect Switch."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: ProtectData,
-        device: ProtectDeviceModel,
+        data: ProtectData,
+        device: ProtectAdoptableDeviceModel,
         description: ProtectSwitchEntityDescription,
     ):
         """Initialize an UniFi Protect Switch."""
-        assert isinstance(device, ProtectAdoptableDeviceModel)
-        self.device: ProtectAdoptableDeviceModel = device
         self.entity_description: ProtectSwitchEntityDescription = description
-        super().__init__(protect, protect_data, device, description)
+        super().__init__(data, device)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._switch_type = self.entity_description.key
 
@@ -168,6 +136,9 @@ class ProtectSwitch(ProtectEntity, SwitchEntity):
     @property
     def is_on(self) -> bool:
         """Return true if device is on."""
+        if self.entity_description.ufp_value is None:
+            return False
+
         ufp_value = get_nested_attr(self.device, self.entity_description.ufp_value)
         if self._switch_type == _KEY_HIGH_FPS:
             return bool(ufp_value == VideoMode.HIGH_FPS)

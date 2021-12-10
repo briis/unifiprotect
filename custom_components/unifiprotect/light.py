@@ -14,9 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Light, LightModeEnableType, LightModeType
-from pyunifiprotect.data.base import ProtectDeviceModel
 
 from .const import (
     ATTR_ONLINE,
@@ -26,8 +24,7 @@ from .const import (
     SERVICE_LIGHT_SETTINGS,
 )
 from .data import ProtectData
-from .entity import ProtectEntity
-from .models import ProtectEntryData
+from .entity import ProtectDeviceEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,17 +37,13 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Set up lights for UniFi Protect integration."""
-    entry_data: ProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
-
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
     entities = [
         ProtectLight(
-            protect,
-            protect_data,
+            data,
             device,
         )
-        for device in protect.bootstrap.lights.values()
+        for device in data.api.bootstrap.lights.values()
     ]
 
     if not entities:
@@ -74,23 +67,19 @@ def hass_to_unifi_brightness(value: int) -> int:
     return max(1, round((value / 255) * 6))
 
 
-class ProtectLight(ProtectEntity, LightEntity):
+class ProtectLight(ProtectDeviceEntity, LightEntity):
     """A Ubiquiti UniFi Protect Light Entity."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: ProtectData,
-        device: ProtectDeviceModel,
+        data: ProtectData,
+        device: Light,
     ):
         """Initialize an UniFi light."""
-        assert isinstance(device, Light)
         self.device: Light = device
-        super().__init__(protect, protect_data, device, None)
-        self._attr_name = self.device.name
+        super().__init__(data)
         self._attr_icon = "mdi:spotlight-beam"
         self._attr_supported_features = SUPPORT_BRIGHTNESS
-        self._async_update_device_from_protect()
 
     @callback
     def _async_update_device_from_protect(self) -> None:
@@ -113,11 +102,9 @@ class ProtectLight(ProtectEntity, LightEntity):
         _LOGGER.debug("Turning off light")
         await self.device.set_light(False)
 
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the device state attributes."""
+    @callback
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
         return {
-            **super().extra_state_attributes,
             ATTR_ONLINE: self.device.is_connected,
             ATTR_UP_SINCE: self.device.up_since,
         }

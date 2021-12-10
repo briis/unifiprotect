@@ -2,7 +2,12 @@
 
 ## 0.11.0-dev (master)
 
+* `DEPRECATION`: The Motion binary sensor will stop showing details about smart detections in the next version. Use the new separate Detected Object sensor. `event_object` attribute will be removed as well.
+
 * `NEW`: Adds `phy_rate` and `wifi_signal` sensors so all connection states (BLE, WiFi and Wired) should have a diagnostic sensor
+
+* `NEW`: Added Detected Object sensor for cameras with smart detections. Values are `none`, `person` or `vehicle`. Contains `event_score` and `event_thumb` attributes.
+  * Closes #342
 
 ## 0.11.0-beta.2
 

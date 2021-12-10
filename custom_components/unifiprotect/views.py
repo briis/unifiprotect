@@ -12,6 +12,7 @@ from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.exceptions import NvrError
 
 from .const import DOMAIN
+from .data import ProtectData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,9 +33,10 @@ class ThumbnailProxyView(HomeAssistantView):
         self, entity_id: str
     ) -> tuple[collections.deque, ProtectApiClient] | None:
 
-        for entry in self.data.values():
-            if entity_id in entry.protect_data.access_tokens:
-                return entry.protect_data.access_tokens[entity_id], entry.protect
+        entries: list[ProtectData] = list(self.data.values())
+        for entry in entries:
+            if entity_id in entry.access_tokens:
+                return entry.access_tokens[entity_id], entry.api
         return None
 
     def _404(self, message: Any) -> web.Response:

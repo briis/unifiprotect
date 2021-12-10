@@ -6,7 +6,7 @@ from datetime import timedelta
 import hashlib
 import logging
 from random import SystemRandom
-from typing import Any, Final, Sequence, Type
+from typing import Any, Final, Sequence
 
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import callback

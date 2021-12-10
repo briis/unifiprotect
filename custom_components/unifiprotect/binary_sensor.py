@@ -367,16 +367,16 @@ class ProtectDiskBinarySensor(ProtectNVREntity, BinarySensorEntity):
     def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
 
-        if self.entity_description.key.startswith(_KEY_DISK_HEALTH):
-            disks = self.device.system_info.storage.devices
-            disk_available = len(disks) > self._index
-            self._attr_available = self._attr_available and disk_available
-            if disk_available:
-                disk = disks[self._index]
-                self._attr_is_on = not disk.healthy
-
-                self._extra_state_attributes = {ATTR_MODEL: disk.model}
+        if not self.entity_description.key.startswith(_KEY_DISK_HEALTH):
             return
+
+        disks = self.device.system_info.storage.devices
+        disk_available = len(disks) > self._index
+        self._attr_available = self._attr_available and disk_available
+        if disk_available:
+            disk = disks[self._index]
+            self._attr_is_on = not disk.healthy
+            self._extra_state_attributes = {ATTR_MODEL: disk.model}
 
 
 class ProtectAccessTokenBinarySensor(ProtectDeviceBinarySensor, AccessTokenMixin):

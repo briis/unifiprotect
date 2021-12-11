@@ -1,4 +1,4 @@
-"""Unifi Protect Platform."""
+"""UniFi Protect Platform."""
 from __future__ import annotations
 
 import asyncio
@@ -8,10 +8,9 @@ import logging
 
 from aiohttp import CookieJar
 from aiohttp.client_exceptions import ServerDisconnectedError
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import (
     CONF_HOST,
-    CONF_ID,
     CONF_PASSWORD,
     CONF_PORT,
     CONF_USERNAME,
@@ -20,22 +19,19 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.data.nvr import NVR
-from pyunifiprotect.data.types import ModelType
+from pyunifiprotect.data import ModelType
 
 from .const import (
     CONF_ALL_UPDATES,
-    CONF_DISABLE_RTSP,
     CONF_DOORBELL_TEXT,
     CONFIG_OPTIONS,
-    DEFAULT_BRAND,
     DEFAULT_SCAN_INTERVAL,
     DEVICE_TYPE_CAMERA,
     DEVICES_FOR_SUBSCRIBE,
-    DEVICES_WITH_ENTITIES,
+    DEVICES_THAT_ADOPT,
     DOMAIN,
     DOORBELL_TEXT_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
@@ -47,8 +43,7 @@ from .const import (
     SERVICE_REMOVE_DOORBELL_TEXT,
     SERVICE_SET_DEFAULT_DOORBELL_TEXT,
 )
-from .data import UnifiProtectData
-from .models import UnifiProtectEntryData
+from .data import ProtectData
 from .services import (
     add_doorbell_text,
     profile_ws,
@@ -56,6 +51,7 @@ from .services import (
     set_default_doorbell_text,
 )
 from .utils import above_ha_version
+from .views import ThumbnailProxyView
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,7 +81,7 @@ async def _async_migrate_data(
     mac_to_id: dict[str, str] = {}
     mac_to_channel_id: dict[str, str] = {}
     bootstrap = await protect.get_bootstrap()
-    for model in DEVICES_WITH_ENTITIES:
+    for model in DEVICES_THAT_ADOPT:
         attr = model.value + "s"
         for device in getattr(bootstrap, attr).values():
             mac_to_id[device.mac] = device.id
@@ -170,7 +166,7 @@ def _async_import_options_from_data_if_missing(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up the Unifi Protect config entries."""
+    """Set up the UniFi Protect config entries."""
     _async_import_options_from_data_if_missing(hass, entry)
 
     session = async_create_clientsession(hass, cookie_jar=CookieJar(unsafe=True))
@@ -185,7 +181,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ignore_stats=not entry.options.get(CONF_ALL_UPDATES, False),
     )
     _LOGGER.debug("Connect to UniFi Protect")
-    protect_data = UnifiProtectData(hass, protect, SCAN_INTERVAL, entry)
+    data_service = ProtectData(hass, protect, SCAN_INTERVAL, entry)
 
     try:
         nvr_info = await protect.get_nvr()
@@ -209,70 +205,48 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if entry.unique_id is None:
         hass.config_entries.async_update_entry(entry, unique_id=nvr_info.mac)
 
-    await protect_data.async_setup()
-    if not protect_data.last_update_success:
+    await data_service.async_setup()
+    if not data_service.last_update_success:
         raise ConfigEntryNotReady
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = UnifiProtectEntryData(
-        protect_data=protect_data,
-        protect=protect,
-        disable_stream=entry.options.get(CONF_DISABLE_RTSP, False),
-    )
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = data_service
 
-    await _async_get_or_create_nvr_device_in_registry(hass, entry, nvr_info)
-
+    platforms = PLATFORMS
     if above_ha_version(2021, 12):
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS_NEXT)
-    else:
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+        platforms = PLATFORMS_NEXT
+    hass.config_entries.async_setup_platforms(entry, platforms)
 
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_ADD_DOORBELL_TEXT,
-        functools.partial(add_doorbell_text, hass),
-        DOORBELL_TEXT_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_REMOVE_DOORBELL_TEXT,
-        functools.partial(remove_doorbell_text, hass),
-        DOORBELL_TEXT_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_SET_DEFAULT_DOORBELL_TEXT,
-        functools.partial(set_default_doorbell_text, hass),
-        DOORBELL_TEXT_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_PROFILE_WS,
-        functools.partial(profile_ws, hass),
-        PROFILE_WS_SCHEMA,
-    )
+    services = [
+        (
+            SERVICE_ADD_DOORBELL_TEXT,
+            functools.partial(add_doorbell_text, hass),
+            DOORBELL_TEXT_SCHEMA,
+        ),
+        (
+            SERVICE_REMOVE_DOORBELL_TEXT,
+            functools.partial(remove_doorbell_text, hass),
+            DOORBELL_TEXT_SCHEMA,
+        ),
+        (
+            SERVICE_SET_DEFAULT_DOORBELL_TEXT,
+            functools.partial(set_default_doorbell_text, hass),
+            DOORBELL_TEXT_SCHEMA,
+        ),
+        (SERVICE_PROFILE_WS, functools.partial(profile_ws, hass), PROFILE_WS_SCHEMA),
+    ]
+    for name, method, schema in services:
+        if hass.services.has_service(DOMAIN, name):
+            continue
+        hass.services.async_register(DOMAIN, name, method, schema=schema)
+
+    hass.http.register_view(ThumbnailProxyView(hass))
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, protect_data.async_stop)
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, data_service.async_stop)
     )
 
     return True
-
-
-async def _async_get_or_create_nvr_device_in_registry(
-    hass: HomeAssistant, entry: ConfigEntry, nvr: NVR
-) -> None:
-    device_registry = await dr.async_get_registry(hass)
-    device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        connections={(dr.CONNECTION_NETWORK_MAC, nvr.mac)},
-        identifiers={(DOMAIN, nvr.mac)},
-        manufacturer=DEFAULT_BRAND,
-        name=entry.data[CONF_ID],
-        model=nvr.type,
-        sw_version=str(nvr.version),
-        configuration_url=nvr.api.base_url,
-    )
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -281,11 +255,33 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload Unifi Protect config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-        await data.protect_data.async_stop()
+    """Unload UniFi Protect config entry."""
+    platforms = PLATFORMS
+    if above_ha_version(2021, 12):
+        platforms = PLATFORMS_NEXT
+
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, platforms):
+        data: ProtectData = hass.data[DOMAIN][entry.entry_id]
+        await data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
+
+    loaded_entries = [
+        entry
+        for entry in hass.config_entries.async_entries(DOMAIN)
+        if entry.state == ConfigEntryState.LOADED
+    ]
+    if len(loaded_entries) == 1:
+        all_services = [
+            SERVICE_ADD_DOORBELL_TEXT,
+            SERVICE_REMOVE_DOORBELL_TEXT,
+            SERVICE_SET_DEFAULT_DOORBELL_TEXT,
+            SERVICE_PROFILE_WS,
+        ]
+        # If this is the last loaded instance of RainMachine, deregister any services
+        # defined during integration setup:
+        for name in all_services:
+            hass.services.async_remove(DOMAIN, name)
+
     return bool(unload_ok)
 
 

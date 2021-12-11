@@ -1,4 +1,4 @@
-"""Config Flow to configure Unifi Protect Integration."""
+"""Config Flow to configure UniFi Protect Integration."""
 from __future__ import annotations
 
 import logging
@@ -33,8 +33,8 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class UnifiProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a Unifi Protect config flow."""
+class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a UniFi Protect config flow."""
 
     VERSION = 2
 

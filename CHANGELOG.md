@@ -2,7 +2,44 @@
 
 ## 0.11.0-dev (master)
 
+* `DEPRECATION`: The Motion binary sensor will stop showing details about smart detections in the next version. Use the new separate Detected Object sensor. `event_object` attribute will be removed as well.
+
+* `NEW`: Adds `phy_rate` and `wifi_signal` sensors so all connection states (BLE, WiFi and Wired) should have a diagnostic sensor. Disabled by default. Requires "Realtime metrics" option to update in realtime.
+
+* `NEW`: Added Detected Object sensor for cameras with smart detections. Values are `none`, `person` or `vehicle`. Contains `event_score` and `event_thumb` attributes.
+  * Closes #342
+
+* `NEW`: Adds Paired Camera select entity for Viewports
+
+* `NEW`: Adds "Received Data", "Transferred Data", "Oldest Recording", "Storage Used", and "Disk Write Rate" sensors for cameras. Disabled by default. Requires "Realtime metrics" option to update in realtime.
+
+* `NEW`: (requires UniFi Protect 1.20.1) Adds "Voltage" sensor for doorbells. Disabled by default.
+
+* `NEW`: Adds "System Sounds" switch for cameras with speakers
+
+* `NEW`: Adds switches to toggle overlay information for video feeds on all cameras
+
+* `NEW`: Adds switches to toggle smart detection types on cameras with smart detections
+
+## 0.11.0-beta.2
+
 * `CHANGE`: Allows `device_id` parameter for global service calls to be any device from a UniFi Protect instance
+
+* `NEW`: Adds event thumbnail proxy view.
+  * URL is `/api/ufp/thumbnail/{thumb_id}`. `thumb_id` is the ID of the thumbnail from UniFi Protect.
+  * `entity_id` is a required query parameters. `entity_id` be for an sensor that has event thumbnails on it (like the Motion binary sensor)
+  * `token` is a required query parameter is you are _not_ authenticated. It is an attribute on the motion sensor for the Camera
+  * `w` and `h` are optional query string params for thumbnail resizing.
+
+* `NEW`: Adds `event_thumbnail` attribute to Motion binary sensor that uses above mentioned event thumbnail proxy view.
+
+* `NEW`: Adds NVR sensors. All of them are disabled by default. All of the sensors will only update every ~15 minutes unless the "Realtime metrics" config option is turned on. List of all sensors:
+    * Disk Health (one per disk)
+    * System Info: CPU Temp, CPU, Memory and Storage Utilization
+    * Uptime
+    * Recording Capacity (in seconds)
+    * Distributions of stored video for Resolution (4K/HD/Free)
+    * Distributions of stored video for Type (Continuous/Detections/Timelapse)
 
 * More clean up and improvements for upcoming Home Assistant core merge.
 

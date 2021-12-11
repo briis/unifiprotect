@@ -1,4 +1,4 @@
-"""Support for Ubiquiti's Unifi Protect NVR."""
+"""Support for Ubiquiti's UniFi Protect NVR."""
 from __future__ import annotations
 
 import logging
@@ -21,13 +21,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_IDLE, STATE_PLAYING
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Camera
 
 from .const import DOMAIN
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .data import ProtectData
+from .entity import ProtectDeviceEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,41 +35,37 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
-    """Discover cameras with speakers on a Unifi Protect NVR."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
+    """Discover cameras with speakers on a UniFi Protect NVR."""
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities(
         [
-            UnifiProtectMediaPlayer(
-                protect,
-                protect_data,
+            ProtectMediaPlayer(
+                data,
                 camera,
             )
-            for camera in protect.bootstrap.cameras.values()
+            for camera in data.api.bootstrap.cameras.values()
             if camera.feature_flags.has_speaker
         ]
     )
 
 
-class UnifiProtectMediaPlayer(UnifiProtectEntity, MediaPlayerEntity):
+class ProtectMediaPlayer(ProtectDeviceEntity, MediaPlayerEntity):
     """A Ubiquiti UniFi Protect Speaker."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        data: ProtectData,
         camera: Camera,
     ) -> None:
         """Initialize an UniFi speaker."""
 
-        description = MediaPlayerEntityDescription(
+        self.device: Camera = camera
+        self.entity_description = MediaPlayerEntityDescription(
             key="speaker", device_class=DEVICE_CLASS_SPEAKER
         )
-        super().__init__(protect, protect_data, camera, description)
+        super().__init__(data)
 
-        self.device: Camera = camera
         self._attr_name = f"{self.device.name} Speaker"
         self._attr_supported_features = (
             SUPPORT_PLAY_MEDIA
@@ -81,7 +75,6 @@ class UnifiProtectMediaPlayer(UnifiProtectEntity, MediaPlayerEntity):
             | SUPPORT_SELECT_SOURCE
         )
         self._attr_media_content_type = MEDIA_TYPE_MUSIC
-        self._async_update_device_from_protect()
 
     @callback
     def _async_update_device_from_protect(self) -> None:

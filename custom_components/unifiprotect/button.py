@@ -1,4 +1,4 @@
-"""Support for Ubiquiti's Unifi Protect NVR."""
+"""Support for Ubiquiti's UniFi Protect NVR."""
 from __future__ import annotations
 
 import logging
@@ -8,13 +8,11 @@ from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
-from .const import DEVICES_WITH_ENTITIES, DOMAIN
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .const import DEVICES_THAT_ADOPT, DOMAIN
+from .data import ProtectData
+from .entity import ProtectDeviceEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,35 +23,29 @@ async def async_setup_entry(
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
     """Discover devices on a UniFi Protect NVR."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities(
         [
-            UnifiProtectMediaPlayer(
-                protect,
-                protect_data,
+            ProtectButton(
+                data,
                 device,
             )
-            for device in protect_data.get_by_types(DEVICES_WITH_ENTITIES)
+            for device in data.get_by_types(DEVICES_THAT_ADOPT)
         ]
     )
 
 
-class UnifiProtectMediaPlayer(UnifiProtectEntity, ButtonEntity):
+class ProtectButton(ProtectDeviceEntity, ButtonEntity):
     """A Ubiquiti UniFi Protect Reboot button."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
+        data: ProtectData,
         device: ProtectAdoptableDeviceModel,
     ):
-        """Initialize an Unifi camera."""
-
-        super().__init__(protect, protect_data, device, None)
-
+        """Initialize an UniFi camera."""
+        super().__init__(data, device)
         self._attr_name = f"{self.device.name} Reboot Device"
         self._attr_entity_registry_enabled_default = False
         self._attr_device_class = ButtonDeviceClass.RESTART

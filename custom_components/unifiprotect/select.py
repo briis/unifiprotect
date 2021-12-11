@@ -1,4 +1,4 @@
-"""This component provides select entities for Unifi Protect."""
+"""This component provides select entities for UniFi Protect."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,23 +12,23 @@ from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect import ProtectApiClient
 from pyunifiprotect.data import (
+    Camera,
     DoorbellMessageType,
     IRLEDMode,
+    Light,
     LightModeEnableType,
     LightModeType,
-    ModelType,
+    Liveview,
     RecordingMode,
+    Viewer,
 )
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Camera, Light, Viewer
-from pyunifiprotect.data.nvr import DoorbellMessage, Liveview
+from pyunifiprotect.data.devices import LCDMessage
 
-from .const import DEVICES_WITH_CAMERA, DOMAIN, TYPE_EMPTY_VALUE
-from .data import UnifiProtectData
-from .entity import UnifiProtectEntity
-from .models import UnifiProtectEntryData
+from .const import DOMAIN, TYPE_EMPTY_VALUE
+from .data import ProtectData
+from .entity import ProtectDeviceEntity, async_all_device_entities
+from .models import ProtectRequiredKeysMixin
 from .utils import get_nested_attr
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,6 +38,7 @@ _KEY_REC_MODE = "recording_mode"
 _KEY_VIEWER = "viewer"
 _KEY_LIGHT_MOTION = "light_motion"
 _KEY_DOORBELL_TEXT = "doorbell_text"
+_KEY_PAIRED_CAMERA = "paired_camera"
 
 INFRARED_MODES = [
     {"id": IRLEDMode.AUTO.value, "name": "Auto"},
@@ -76,83 +77,71 @@ DEVICE_RECORDING_MODES = [
 
 
 @dataclass
-class UnifiprotectRequiredKeysMixin:
-    """Mixin for required keys."""
+class ProtectSelectEntityDescription(ProtectRequiredKeysMixin, SelectEntityDescription):
+    """Describes UniFi Protect Sensor entity."""
 
-    ufp_device_types: set[ModelType]
-    ufp_required_field: str | None
-    ufp_options: list[dict[str, Any]] | None
-    ufp_enum_type: type[Enum] | None
-    ufp_value: str
-    ufp_set_function: str | None
+    ufp_options: list[dict[str, Any]] | None = None
+    ufp_enum_type: type[Enum] | None = None
+    ufp_set_function: str | None = None
 
 
-@dataclass
-class UnifiProtectSelectEntityDescription(
-    SelectEntityDescription, UnifiprotectRequiredKeysMixin
-):
-    """Describes Unifi Protect Sensor entity."""
-
-
-SELECT_TYPES: tuple[UnifiProtectSelectEntityDescription, ...] = (
-    UnifiProtectSelectEntityDescription(
+CAMERA_SELECTS: tuple[ProtectSelectEntityDescription, ...] = (
+    ProtectSelectEntityDescription(
         key=_KEY_REC_MODE,
         name="Recording Mode",
         icon="mdi:video-outline",
         entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_required_field=None,
         ufp_options=DEVICE_RECORDING_MODES,
         ufp_enum_type=RecordingMode,
         ufp_value="recording_settings.mode",
         ufp_set_function="set_recording_mode",
     ),
-    UnifiProtectSelectEntityDescription(
-        key=_KEY_VIEWER,
-        name="Viewer",
-        icon="mdi:view-dashboard",
-        ufp_device_types={ModelType.VIEWPORT},
-        ufp_required_field=None,
-        ufp_options=None,
-        ufp_enum_type=None,
-        ufp_value="liveview",
-        ufp_set_function="set_liveview",
-    ),
-    UnifiProtectSelectEntityDescription(
-        key=_KEY_LIGHT_MOTION,
-        name="Lighting",
-        icon="mdi:spotlight",
-        entity_category=ENTITY_CATEGORY_CONFIG,
-        ufp_required_field=None,
-        ufp_device_types={ModelType.LIGHT},
-        ufp_options=MOTION_MODE_TO_LIGHT_MODE,
-        ufp_enum_type=None,
-        ufp_value="light_mode_settings.mode",
-        ufp_set_function=None,
-    ),
-    UnifiProtectSelectEntityDescription(
+    ProtectSelectEntityDescription(
         key=_KEY_IR,
         name="Infrared",
         icon="mdi:circle-opacity",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_required_field="feature_flags.has_led_ir",
-        ufp_device_types=DEVICES_WITH_CAMERA,
         ufp_options=INFRARED_MODES,
         ufp_enum_type=IRLEDMode,
         ufp_value="isp_settings.ir_led_mode",
         ufp_set_function="set_ir_led_model",
     ),
-    UnifiProtectSelectEntityDescription(
+    ProtectSelectEntityDescription(
         key=_KEY_DOORBELL_TEXT,
         name="Doorbell Text",
         icon="mdi:card-text",
         entity_category=ENTITY_CATEGORY_CONFIG,
         ufp_required_field="feature_flags.has_lcd_screen",
-        ufp_device_types=DEVICES_WITH_CAMERA,
-        ufp_options=None,
-        ufp_enum_type=None,
         ufp_value="lcd_message",
-        ufp_set_function=None,
+    ),
+)
+
+LIGHT_SELECTS: tuple[ProtectSelectEntityDescription, ...] = (
+    ProtectSelectEntityDescription(
+        key=_KEY_LIGHT_MOTION,
+        name="Lighting",
+        icon="mdi:spotlight",
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_options=MOTION_MODE_TO_LIGHT_MODE,
+        ufp_value="light_mode_settings.mode",
+    ),
+    ProtectSelectEntityDescription(
+        key=_KEY_PAIRED_CAMERA,
+        name="Paired Camera",
+        icon="mdi:cctv",
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_value="camera_id",
+    ),
+)
+
+VIEWPORT_SELECTS: tuple[ProtectSelectEntityDescription, ...] = (
+    ProtectSelectEntityDescription(
+        key=_KEY_VIEWER,
+        name="Viewer",
+        icon="mdi:view-dashboard",
+        ufp_value="liveview",
+        ufp_set_function="set_liveview",
     ),
 )
 
@@ -162,60 +151,38 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: Callable[[Sequence[Entity]], None],
 ) -> None:
-    """Set up Select entities for UniFi Protect integration."""
-    entry_data: UnifiProtectEntryData = hass.data[DOMAIN][entry.entry_id]
-    protect = entry_data.protect
-    protect_data = entry_data.protect_data
-
-    entities = []
-    for description in SELECT_TYPES:
-        for device in protect_data.get_by_types(description.ufp_device_types):
-            if description.ufp_required_field:
-                required_field = get_nested_attr(device, description.ufp_required_field)
-                if not required_field:
-                    continue
-
-            entities.append(
-                UnifiProtectSelects(
-                    protect,
-                    protect_data,
-                    device,
-                    description,
-                    description.ufp_options,
-                )
-            )
-            _LOGGER.debug(
-                "Adding select entity %s for %s with options %s",
-                description.name,
-                device.name,
-                description.ufp_options,
-            )
-
-    if not entities:
-        return
+    """Set up number entities for UniFi Protect integration."""
+    data: ProtectData = hass.data[DOMAIN][entry.entry_id]
+    entities: list[ProtectDeviceEntity] = async_all_device_entities(
+        data,
+        ProtectSelects,
+        camera_descs=CAMERA_SELECTS,
+        light_descs=LIGHT_SELECTS,
+        viewport_descs=VIEWPORT_SELECTS,
+    )
 
     async_add_entities(entities)
 
 
-class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
-    """A Unifi Protect Select Entity."""
+class ProtectSelects(ProtectDeviceEntity, SelectEntity):
+    """A UniFi Protect Select Entity."""
 
     def __init__(
         self,
-        protect: ProtectApiClient,
-        protect_data: UnifiProtectData,
-        device: ProtectAdoptableDeviceModel,
-        description: UnifiProtectSelectEntityDescription,
-        options: list[dict[str, Any]] | None,
+        data: ProtectData,
+        device: Camera | Light | Viewer,
+        description: ProtectSelectEntityDescription,
     ):
         """Initialize the unifi protect select entity."""
-        assert isinstance(device, (Camera, Viewer, Light))
-        self.device: Camera | Viewer | Light = device
-        self.entity_description: UnifiProtectSelectEntityDescription = description
-        super().__init__(protect, protect_data, device, description)
+        assert description.ufp_value is not None
+
+        self.device: Camera | Light | Viewer = device
+        self.entity_description: ProtectSelectEntityDescription = description
+        super().__init__(data)
         self._attr_name = f"{self.device.name} {self.entity_description.name}"
         self._data_key = description.ufp_value
 
+        options = description.ufp_options
         if options is not None:
             self._attr_options = [item["name"] for item in options]
             self._hass_to_unifi_options: dict[str, Any] = {
@@ -232,19 +199,19 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
 
         This is due to possible downstream platforms dependencies on these options.
         """
-        if self.entity_description.key not in (_KEY_VIEWER, _KEY_DOORBELL_TEXT):
+        if self.entity_description.ufp_options is not None:
             return
 
         if self.entity_description.key == _KEY_VIEWER:
             options = [
                 {"id": item.id, "name": item.name}
-                for item in self.protect.bootstrap.liveviews.values()
+                for item in self.data.api.bootstrap.liveviews.values()
             ]
         elif self.entity_description.key == _KEY_DOORBELL_TEXT:
             default_message = (
-                self.protect.bootstrap.nvr.doorbell_settings.default_message_text
+                self.data.api.bootstrap.nvr.doorbell_settings.default_message_text
             )
-            messages = self.protect.bootstrap.nvr.doorbell_settings.all_messages
+            messages = self.data.api.bootstrap.nvr.doorbell_settings.all_messages
             built_messages = (
                 {"id": item.type.value, "name": item.text} for item in messages
             )
@@ -253,6 +220,10 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                 {"id": "", "name": f"Default Message ({default_message})"},
                 *built_messages,
             ]
+        elif self.entity_description.key == _KEY_PAIRED_CAMERA:
+            options = [{"id": TYPE_EMPTY_VALUE, "name": "Not Paired"}]
+            for camera in self.data.api.bootstrap.cameras.values():
+                options.append({"id": camera.id, "name": camera.name})
 
         self._attr_options = [item["name"] for item in options]
         self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
@@ -263,7 +234,9 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         """Return the current selected option."""
         unifi_value = get_nested_attr(self.device, self._data_key)
 
-        if isinstance(unifi_value, Enum):
+        if unifi_value is None:
+            unifi_value = TYPE_EMPTY_VALUE
+        elif isinstance(unifi_value, Enum):
             unifi_value = unifi_value.value
         elif isinstance(unifi_value, Liveview):
             unifi_value = unifi_value.id
@@ -278,11 +251,8 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
             ):
                 unifi_value = f"{LightModeType.MOTION.value}Dark"
         elif self.entity_description.key == _KEY_DOORBELL_TEXT:
-            if unifi_value is None:
-                unifi_value = TYPE_EMPTY_VALUE
-            else:
-                assert isinstance(unifi_value, DoorbellMessage)
-                return unifi_value.text
+            assert isinstance(unifi_value, LCDMessage)
+            return unifi_value.text
         return self._unifi_to_hass_options[unifi_value]
 
     async def async_select_option(self, option: str) -> None:
@@ -300,6 +270,15 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
                     LightModeType(lightmode),
                     enable_at=None if timing is None else LightModeEnableType(timing),
                 )
+                return
+
+            unifi_value = self._hass_to_unifi_options[option]
+            if self.entity_description.key == _KEY_PAIRED_CAMERA:
+                if unifi_value == TYPE_EMPTY_VALUE:
+                    unifi_value = None
+                camera = self.data.api.bootstrap.cameras.get(unifi_value)
+                await self.device.set_paired_camera(camera)
+                _LOGGER.debug("Changed Paired Camera to to: %s", option)
                 return
 
         unifi_value = self._hass_to_unifi_options[option]
@@ -320,7 +299,7 @@ class UnifiProtectSelects(UnifiProtectEntity, SelectEntity):
         if self.entity_description.ufp_enum_type is not None:
             unifi_value = self.entity_description.ufp_enum_type(unifi_value)
         elif self.entity_description.key == _KEY_VIEWER:
-            unifi_value = self.protect.bootstrap.liveviews[unifi_value]
+            unifi_value = self.data.api.bootstrap.liveviews[unifi_value]
 
         _LOGGER.debug("%s set to: %s", self.entity_description.key, option)
         assert self.entity_description.ufp_set_function

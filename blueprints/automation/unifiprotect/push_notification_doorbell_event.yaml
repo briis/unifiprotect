@@ -1,24 +1,24 @@
 blueprint:
-  name: UniFi Protect Motion / Smart Detection Notifications
+  name: UniFi Protect Doorbell Notifications
   description: |
-    ## UniFi Protect Motion / Smart Detection Notifications
+    ## UniFi Protect Doorbell Notifications
 
-    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a motion or smart detection event is fired.
+    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a UniFi Chime is rung.
 
     ### Required Settings
 
-      - Area or Device with UniFi Protect Motion Sensors or a Motion Sensor Entity
+      - Area or Device with UniFi Protect Doorbell Sensor
 
     ### Optional Settings
 
-      - What Smart Detection(s) you want to trigger on
-      - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2] as well as toggles for both
-      - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
+      - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2]
       - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
+      - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
       - Cooldown before sending another notification
       - Silence timer for muting notifications via Actionable Notification (docs: [HTML5][6], [Mobile][7])
       - Configurable HA Internal / External Base URLs
-      - Configurable Lovelace view from notification
+      - Configurable lovelace view from notification
+      - Optional Actionable Notification to unlock door entity for camera
 
     ### Requirements
 
@@ -26,8 +26,7 @@ blueprint:
 
     - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
     - The [unifiprotect][8] integration
-    - A UniFi camera pair with your NVR
-      - If you want to filter smart detections, you need a Smart Detection capable camera. This is any G4 series camera _except_ the EA G4 Instant.
+    - A UniFi camera pair with your NVR that has a chime (like the G4 Doorbell)
     - A valid HTTPS certificate and public facing Home Assistant instance
       - If you do not have these, the actionable notifications and images will not appear in the notifications.
       - You do not need your _whole_ Home Assistant to be publicly accessible. Only the paths `/api/camera_proxy/*` and `/api/webhook/*` need to be accessible outside of your network.
@@ -45,8 +44,8 @@ blueprint:
     device_filter:
       name: Device(s)
       description: >
-        The motion sensor / area / devices you want to trigger notifications for.
-        Will always be the first motion sensor found in filter if triggered manually.
+        The doorbell sensor / area / devices you want to trigger notifications for.
+        Will always be the first doorbell sensor found in filter if triggered manually.
       selector:
         target:
           device:
@@ -54,16 +53,16 @@ blueprint:
           entity:
             integration: unifiprotect
             domain: binary_sensor
-            device_class: motion
-    objects:
-      name: (Optional) Smart Detections
+            device_class: occupancy
+    lock_entity:
+      name: (Optional) Door Lock Entity
       description: >
-        Smart Detections to filter on. List should be comma separated. If left empty,
-        will trigger on all motion events.
-        Possible objects: person, vehicle
+        The Lock entity to provide an actionable notification to unlock on doorbell
+        ring.
       default: ""
       selector:
-        text:
+        entity:
+          domain: lock
     send_mobile:
       name: (Optional) Send Mobile App Notifications
       description: Send mobile app push notifications
@@ -102,15 +101,15 @@ blueprint:
         Notification channel/tag to use. Will automatically be prepended with
         "Manual " if action is triggered manually.
         https://companion.home-assistant.io/docs/notifications/notifications-basic#notification-channels
-      default: Motion
+      default: Doorbell
       selector:
         text:
     time_format:
       name: (Optional) Time Format String
       description: >
-        Python datetime format code string for the event trigger time. This string is
-        the actually time the moton event was triggered in case the automation or
-        notification is delayed. Manual triggers will cause this to always be the time
+        Python datetime format code string for the event trigger time. This string is 
+        the actually time the doorbell event was triggered in case the automation or 
+        notification is delayed. Manual triggers will cause this to always be the time 
         of the previous event.
         https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
       default: "%I:%M %p"
@@ -120,7 +119,7 @@ blueprint:
       name: (Optional) Cooldown
       description: >
         Delay before sending another notification for this camera after the last event.
-        Is also the interval you have to choose to silence the notifications.
+        It is also the interval you have to silence the notifications or unlock the door.
       default: 30
       selector:
         number:
@@ -177,7 +176,6 @@ max_exceeded: silent
 variables:
   # input vars
   input_device_filter: !input device_filter
-  input_objects: !input objects
   input_channel: !input channel
   input_base_image_url: !input base_image_url
   input_base_ha_url: !input base_ha_url
@@ -186,6 +184,7 @@ variables:
   input_notify_target_app: !input notify_target_app
   input_notify_target_html5: !input notify_target_html5
   input_silence_timer: !input silence_timer
+  input_lock_entity: !input lock_entity
   input_send_mobile: !input send_mobile
   input_send_html5: !input send_html5
   input_time_format: !input time_format
@@ -217,33 +216,23 @@ variables:
   device_ids: "{{ ((raw_area_ids | map('area_devices') | map('join','|||') | join('|||')).split('|||') | list + raw_device_ids | list) | unique | list }}"
   entity_ids: "{{ ((device_ids | map('device_entities') | map('join','|||') | join('|||')).split('|||') | list + raw_entity_ids | list) | unique | list }}"
   # automation data
-  motion_entity_ids: '[{% for eid in entity_ids %}{%if eid.startswith(''binary_sensor'') and is_state_attr(eid, "device_class", "motion") %}"{{ eid }}",{% endif %}{% endfor %}]'
+  doorbell_entity_ids: '[{% for eid in entity_ids %}{%if eid.startswith(''binary_sensor'') and is_state_attr(eid, "device_class", "occupancy") %}"{{ eid }}",{% endif %}{% endfor %}]'
   camera_id_map: |
     {
-      {% for entity_id in motion_entity_ids %}
+      {% for entity_id in doorbell_entity_ids %}
       "{{ entity_id }}": [{% for eid in device_entities(device_id(entity_id)) %}{%if eid.startswith("camera") and not is_state(eid, "unavailable") %}"{{ eid }}",{% endif %}{% endfor %}],
       {% endfor %}
     }
-  smart_detect_objs: "{{ (input_objects | lower).split(',') | map('trim') | list | select('in', ['person', 'vehicle']) | list }}"
   # automation variables
   lovelace_view: "{{ input_lovelace_view | trim }}"
   trigger_entity_id: |
     {% if "event" in trigger %}
       {{ trigger.event.data.entity_id }}
     {% else %}
-      {{ motion_entity_ids | first }}
+      {{ doorbell_entity_ids | first }}
     {% endif %}
   camera_entity_id: "{{ camera_id_map[trigger_entity_id] | default([None]) | first }}"
-  trigger_object: |
-    {% if "event" in trigger and trigger.event.data.new_state != None and "event_object" in trigger.event.data.new_state.attributes %}
-      {% if trigger.event.data.new_state.attributes.event_object == "None Identified" %}
-        None
-      {% else %}
-        {{ trigger.event.data.new_state.attributes.event_object }}
-      {% endif %}
-    {% else %}
-      None
-    {% endif %}
+  lock_entity_id: "{{ input_lock_entity or '' }}"
   trigger_time: |
     {% if states[trigger_entity_id] == None %}
       None
@@ -264,7 +253,7 @@ variables:
     {% else %}
       {{ input_base_ha_url | trim }}{{ lovelace_view }}
     {% endif %}
-  notification_message: "{% if trigger_object == None %}Motion{% else %}{{ trigger_object.title() }}{% endif %} detected by {{ notification_title }}{% if trigger_time != None %} at {{ trigger_time }}{% endif %}."
+  notification_message: "Someone rang {{ notification_title }}{% if trigger_time != None %} at {{ trigger_time }}{% endif %}."
   notification_message_html5: |
     {{ notification_message }}{% if notification_url != None %}
 
@@ -277,6 +266,7 @@ variables:
       {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
     {% endif %}
   silence_action: "silence-{{ trigger_entity_id }}"
+  unlock_action: "unlock-{{ lock_entity_id }}"
 
 trigger:
   - platform: event
@@ -285,18 +275,10 @@ trigger:
 condition:
   - condition: template
     value_template: >
-      {% if trigger.event.data.entity_id in motion_entity_ids %}
-        {% if (smart_detect_objs | length) > 0 %}
-          {% if trigger.event.data.new_state.attributes.event_object in smart_detect_objs and trigger.event.data.old_state.attributes.event_object in (None, "None Identified") %}
-            true
-          {% else %}
-            false
-          {% endif %}
-        {% elif trigger.event.data.new_state.state == "on" and trigger.event.data.old_state.state == "off" and trigger_entity_id != None %}
-          true
-        {% else %}
-          false
-        {% endif %}
+      {% if trigger.event.data.entity_id in doorbell_entity_ids and trigger.event.data.new_state.state == "on" and trigger.event.data.old_state.state == "off" and trigger_entity_id != None %}
+        true
+      {% else %}
+        false
       {% endif %}
 
 action:
@@ -308,8 +290,8 @@ action:
               title: "Debug: {{ notification_title }}"
               message: |
                 Entity ID: `{{ trigger_entity_id }}`
-                Object: `{{ trigger_object }}`
                 Camera: `{{ camera_entity_id }}`
+                Lock: `{{ lock_entity_id }}`
                 Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
                 Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
 
@@ -345,6 +327,9 @@ action:
                   [{% if notification_url != None %}
                   { "action": "URI", "title": "Open Camera", "uri": "{{ lovelace_view }}" },
                   {% endif %}
+                  {% if lock_entity_id != "" %}
+                  { "action": "{{ unlock_action }}", "title": "Unlock Door" },
+                  {% endif %}
                   {% if input_silence_timer > 0 %}
                   { "action": "{{ silence_action }}", "title": "Silence", "destructive": True },
                   {% endif %}]
@@ -361,7 +346,10 @@ action:
                 image: "{{ notification_image }}"
                 url: "{{ notification_url }}"
                 actions: >
-                  [{% if input_silence_timer > 0 %}
+                  [{% if lock_entity_id != "" %}
+                  { "action": "{{ unlock_action }}", "title": "Unlock Door" },
+                  {% endif %}
+                  {% if input_silence_timer > 0 %}
                   { "action": "{{ silence_action }}", "title": "Silence" },
                   {% endif %}]
   - wait_for_trigger:
@@ -373,6 +361,14 @@ action:
         event_type: html5_notification.clicked
         event_data:
           action: "{{ silence_action }}"
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "{{ unlock_action }}"
+      - platform: event
+        event_type: html5_notification.clicked
+        event_data:
+          action: "{{ unlock_action }}"
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false
@@ -382,13 +378,37 @@ action:
           - service: notify.persistent_notification
             data:
               title: "Debug: {{ notification_title }}"
-              message: Silence started.
-  - delay:
-      minutes: "{{ input_silence_timer }}"
+              message: |
+                Callback: `{{ wait.trigger.event.event_type }}`
+                Actions: `{{ wait.trigger.event.data.action }}`
   - choose:
-      - conditions: "{{ input_debug_enabled }}"
+      - conditions: "{{ lock_entity_id != '' and wait.trigger.event.data.action == unlock_action }}"
         sequence:
-          - service: notify.persistent_notification
+          - choose:
+              - conditions: "{{ input_debug_enabled }}"
+                sequence:
+                  - service: notify.persistent_notification
+                    data:
+                      title: "Debug: {{ notification_title }}"
+                      message: "Unlock `{{ lock_entity_id }}`"
+          - service: lock.unlock
             data:
-              title: "Debug: {{ notification_title }}"
-              message: Silence ended.
+              entity_id: "{{ lock_entity_id }}"
+      - conditions: "{{wait.trigger.event.data.action == silence_action }}"
+        sequence:
+          - choose:
+              - conditions: "{{ input_debug_enabled }}"
+                sequence:
+                  - service: notify.persistent_notification
+                    data:
+                      title: "Debug: {{ notification_title }}"
+                      message: Silence started.
+          - delay:
+              minutes: "{{ input_silence_timer }}"
+          - choose:
+              - conditions: "{{ input_debug_enabled }}"
+                sequence:
+                  - service: notify.persistent_notification
+                    data:
+                      title: "Debug: {{ notification_title }}"
+                      message: Silence ended.

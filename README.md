@@ -194,11 +194,11 @@ As part of the integration, we provide a couple of blueprints that you can use o
 
 ### Doorbell Notifications
 
-[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbriis%2Funifiprotect%2Fmaster%2Fblueprints%2Fautomation%2Funifiprotect%2Fdoorbell_event.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbriis%2Funifiprotect%2Fmaster%2Fblueprints%2Fautomation%2Funifiprotect%2Fpush_notification_doorbell_event.yaml)
 
 ### Motion / Smart Detection Notifications
 
-[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbriis%2Funifiprotect%2Fmaster%2Fblueprints%2Fautomation%2Funifiprotect%2Fmotion_event.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbriis%2Funifiprotect%2Fmaster%2Fblueprints%2Fautomation%2Funifiprotect%2Fpush_notification_motion_event.yaml)
 
 ### Enable Debug Logging
 

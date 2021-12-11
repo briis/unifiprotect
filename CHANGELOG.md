@@ -13,7 +13,7 @@
 
 * `NEW`: Adds "Received Data", "Transferred Data", "Oldest Recording", "Storage Used", and "Disk Write Rate" sensors for cameras. Disabled by default. Requires "Realtime metrics" option to update in realtime.
 
-* `NEW`: (requires UniFi Protect 1.20.1) Adds "Voltage" sensor for doorbells. Disabled by default. Requires "Realtime metrics" option to update in realtime.
+* `NEW`: (requires UniFi Protect 1.20.1) Adds "Voltage" sensor for doorbells. Disabled by default.
 
 * `NEW`: Adds "System Sounds" switch for cameras with speakers
 

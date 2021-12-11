@@ -4,10 +4,22 @@
 
 * `DEPRECATION`: The Motion binary sensor will stop showing details about smart detections in the next version. Use the new separate Detected Object sensor. `event_object` attribute will be removed as well.
 
-* `NEW`: Adds `phy_rate` and `wifi_signal` sensors so all connection states (BLE, WiFi and Wired) should have a diagnostic sensor
+* `NEW`: Adds `phy_rate` and `wifi_signal` sensors so all connection states (BLE, WiFi and Wired) should have a diagnostic sensor. Disabled by default. Requires "Realtime metrics" option to update in realtime.
 
 * `NEW`: Added Detected Object sensor for cameras with smart detections. Values are `none`, `person` or `vehicle`. Contains `event_score` and `event_thumb` attributes.
   * Closes #342
+
+* `NEW`: Adds Paired Camera select entity for Viewports
+
+* `NEW`: Adds "Received Data", "Transferred Data", "Oldest Recording", "Storage Used", and "Disk Write Rate" sensors for cameras. Disabled by default. Requires "Realtime metrics" option to update in realtime.
+
+* `NEW`: (requires UniFi Protect 1.20.1) Adds "Voltage" sensor for doorbells. Disabled by default.
+
+* `NEW`: Adds "System Sounds" switch for cameras with speakers
+
+* `NEW`: Adds switches to toggle overlay information for video feeds on all cameras
+
+* `NEW`: Adds switches to toggle smart detection types on cameras with smart detections
 
 ## 0.11.0-beta.2
 

@@ -38,6 +38,7 @@ _KEY_REC_MODE = "recording_mode"
 _KEY_VIEWER = "viewer"
 _KEY_LIGHT_MOTION = "light_motion"
 _KEY_DOORBELL_TEXT = "doorbell_text"
+_KEY_PAIRED_CAMERA = "paired_camera"
 
 INFRARED_MODES = [
     {"id": IRLEDMode.AUTO.value, "name": "Auto"},
@@ -125,6 +126,13 @@ LIGHT_SELECTS: tuple[ProtectSelectEntityDescription, ...] = (
         ufp_options=MOTION_MODE_TO_LIGHT_MODE,
         ufp_value="light_mode_settings.mode",
     ),
+    ProtectSelectEntityDescription(
+        key=_KEY_PAIRED_CAMERA,
+        name="Paired Camera",
+        icon="mdi:cctv",
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        ufp_value="camera_id",
+    ),
 )
 
 VIEWPORT_SELECTS: tuple[ProtectSelectEntityDescription, ...] = (
@@ -132,7 +140,6 @@ VIEWPORT_SELECTS: tuple[ProtectSelectEntityDescription, ...] = (
         key=_KEY_VIEWER,
         name="Viewer",
         icon="mdi:view-dashboard",
-        ufp_required_field=None,
         ufp_value="liveview",
         ufp_set_function="set_liveview",
     ),
@@ -192,7 +199,7 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
 
         This is due to possible downstream platforms dependencies on these options.
         """
-        if self.entity_description.key not in (_KEY_VIEWER, _KEY_DOORBELL_TEXT):
+        if self.entity_description.ufp_options is not None:
             return
 
         if self.entity_description.key == _KEY_VIEWER:
@@ -213,6 +220,10 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
                 {"id": "", "name": f"Default Message ({default_message})"},
                 *built_messages,
             ]
+        elif self.entity_description.key == _KEY_PAIRED_CAMERA:
+            options = []
+            for camera in self.data.api.bootstrap.cameras.values():
+                options.append({"id": camera.id, "name": camera.name})
 
         self._attr_options = [item["name"] for item in options]
         self._hass_to_unifi_options = {item["name"]: item["id"] for item in options}
@@ -260,6 +271,13 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
                     LightModeType(lightmode),
                     enable_at=None if timing is None else LightModeEnableType(timing),
                 )
+                return
+
+            unifi_value = self._hass_to_unifi_options[option]
+            if self.entity_description.key == _KEY_PAIRED_CAMERA:
+                camera = self.data.api.bootstrap.cameras.get(unifi_value)
+                await self.device.set_paired_camera(camera)
+                _LOGGER.debug("Changed Paired Camera to to: %s", option)
                 return
 
         unifi_value = self._hass_to_unifi_options[option]

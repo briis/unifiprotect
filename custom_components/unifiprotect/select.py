@@ -236,7 +236,7 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
 
         if unifi_value is None:
             unifi_value = TYPE_EMPTY_VALUE
-        if isinstance(unifi_value, Enum):
+        elif isinstance(unifi_value, Enum):
             unifi_value = unifi_value.value
         elif isinstance(unifi_value, Liveview):
             unifi_value = unifi_value.id
@@ -250,9 +250,8 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
                 == LightModeEnableType.DARK
             ):
                 unifi_value = f"{LightModeType.MOTION.value}Dark"
-        elif self.entity_description.key == _KEY_DOORBELL_TEXT and isinstance(
-            unifi_value, LCDMessage
-        ):
+        elif self.entity_description.key == _KEY_DOORBELL_TEXT:
+            assert isinstance(unifi_value, LCDMessage)
             return unifi_value.text
         return self._unifi_to_hass_options[unifi_value]
 

@@ -221,7 +221,7 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
                 *built_messages,
             ]
         elif self.entity_description.key == _KEY_PAIRED_CAMERA:
-            options = []
+            options = [{"id": TYPE_EMPTY_VALUE, "name": "Not Paired"}]
             for camera in self.data.api.bootstrap.cameras.values():
                 options.append({"id": camera.id, "name": camera.name})
 
@@ -234,7 +234,9 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
         """Return the current selected option."""
         unifi_value = get_nested_attr(self.device, self._data_key)
 
-        if isinstance(unifi_value, Enum):
+        if unifi_value is None:
+            unifi_value = TYPE_EMPTY_VALUE
+        elif isinstance(unifi_value, Enum):
             unifi_value = unifi_value.value
         elif isinstance(unifi_value, Liveview):
             unifi_value = unifi_value.id
@@ -249,11 +251,8 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
             ):
                 unifi_value = f"{LightModeType.MOTION.value}Dark"
         elif self.entity_description.key == _KEY_DOORBELL_TEXT:
-            if unifi_value is None:
-                unifi_value = TYPE_EMPTY_VALUE
-            else:
-                assert isinstance(unifi_value, LCDMessage)
-                return unifi_value.text
+            assert isinstance(unifi_value, LCDMessage)
+            return unifi_value.text
         return self._unifi_to_hass_options[unifi_value]
 
     async def async_select_option(self, option: str) -> None:
@@ -275,6 +274,8 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
 
             unifi_value = self._hass_to_unifi_options[option]
             if self.entity_description.key == _KEY_PAIRED_CAMERA:
+                if unifi_value == TYPE_EMPTY_VALUE:
+                    unifi_value = None
                 camera = self.data.api.bootstrap.cameras.get(unifi_value)
                 await self.device.set_paired_camera(camera)
                 _LOGGER.debug("Changed Paired Camera to to: %s", option)

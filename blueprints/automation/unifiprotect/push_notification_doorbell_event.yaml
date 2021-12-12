@@ -7,7 +7,7 @@ blueprint:
 
     ### Required Settings
 
-      - Area or Device with UniFi Protect Doorbell Sensor
+      - UniFi Protect Doorbell Sensor
 
     ### Optional Settings
 
@@ -41,19 +41,15 @@ blueprint:
     [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
   domain: automation
   input:
-    device_filter:
-      name: Device(s)
+    doorbell:
+      name: Doorbell Entity
       description: >
-        The doorbell sensor / area / devices you want to trigger notifications for.
-        Will always be the first doorbell sensor found in filter if triggered manually.
+        The doorbell sensor you want to trigger notifications for.
       selector:
-        target:
-          device:
-            integration: unifiprotect
-          entity:
-            integration: unifiprotect
-            domain: binary_sensor
-            device_class: occupancy
+        entity:
+          integration: unifiprotect
+          domain: binary_sensor
+          device_class: occupancy
     lock_entity:
       name: (Optional) Door Lock Entity
       description: >
@@ -175,7 +171,7 @@ max_exceeded: silent
 
 variables:
   # input vars
-  input_device_filter: !input device_filter
+  input_doorbell: !input doorbell
   input_channel: !input channel
   input_base_image_url: !input base_image_url
   input_base_ha_url: !input base_ha_url
@@ -188,41 +184,8 @@ variables:
   input_send_mobile: !input send_mobile
   input_send_html5: !input send_html5
   input_time_format: !input time_format
-  # itermediate variables
-  raw_area_ids: |
-    {% if 'area_id' not in input_device_filter %}
-      []
-    {% elif input_device_filter.area_id is string %}
-      ["{{ input_device_filter.area_id }}"]
-    {% else %}
-      {{ input_device_filter.area_id }}
-    {% endif %}
-  raw_device_ids: |
-    {% if 'device_id' not in input_device_filter %}
-      []
-    {% elif input_device_filter.device_id is string %}
-      ["{{ input_device_filter.device_id }}"]
-    {% else %}
-      {{ input_device_filter.device_id }}
-    {% endif %}
-  raw_entity_ids: |
-    {% if 'entity_id' not in input_device_filter %}
-      []
-    {% elif input_device_filter.entity_id is string %}
-      ["{{ input_device_filter.entity_id }}"]
-    {% else %}
-      {{ input_device_filter.entity_id }}
-    {% endif %}
-  device_ids: "{{ ((raw_area_ids | map('area_devices') | map('join','|||') | join('|||')).split('|||') | list + raw_device_ids | list) | unique | list }}"
-  entity_ids: "{{ ((device_ids | map('device_entities') | map('join','|||') | join('|||')).split('|||') | list + raw_entity_ids | list) | unique | list }}"
   # automation data
-  doorbell_entity_ids: '[{% for eid in entity_ids %}{%if eid.startswith(''binary_sensor'') and is_state_attr(eid, "device_class", "occupancy") %}"{{ eid }}",{% endif %}{% endfor %}]'
-  camera_id_map: |
-    {
-      {% for entity_id in doorbell_entity_ids %}
-      "{{ entity_id }}": [{% for eid in device_entities(device_id(entity_id)) %}{%if eid.startswith("camera") and not is_state(eid, "unavailable") %}"{{ eid }}",{% endif %}{% endfor %}],
-      {% endfor %}
-    }
+  camera_entities: '[{% for eid in device_entities(device_id(input_doorbell)) %}{%if eid.startswith(''camera'') and not is_state(eid, ''unavailable'') %}"{{ eid }}",{% endif %}{% endfor %}]'
   # automation variables
   lovelace_view: "{{ input_lovelace_view | trim }}"
   trigger_entity_id: |
@@ -231,13 +194,13 @@ variables:
     {% else %}
       {{ doorbell_entity_ids | first }}
     {% endif %}
-  camera_entity_id: "{{ camera_id_map[trigger_entity_id] | default([None]) | first }}"
+  camera_entity_id: "{{ camera_entities | default([None]) | first }}"
   lock_entity_id: "{{ input_lock_entity or '' }}"
   trigger_time: |
-    {% if states[trigger_entity_id] == None %}
+    {% if states[input_doorbell] == None %}
       None
     {% else %}
-      {{ as_local(states[trigger_entity_id].last_changed).strftime(input_time_format) }}
+      {{ as_local(states[input_doorbell].last_changed).strftime(input_time_format) }}
     {% endif %}
   notification_channel: |
     {% if "event" in trigger %}
@@ -246,7 +209,7 @@ variables:
       Manual {{ input_channel }}
     {% endif %}
   notification_tag: "{{ notification_channel.lower().replace(' ', '-') }}"
-  notification_title: "{{ device_attr(trigger_entity_id, 'name') }}"
+  notification_title: "{{ device_attr(input_doorbell, 'name') }}"
   notification_url: |
     {% if lovelace_view == "" %}
       None
@@ -265,21 +228,14 @@ variables:
     {% else %}
       {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
     {% endif %}
-  silence_action: "silence-{{ trigger_entity_id }}"
+  silence_action: "silence-{{ input_doorbell }}"
   unlock_action: "unlock-{{ lock_entity_id }}"
 
 trigger:
-  - platform: event
-    event_type: state_changed
-
-condition:
-  - condition: template
-    value_template: >
-      {% if trigger.event.data.entity_id in doorbell_entity_ids and trigger.event.data.new_state.state == "on" and trigger.event.data.old_state.state == "off" and trigger_entity_id != None %}
-        true
-      {% else %}
-        false
-      {% endif %}
+  - platform: state
+    entity_id: !input doorbell
+    from: "off"
+    to: "on"
 
 action:
   - choose:
@@ -289,7 +245,7 @@ action:
             data:
               title: "Debug: {{ notification_title }}"
               message: |
-                Entity ID: `{{ trigger_entity_id }}`
+                Entity ID: `{{ input_doorbell }}`
                 Camera: `{{ camera_entity_id }}`
                 Lock: `{{ lock_entity_id }}`
                 Notification Service (Mobile): `notify.{{ input_notify_target_app }}`

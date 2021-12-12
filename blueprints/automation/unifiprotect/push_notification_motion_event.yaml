@@ -1,17 +1,18 @@
 blueprint:
-  name: UniFi Protect Motion / Smart Detection Notifications
+  name: UniFi Protect Motion Notifications
   description: |
-    ## UniFi Protect Motion / Smart Detection Notifications
+    ## UniFi Protect Motion Notifications
 
-    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a motion or smart detection event is fired.
+    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a motion event is fired.
+
+    This blueprint is _only_ for **motion** events, not smart detections.
 
     ### Required Settings
 
-      - Area or Device with UniFi Protect Motion Sensors or a Motion Sensor Entity
+      - UniFi Protect Motion Sensor
 
     ### Optional Settings
 
-      - What Smart Detection(s) you want to trigger on
       - Precense filter for only sending notifications for when you are not home
       - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2] as well as toggles for both
       - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
@@ -28,7 +29,6 @@ blueprint:
     - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
     - The [unifiprotect][8] integration version 0.11-beta3 or newer
     - A UniFi camera pair with your NVR
-      - If you want to filter smart detections, you need a Smart Detection capable camera. This is any G4 series camera _except_ the EA G4 Instant.
     - A valid HTTPS certificate and public facing Home Assistant instance
       - If you do not have these, the actionable notifications and images will not appear in the notifications.
       - You do not need your _whole_ Home Assistant to be publicly accessible. Only the paths `/api/camera_proxy/*` and`/api/webhook/*` need to be accessible outside of your network.
@@ -43,28 +43,15 @@ blueprint:
     [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
   domain: automation
   input:
-    device_filter:
-      name: Device(s)
+    motion_entity:
+      name: Motion Entity
       description: >
-        The motion sensor / area / devices you want to trigger notifications for.
-        Will always be the first motion sensor found in filter if triggered manually.
+        The camera motion sensor for you want to fire events for.
       selector:
-        target:
-          device:
-            integration: unifiprotect
-          entity:
-            integration: unifiprotect
-            domain: binary_sensor
-            device_class: motion
-    objects:
-      name: (Optional) Smart Detections
-      description: >
-        Smart Detections to filter on. List should be comma separated. If left empty,
-        will trigger on all motion events.
-        Possible objects: person, vehicle
-      default: ""
-      selector:
-        text:
+        entity:
+          integration: unifiprotect
+          domain: binary_sensor
+          device_class: motion
     presence_filter:
       name: (Optional) Presence Filter
       description: Only notify if selected presence entity is not "home".
@@ -183,8 +170,7 @@ max_exceeded: silent
 
 variables:
   # input vars
-  input_device_filter: !input device_filter
-  input_objects: !input objects
+  input_motion_entity: !input motion_entity
   input_channel: !input channel
   input_base_image_url: !input base_image_url
   input_base_ha_url: !input base_ha_url
@@ -197,66 +183,16 @@ variables:
   input_send_html5: !input send_html5
   input_time_format: !input time_format
   input_presence_filter: !input presence_filter
-  # itermediate variables
-  raw_area_ids: |
-    {% if 'area_id' not in input_device_filter %}
-      []
-    {% elif input_device_filter.area_id is string %}
-      ["{{ input_device_filter.area_id }}"]
-    {% else %}
-      {{ input_device_filter.area_id }}
-    {% endif %}
-  raw_device_ids: |
-    {% if 'device_id' not in input_device_filter %}
-      []
-    {% elif input_device_filter.device_id is string %}
-      ["{{ input_device_filter.device_id }}"]
-    {% else %}
-      {{ input_device_filter.device_id }}
-    {% endif %}
-  raw_entity_ids: |
-    {% if 'entity_id' not in input_device_filter %}
-      []
-    {% elif input_device_filter.entity_id is string %}
-      ["{{ input_device_filter.entity_id }}"]
-    {% else %}
-      {{ input_device_filter.entity_id }}
-    {% endif %}
-  device_ids: "{{ ((raw_area_ids | map('area_devices') | map('join','|||') | join('|||')).split('|||') | list + raw_device_ids | list) | unique | list }}"
-  entity_ids: "{{ ((device_ids | map('device_entities') | map('join','|||') | join('|||')).split('|||') | list + raw_entity_ids | list) | unique | list }}"
   # automation data
-  motion_entity_ids: '[{% for eid in entity_ids %}{%if eid.startswith(''binary_sensor'') and is_state_attr(eid, "device_class", "motion") %}"{{ eid }}",{% endif %}{% endfor %}]'
-  smart_entity_ids: '[{% for eid in entity_ids %}{%if eid.startswith(''sensor'') and is_state_attr(eid, "device_class", "occupancy") %}"{{ eid }}",{% endif %}{% endfor %}]'
-  camera_id_map: |
-    {
-      {% for entity_id in motion_entity_ids %}
-      "{{ entity_id }}": [{% for eid in device_entities(device_id(entity_id)) %}{%if eid.startswith("camera") and not is_state(eid, "unavailable") %}"{{ eid }}",{% endif %}{% endfor %}],
-      {% endfor %}
-      {% for entity_id in smart_entity_ids %}
-      "{{ entity_id }}": [{% for eid in device_entities(device_id(entity_id)) %}{%if eid.startswith("camera") and not is_state(eid, "unavailable") %}"{{ eid }}",{% endif %}{% endfor %}],
-      {% endfor %}
-    }
-  smart_detect_objs: "{{ (input_objects | lower).split(',') | map('trim') | list | select('in', ['person', 'vehicle']) | list }}"
+  camera_entities: '[{% for eid in device_entities(device_id(input_motion_entity)) %}{%if eid.startswith(''camera'') and not is_state(eid, ''unavailable'') %}"{{ eid }}",{% endif %}{% endfor %}]'
   # automation variables
   lovelace_view: "{{ input_lovelace_view | trim }}"
-  trigger_entity_id: |
-    {% if "event" in trigger %}
-      {{ trigger.event.data.entity_id }}
-    {% else %}
-      {{ smart_entity_ids | first }}
-    {% endif %}
-  camera_entity_id: "{{ camera_id_map[trigger_entity_id] | default([None], true) | first }}"
-  trigger_object: |
-    {% if trigger_entity_id.startswith('sensor') and is_state_attr(trigger_entity_id, "device_class", "occupancy") %}
-      {{ states[trigger_entity_id].state }}
-    {% else %}
-      none
-    {% endif %}
+  camera_entity_id: "{{ camera_entities | default([None]) | first }}"
   trigger_time: |
-    {% if states[trigger_entity_id] == None %}
+    {% if states[input_motion_entity] == None %}
       None
     {% else %}
-      {{ as_local(states[trigger_entity_id].last_changed).strftime(input_time_format) }}
+      {{ as_local(states[input_motion_entity].last_changed).strftime(input_time_format) }}
     {% endif %}
   notification_channel: |
     {% if "event" in trigger %}
@@ -265,14 +201,14 @@ variables:
       Manual {{ input_channel }}
     {% endif %}
   notification_tag: "{{ notification_channel.lower().replace(' ', '-') }}"
-  notification_title: "{{ device_attr(trigger_entity_id, 'name') }}"
+  notification_title: "{{ device_attr(input_motion_entity, 'name') }}"
   notification_url: |
     {% if lovelace_view == "" %}
       None
     {% else %}
       {{ input_base_ha_url | trim }}{{ lovelace_view }}
     {% endif %}
-  notification_message: "{% if trigger_object == 'none' %}Motion{% else %}{{ trigger_object.title() }}{% endif %} detected by {{ notification_title }}{% if trigger_time != None %} at {{ trigger_time }}{% endif %}."
+  notification_message: "Motion detected by {{ notification_title }}{% if trigger_time != None %} at {{ trigger_time }}{% endif %}."
   notification_message_html5: |
     {{ notification_message }}{% if notification_url != None %}
 
@@ -284,31 +220,16 @@ variables:
     {% else %}
       {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
     {% endif %}
-  silence_action: "silence-{{ trigger_entity_id }}"
+  silence_action: "silence-{{ input_motion_entity }}"
 
 trigger:
-  - platform: event
-    event_type: state_changed
+  - platform: state
+    entity_id: !input motion_entity
+    from: "off"
+    to: "on"
 
 condition:
   - "{{ not input_presence_filter or not is_state(input_presence_filter, 'home') }}"
-  - condition: template
-    value_template: >
-      {% if (smart_detect_objs | length) > 0 %}
-        {% if trigger.event.data.entity_id in smart_entity_ids %}
-          {% if trigger.event.data.new_state.state in smart_detect_objs and trigger.event.data.old_state.state == "none" and trigger_object != "none" %}
-            true
-          {% else %}
-            false
-          {% endif %}
-        {% endif %}
-      {% elif trigger.event.data.entity_id in motion_entity_ids %}
-        {% if trigger.event.data.new_state.state == "on" and trigger.event.data.old_state.state == "off" and trigger_entity_id != None %}
-          true
-        {% else %}
-          false
-        {% endif %}
-      {% endif %}
 
 action:
   - choose:
@@ -318,9 +239,8 @@ action:
             data:
               title: "Debug: {{ notification_title }}"
               message: |
-                Entity ID: `{{ trigger_entity_id }}`
+                Entity ID: `{{ input_motion_entity }}`
                 Camera: `{{ camera_entity_id }}`
-                Object: `{{ trigger_object }}`
                 Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
                 Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
 

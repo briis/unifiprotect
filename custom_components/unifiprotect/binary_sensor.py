@@ -390,46 +390,48 @@ class ProtectAccessTokenBinarySensor(ProtectDeviceBinarySensor, AccessTokenMixin
     ) -> None:
         self.device: Camera = device
         super().__init__(data, description=description)
+        self._event: Event | None = None
 
     @callback
-    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
-        # Camera motion sensors with object detection
-        event: Event | None = None
-        score = 0
+    def _async_update_device_from_protect(self) -> None:
+        self._event = None
         if (
             self.device.is_smart_detected
             and self.device.last_smart_detect_event is not None
             and len(self.device.last_smart_detect_event.smart_detect_types) > 0
         ):
-            score = self.device.last_smart_detect_event.score
-            event = self.device.last_smart_detect_event
-            detected_object: str | None = (
-                self.device.last_smart_detect_event.smart_detect_types[0].value
-            )
-        else:
-            if (
-                self.device.is_motion_detected
-                and self.device.last_motion_event is not None
-            ):
-                score = self.device.last_motion_event.score
-            detected_object = None
-            event = self.device.last_motion_event
+            self._event = self.device.last_smart_detect_event
+        elif (
+            self.device.is_motion_detected and self.device.last_motion_event is not None
+        ):
+            self._event = self.device.last_motion_event
+        super()._async_update_device_from_protect()
 
-        thumb_url: str | None = None
-        if event is not None and len(self.access_tokens) > 0:
-            assert self.device_info is not None
+    @callback
+    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
+        # Camera motion sensors with object detection
+        attrs: dict[str, Any] = {
+            **super()._async_update_extra_attrs_from_protect(),
+            ATTR_LAST_TRIP_TIME: self.device.last_motion,
+            ATTR_EVENT_SCORE: 0,
+            ATTR_EVENT_OBJECT: None,
+            ATTR_EVENT_THUMB: None,
+        }
+
+        if self._event is None:
+            return attrs
+
+        if len(self._event.smart_detect_types) > 0:
+            attrs[ATTR_EVENT_OBJECT] = self._event.smart_detect_types[0].value
+
+        if len(self.access_tokens) > 0:
             # thumbnail_id is never updated via WS, but it is always e-{event.id}
             params = urlencode(
                 {"entity_id": self.entity_id, "token": self.access_tokens[-1]}
             )
-            thumb_url = (
-                ThumbnailProxyView.url.format(event_id=f"e-{event.id}") + f"?{params}"
+            attrs[ATTR_EVENT_THUMB] = (
+                ThumbnailProxyView.url.format(event_id=f"e-{self._event.id}")
+                + f"?{params}"
             )
 
-        return {
-            **super()._async_update_extra_attrs_from_protect(),
-            ATTR_LAST_TRIP_TIME: self.device.last_motion,
-            ATTR_EVENT_SCORE: score,
-            ATTR_EVENT_OBJECT: detected_object,
-            ATTR_EVENT_THUMB: thumb_url,
-        }
+        return attrs

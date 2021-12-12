@@ -23,7 +23,7 @@ from homeassistant.const import (
     DEVICE_CLASS_VOLTAGE,
     ENTITY_CATEGORY_DIAGNOSTIC,
     PERCENTAGE,
-    SIGNAL_STRENGTH_DECIBELS,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     TEMP_CELSIUS,
     TIME_SECONDS,
 )
@@ -79,7 +79,7 @@ ALL_DEVICES_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
     ProtectSensorEntityDescription(
         key="ble_signal",
         name="Bluetooth Signal Strength",
-        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
         device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
         entity_registry_enabled_default=False,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
@@ -98,7 +98,7 @@ ALL_DEVICES_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
     ProtectSensorEntityDescription(
         key="wifi_signal",
         name="WiFi Signal Strength",
-        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
         device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
         entity_registry_enabled_default=False,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,

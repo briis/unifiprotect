@@ -2,6 +2,19 @@
 
 ## 0.11.0-dev (master)
 
+* `NEW`: Adds `unifiprotect.set_doorbell_message` service. This is just like the `unifiprotect.set_doorbell_lcd_message`, but it is not deprecated and it requires the Doorbell Text Select entity instead of the Camera entity. Should **only** be used to set dynamic doorbell text messages (i.e. setting the current outdoor temperate on your doorbell). If you want to use static custom messages, use the Doorbell Text Select entity and the `unifiprotect.add_doorbell_text` / `unifiprotect.remove_doorbell_text` service. `unifiprotect.set_doorbell_lcd_message` is still deprecated and will still be removed in the next release.
+  * Closes #396
+
+* `NEW`: Adds "Override Connection Host" config option. This will force your RTSP(S) connection IP address to be the same as everything else. Should only be used if you need to forcibly use a different IP address.
+  * For sure closes #248
+
+* `FIX`: Reset event_thumbnail attribute for Motion binary sensor after motion has ended
+
+* `FIX`: Change unit for signal strength from db to dbm. (fixes Camera Wifi Signal Strength should be dBm not dB)
+  * Closes #394
+
+## 0.11.0-beta.3
+
 * `DEPRECATION`: The Motion binary sensor will stop showing details about smart detections in the next version. Use the new separate Detected Object sensor. `event_object` attribute will be removed as well.
 
 * `NEW`: Adds `phy_rate` and `wifi_signal` sensors so all connection states (BLE, WiFi and Wired) should have a diagnostic sensor. Disabled by default. Requires "Realtime metrics" option to update in realtime.

@@ -27,6 +27,7 @@ from pyunifiprotect.data import ModelType
 from .const import (
     CONF_ALL_UPDATES,
     CONF_DOORBELL_TEXT,
+    CONF_OVERRIDE_CHOST,
     CONFIG_OPTIONS,
     DEFAULT_SCAN_INTERVAL,
     DEVICE_TYPE_CAMERA,
@@ -178,6 +179,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         verify_ssl=entry.data[CONF_VERIFY_SSL],
         session=session,
         subscribed_models=DEVICES_FOR_SUBSCRIBE,
+        override_connection_host=entry.options.get(CONF_OVERRIDE_CHOST, False),
         ignore_stats=not entry.options.get(CONF_ALL_UPDATES, False),
     )
     _LOGGER.debug("Connect to UniFi Protect")

@@ -3,7 +3,7 @@ blueprint:
   description: |
     ## UniFi Protect Dynamic Doorbell
 
-    This blueprint will dynamically update the text on the LCD display if your UniFi Protect Doorbell
+    This blueprint will dynamically update the text on the LCD display for your UniFi Protect Doorbell
 
     ### Required Settings
 
@@ -66,9 +66,9 @@ blueprint:
     time_format:
       name: (Optional) Time Format String
       description: >
-        Python datetime format code string for the event trigger time. This string is 
-        the actually time the doorbell event was triggered in case the automation or 
-        notification is delayed. Manual triggers will cause this to always be the time 
+        Python datetime format code string for the event trigger time. This string is
+        the actually time the doorbell event was triggered in case the automation or
+        notification is delayed. Manual triggers will cause this to always be the time
         of the previous event.
         https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
       default: "%I:%M %p"

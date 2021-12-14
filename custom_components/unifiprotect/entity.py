@@ -8,11 +8,6 @@ import logging
 from random import SystemRandom
 from typing import Any, Final, Sequence
 
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
-from pyunifiprotect.data.nvr import NVR
-from pyunifiprotect.data.types import ModelType
-
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import callback
 import homeassistant.helpers.device_registry as dr
@@ -21,6 +16,10 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
+from pyunifiprotect.data.nvr import NVR
+from pyunifiprotect.data.types import ModelType
 
 from .const import (
     ATTR_DEVICE_MODEL,

@@ -7,11 +7,10 @@ import logging
 from typing import Any
 
 from aiohttp import web
-from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.exceptions import NvrError
-
 from homeassistant.components.http import KEY_AUTHENTICATED, HomeAssistantView
 from homeassistant.core import HomeAssistant
+from pyunifiprotect.api import ProtectApiClient
+from pyunifiprotect.exceptions import NvrError
 
 from .const import DOMAIN
 from .data import ProtectData

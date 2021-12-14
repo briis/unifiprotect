@@ -6,6 +6,9 @@ from datetime import timedelta
 import logging
 from typing import Any, Generator, Iterable
 
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
 from pyunifiprotect.data import (
     Bootstrap,
@@ -15,10 +18,6 @@ from pyunifiprotect.data import (
     WSSubscriptionMessage,
 )
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
-
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
-from homeassistant.helpers.event import async_track_time_interval
 
 from .const import CONF_DISABLE_RTSP, DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
 

@@ -9,13 +9,12 @@ import logging
 import time
 from typing import Any
 
-from pyunifiprotect.api import ProtectApiClient
-from pyunifiprotect.utils import print_ws_stat_summary
-
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
+from pyunifiprotect.api import ProtectApiClient
+from pyunifiprotect.utils import print_ws_stat_summary
 
 _LOGGER = logging.getLogger(__name__)
 

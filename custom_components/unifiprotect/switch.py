@@ -5,14 +5,13 @@ from dataclasses import dataclass
 import logging
 from typing import Any, Callable, Sequence
 
-from pyunifiprotect.data import Camera, RecordingMode, VideoMode
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
+from pyunifiprotect.data import Camera, RecordingMode, VideoMode
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
 from .const import DOMAIN
 from .data import ProtectData

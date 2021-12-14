@@ -7,9 +7,6 @@ import logging
 from typing import Any, Callable, Sequence
 from urllib.parse import urlencode
 
-from pyunifiprotect.data import NVR, Camera, Event, Light
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-
 from homeassistant.components.binary_sensor import DEVICE_CLASS_OCCUPANCY
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -32,6 +29,8 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
+from pyunifiprotect.data import NVR, Camera, Event, Light
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
 from .const import ATTR_ENABLED_AT, ATTR_EVENT_SCORE, ATTR_EVENT_THUMB, DOMAIN
 from .data import ProtectData

@@ -5,6 +5,11 @@ from datetime import timedelta
 import logging
 from typing import Any, Callable, Generator, Sequence
 
+from homeassistant.components.camera import SUPPORT_STREAM, Camera
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_platform
+from homeassistant.helpers.entity import Entity
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Camera as UFPCamera
 from pyunifiprotect.data.devices import CameraChannel
@@ -15,12 +20,6 @@ from pyunifiprotect.data.types import (
     VideoMode,
 )
 from pyunifiprotect.utils import utc_now
-
-from homeassistant.components.camera import SUPPORT_STREAM, Camera
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import entity_platform
-from homeassistant.helpers.entity import Entity
 
 from .const import (
     ATTR_BITRATE,

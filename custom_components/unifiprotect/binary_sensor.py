@@ -319,7 +319,8 @@ class ProtectDeviceBinarySensor(ProtectDeviceEntity, BinarySensorEntity):
         CORE: Remove this before merging to core.
         """
 
-        assert isinstance(self.device, (Camera, Light))
+        if isinstance(self.device, Sensor):
+            return
 
         obj: list[str] | None = None
         if isinstance(self.device, Camera):

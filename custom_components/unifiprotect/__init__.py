@@ -8,6 +8,9 @@ import logging
 
 from aiohttp import CookieJar
 from aiohttp.client_exceptions import ServerDisconnectedError
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data import ModelType
+
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import (
     CONF_HOST,
@@ -21,8 +24,6 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.data import ModelType
 
 from .const import (
     CONF_ALL_UPDATES,

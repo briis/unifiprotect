@@ -7,6 +7,9 @@ import logging
 from typing import Any, Callable, Sequence
 from urllib.parse import urlencode
 
+from pyunifiprotect.data import NVR, Camera, Event, Light
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+
 from homeassistant.components.binary_sensor import DEVICE_CLASS_OCCUPANCY
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -29,8 +32,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.data import NVR, Camera, Event, Light
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
 from .const import ATTR_ENABLED_AT, ATTR_EVENT_SCORE, ATTR_EVENT_THUMB, DOMAIN
 from .data import ProtectData
@@ -396,6 +397,8 @@ def _async_motion_entities(
 
 
 class SensorValueMixin(Entity):
+    """A mixin to provide sensor values."""
+
     @callback
     def _clean_sensor_value(self, value: Any) -> Any:
         if isinstance(value, timedelta):
@@ -481,6 +484,7 @@ class ProtectAccessTokenSensor(ProtectDeviceSensor, AccessTokenMixin):
         device: Camera,
         description: ProtectSensorEntityDescription,
     ) -> None:
+        """Init an sensor that uses access tokens."""
         self.device: Camera = device
         super().__init__(data, device, description)
         self._event: Event | None = None

@@ -8,7 +8,7 @@ profile_ws_messages:
       required: true
       selector:
         device:
-           integration: unifiprotect
+          integration: unifiprotect
     duration:
       name: Profile Time
       description: How long to profile
@@ -30,7 +30,7 @@ add_doorbell_text:
       required: true
       selector:
         device:
-           integration: unifiprotect
+          integration: unifiprotect
     message:
       name: Custom Message
       description: The custom message to add. Max length of 30 characters.
@@ -48,7 +48,7 @@ remove_doorbell_text:
       required: true
       selector:
         device:
-           integration: unifiprotect
+          integration: unifiprotect
     message:
       name: Custom Message
       description: The custom message to remove. Max length of 30 characters.
@@ -66,7 +66,7 @@ set_default_doorbell_text:
       required: true
       selector:
         device:
-           integration: unifiprotect
+          integration: unifiprotect
     message:
       name: Default Message
       description: The default message. Max length of 30 characters.

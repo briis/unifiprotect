@@ -8,6 +8,11 @@ import logging
 from random import SystemRandom
 from typing import Any, Final, Sequence
 
+from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
+from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
+from pyunifiprotect.data.nvr import NVR
+from pyunifiprotect.data.types import ModelType
+
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import callback
 import homeassistant.helpers.device_registry as dr
@@ -16,10 +21,6 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
-from pyunifiprotect.data.nvr import NVR
-from pyunifiprotect.data.types import ModelType
 
 from .const import (
     ATTR_DEVICE_MODEL,
@@ -84,7 +85,7 @@ def async_all_device_entities(
     viewport_descs: Sequence[ProtectRequiredKeysMixin] | None = None,
     all_descs: Sequence[ProtectRequiredKeysMixin] | None = None,
 ) -> list[ProtectDeviceEntity]:
-
+    """Generate a list of all the device entities."""
     all_descs = list(all_descs or [])
     camera_descs = list(camera_descs or []) + all_descs
     light_descs = list(light_descs or []) + all_descs
@@ -142,7 +143,7 @@ class ProtectDeviceEntity(Entity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return UniFi Protect device attributes"""
+        """Return UniFi Protect device attributes."""
         attrs = super().extra_state_attributes or {}
         return {
             **attrs,
@@ -165,12 +166,12 @@ class ProtectDeviceEntity(Entity):
 
     @callback
     def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
-        """Method called as part of update to calculate extra state attributes"""
+        """Calculate extra state attributes."""
         return {}
 
     @callback
     def _async_update_device_from_protect(self) -> None:
-        """Method called as part of update to update Entity object from Protect device"""
+        """Update Entity object from Protect device."""
         if self.data.last_update_success:
             assert self.device.model
             devices = getattr(self.data.api.bootstrap, f"{self.device.model.value}s")
@@ -183,7 +184,7 @@ class ProtectDeviceEntity(Entity):
 
     @callback
     def _async_updated_event(self) -> None:
-        """Method called when update is available for Entity object"""
+        """Call back for incoming data."""
         self._async_update_device_from_protect()
         self.async_write_ha_state()
 
@@ -237,7 +238,7 @@ class AccessTokenMixin(Entity):
 
     @property
     def access_tokens(self) -> collections.deque[str]:
-        """Get valid access_tokens for current entity"""
+        """Get valid access_tokens for current entity."""
         assert isinstance(self, ProtectDeviceEntity)
         return self.data.async_get_or_create_access_tokens(self.entity_id)
 

@@ -6,12 +6,13 @@ from datetime import timedelta
 import logging
 from typing import Callable, Sequence
 
+from pyunifiprotect.data.devices import Camera, Light
+
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.data.devices import Camera, Light
 
 from .const import DOMAIN
 from .data import ProtectData

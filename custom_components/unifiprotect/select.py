@@ -7,13 +7,6 @@ from enum import Enum
 import logging
 from typing import Any, Callable, Sequence
 
-from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ENTITY_CATEGORY_CONFIG
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_platform
-from homeassistant.helpers.entity import Entity
 from pyunifiprotect.data import (
     Camera,
     DoorbellMessageType,
@@ -27,6 +20,14 @@ from pyunifiprotect.data import (
 )
 from pyunifiprotect.data.devices import LCDMessage
 from pyunifiprotect.utils import utc_now
+
+from homeassistant.components.select import SelectEntity, SelectEntityDescription
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import ENTITY_CATEGORY_CONFIG
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_platform
+from homeassistant.helpers.entity import Entity
 
 from .const import (
     DOMAIN,
@@ -209,7 +210,7 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
 
     @callback
     def _async_set_dynamic_options(self) -> None:
-        """These options do not actually update dynamically.
+        """Options that do not actually update dynamically.
 
         This is due to possible downstream platforms dependencies on these options.
         """

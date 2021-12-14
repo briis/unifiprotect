@@ -5,6 +5,8 @@ from datetime import timedelta
 import logging
 from typing import Any, Callable, Sequence
 
+from pyunifiprotect.data import Light, LightModeEnableType, LightModeType
+
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     SUPPORT_BRIGHTNESS,
@@ -14,7 +16,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.data import Light, LightModeEnableType, LightModeType
 
 from .const import (
     ATTR_ONLINE,

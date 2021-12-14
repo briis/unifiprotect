@@ -9,6 +9,9 @@ import logging
 from typing import TYPE_CHECKING, Any, Callable, Sequence
 from urllib.parse import urlencode
 
+from pyunifiprotect.data import NVR, Camera, Event, Light, Sensor
+from pyunifiprotect.utils import utc_now
+
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_DOOR,
@@ -26,8 +29,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.data import NVR, Camera, Event, Light, Sensor
-from pyunifiprotect.utils import utc_now
 
 from .const import (
     ATTR_EVENT_OBJECT,
@@ -388,6 +389,7 @@ class ProtectAccessTokenBinarySensor(ProtectDeviceBinarySensor, AccessTokenMixin
         device: Camera,
         description: ProtectBinaryEntityDescription,
     ) -> None:
+        """Init a binary sensor that uses access tokens."""
         self.device: Camera = device
         super().__init__(data, description=description)
         self._event: Event | None = None

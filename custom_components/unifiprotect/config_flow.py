@@ -5,6 +5,10 @@ import logging
 from typing import Any
 
 from aiohttp import CookieJar
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data.nvr import NVR
+import voluptuous as vol
+
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
@@ -17,9 +21,6 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.data.nvr import NVR
-import voluptuous as vol
 
 from .const import (
     CONF_ALL_UPDATES,
@@ -40,6 +41,7 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 2
 
     def __init__(self) -> None:
+        """Init the config flow."""
         super().__init__()
 
         self.entry: config_entries.ConfigEntry | None = None
@@ -115,7 +117,7 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_reauth_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-
+        """Confirm reauth."""
         errors: dict[str, str] = {}
         assert self.entry is not None
 

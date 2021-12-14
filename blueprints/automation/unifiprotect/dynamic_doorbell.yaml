@@ -21,7 +21,7 @@ blueprint:
     To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
 
     - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
-    - The [unifiprotect][1] integration
+    - The [unifiprotect][1] integration version 0.11-beta4 or newer
     - A UniFi G4 Doorbell
 
     ### Text Template

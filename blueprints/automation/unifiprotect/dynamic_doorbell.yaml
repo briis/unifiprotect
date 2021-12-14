@@ -3,7 +3,7 @@ blueprint:
   description: |
     ## UniFi Protect Dynamic Doorbell
 
-    This blueprint will dyanmically update the text on the LCD display if your UniFi Protect Doorbell
+    This blueprint will dynamically update the text on the LCD display if your UniFi Protect Doorbell
 
     ### Required Settings
 
@@ -30,7 +30,7 @@ blueprint:
 
     The follow variables will injected and replaced at render time as well (note the _single_ curly bracket, not 2):
 
-      - `{ctime}` -- current time, formatting accordingt to "Time Format String" option
+      - `{ctime}` -- current time, formatting according to "Time Format String" option
       - `{temp}` -- current temperature from the "Temperature Sensor Entity" option
 
     [1]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
@@ -48,7 +48,7 @@ blueprint:
     temp_entity:
       name: (Optional) Temperature Sensor Entity
       description: >
-        Temperture sensor to use. Adds `{temp}` var to template.
+        Temperature sensor to use. Adds `{temp}` var to template.
       default: ""
       selector:
         entity:

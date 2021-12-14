@@ -3,7 +3,13 @@ blueprint:
   description: |
     ## UniFi Protect Dynamic Doorbell
 
-    This blueprint will dynamically update the text on the LCD display for your UniFi Protect Doorbell. Will automatically run once per minute and update your Doorbell LCD Screen.
+    This blueprint will dynamically update the text on the LCD display for your UniFi Protect 
+    Doorbell. Will automatically run once per minute and update your Doorbell LCD Screen.
+
+    For this automation to run, you need to ensure your doorbell LCD display is set to the 
+    "Default Message" option, otherwise it will never run. This is to still allow you to set 
+    static custom messages like "LEAVE PACKAGE AT THE DOOR" without being overriden by the 
+    automation. This behavior can be disabled in the options.
 
     ### Required Settings
 
@@ -61,6 +67,16 @@ blueprint:
       default: "Welcome | {ctime}"
       selector:
         text:
+    always_run:
+      name: (Optional) Ignore current state?
+      description: >
+        Ingore the current state of the doorbell text message. If true, will always run every 
+        minute, potietnally resetting a custom static message you set. If false, will only
+        run every minute if the current text is the "Default Message" option or the
+        "unknown" (meaning it is already set to a dynamic value).
+      default: false
+      selector:
+        boolean:
     time_format:
       name: (Optional) Time Format String
       description: >
@@ -75,13 +91,18 @@ max_exceeded: silent
 
 variables:
   # input vars
+  input_doorbell: !input doorbell
   input_time_format: !input time_format
   input_text_template: !input text_template
   input_temp_entity: !input temp_entity
+  input_always_run: !input always_run
 
 trigger:
   - platform: time_pattern
     minutes: "*"
+
+condition:
+  - "{{ input_always_run or is_state(input_doorbell, 'unknown') or states[input_doorbell].state.startswith('Default Message') }}"
 
 action:
   - service: unifiprotect.set_doorbell_message

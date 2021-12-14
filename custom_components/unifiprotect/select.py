@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 from enum import Enum
 import logging
 from typing import Any, Callable, Sequence
@@ -11,6 +12,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import Entity
 from pyunifiprotect.data import (
     Camera,
@@ -24,8 +26,14 @@ from pyunifiprotect.data import (
     Viewer,
 )
 from pyunifiprotect.data.devices import LCDMessage
+from pyunifiprotect.utils import utc_now
 
-from .const import DOMAIN, TYPE_EMPTY_VALUE
+from .const import (
+    DOMAIN,
+    SERVICE_SET_DOORBELL_MESSAGE,
+    SET_DOORBELL_LCD_MESSAGE_SCHEMA,
+    TYPE_EMPTY_VALUE,
+)
 from .data import ProtectData
 from .entity import ProtectDeviceEntity, async_all_device_entities
 from .models import ProtectRequiredKeysMixin
@@ -162,6 +170,12 @@ async def async_setup_entry(
     )
 
     async_add_entities(entities)
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_SET_DOORBELL_MESSAGE,
+        SET_DOORBELL_LCD_MESSAGE_SCHEMA,
+        "async_set_doorbell_message",
+    )
 
 
 class ProtectSelects(ProtectDeviceEntity, SelectEntity):
@@ -305,3 +319,18 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
         assert self.entity_description.ufp_set_function
         coro = getattr(self.device, self.entity_description.ufp_set_function)
         await coro(unifi_value)
+
+    async def async_set_doorbell_message(self, message: str, duration: str) -> None:
+        """Set LCD Message on Doorbell display."""
+
+        if self.entity_description.key != _KEY_DOORBELL_TEXT:
+            raise HomeAssistantError("Not a doorbell text select entity")
+
+        assert isinstance(self.device, Camera)
+        reset_at = None
+        if duration.isnumeric():
+            reset_at = utc_now() + timedelta(minutes=int(duration))
+
+        await self.device.set_lcd_text(
+            DoorbellMessageType.CUSTOM_MESSAGE, message, reset_at=reset_at
+        )

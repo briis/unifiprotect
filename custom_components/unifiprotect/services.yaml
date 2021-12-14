@@ -74,10 +74,43 @@ set_default_doorbell_text:
       required: true
       selector:
         text:
+set_doorbell_message:
+  name: Set Doorbell message
+  description: >
+    Use to dynamically set the message on a Doorbell LCD screen. Should only be used to set dynamic messages
+    (i.e. setting the current outdoor temperature on your Doorbell). Static messages should still using the Select entity and the
+    add_doorbell_text / remove_doorbell_text services.
+  fields:
+    entity_id:
+      name: Doorbell Text
+      description: (Required) Doorbell to display message on
+      example: "select.front_doorbell_camera_doorbell_text"
+      required: true
+      selector:
+        entity:
+          integration: unifiprotect
+          domain: select
+    message:
+      name: Message to display
+      description: (Required) Message to display on LCD Panel. Max 30 characters
+      example: "Welcome | 09:23 | 25°C"
+      required: true
+      selector:
+        text:
+    duration:
+      name: Duration (minutes)
+      description: "(Optional) Number of minutes to display message, before returning to default. Leave blank to display always"
+      example: 5
+      selector:
+        number:
+          min: 1
+          max: 120
+          step: 1
+          mode: slider
 
 set_recording_mode:
-  name: Set Recording Mode
-  description: "Set recording mode for the camera"
+  name: DEPRECATED Set Recording Mode
+  description: "Set recording mode for the camera. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -100,8 +133,8 @@ set_recording_mode:
             - "detections"
             - "never"
 set_ir_mode:
-  name: Set Infrared mode
-  description: "Set Infrared mode for the camera"
+  name: DEPRECATED Set Infrared mode
+  description: "Set Infrared mode for the camera. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -124,8 +157,8 @@ set_ir_mode:
             - "on"
             - "off"
 set_status_light:
-  name: Set Status Lights
-  description: "Turn the Cameras Led Light on or off"
+  name: DEPRECATED Set Status Lights
+  description: "Turn the Cameras Led Light on or off. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -143,8 +176,8 @@ set_status_light:
       selector:
         boolean:
 set_hdr_mode:
-  name: Set High Dynamic Range mode (HDR)
-  description: "Turn the Cameras HDR mode on or off"
+  name: DEPRECATED Set High Dynamic Range mode (HDR)
+  description: "Turn the Cameras HDR mode on or off. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -162,7 +195,7 @@ set_hdr_mode:
       selector:
         boolean:
 set_highfps_video_mode:
-  name: Set High FPS video mode
+  name: DEPRECATED Set High FPS video mode
   description: "Turn the Cameras High FPS mode on or off (Only G4 Cameras)"
   fields:
     entity_id:
@@ -181,8 +214,8 @@ set_highfps_video_mode:
       selector:
         boolean:
 set_doorbell_lcd_message:
-  name: Set Doorbell LCD message
-  description: "Display a message on the LCD Screen on the G4 Doorbell"
+  name: DEPRECATED Set Doorbell LCD message
+  description: "Display a message on the LCD Screen on the G4 Doorbell. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -211,8 +244,8 @@ set_doorbell_lcd_message:
           step: 1
           mode: slider
 set_mic_volume:
-  name: Set microphone volume
-  description: "Sets the microphone sensitivity volume"
+  name: DEPRECATED Set microphone volume
+  description: "Sets the microphone sensitivity volume. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -234,8 +267,8 @@ set_mic_volume:
           step: 1
           mode: slider
 set_privacy_mode:
-  name: Set Privacy Mode
-  description: "Enables or disables a full cover Privacy Zone for the Camera"
+  name: DEPRECATED Set Privacy Mode
+  description: "Enables or disables a full cover Privacy Zone for the Camera. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -273,8 +306,8 @@ set_privacy_mode:
             - "detections"
             - "never"
 set_zoom_position:
-  name: Set Zoom Position
-  description: "Sets the cameras optical Zoom Position"
+  name: DEPRECATED Set Zoom Position
+  description: "Sets the cameras optical Zoom Position. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -296,8 +329,8 @@ set_zoom_position:
           step: 1
           mode: slider
 set_wdr_value:
-  name: Set Wide Dynamic Range (WDR)
-  description: "Sets the cameras Wide Dynamic Range value"
+  name: DEPRECATED Set Wide Dynamic Range (WDR)
+  description: "Sets the cameras Wide Dynamic Range value. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -319,8 +352,8 @@ set_wdr_value:
           step: 1
           mode: slider
 light_settings:
-  name: Light Settings
-  description: "Adjust settings on a UniFi attached Floodlight"
+  name: DEPRECATED Light Settings
+  description: "Adjust settings on a UniFi attached Floodlight. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -374,8 +407,8 @@ light_settings:
           step: 1
           mode: slider
 set_doorbell_chime_duration:
-  name: Set the Chime duration attached to a Doorbell
-  description: "Set the duration for doorbell chime"
+  name: DEPRECATED Set the Chime duration attached to a Doorbell
+  description: "Set the duration for doorbell chime. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Entity ID
@@ -398,8 +431,8 @@ set_doorbell_chime_duration:
           step: 100
           mode: slider
 set_viewport_view:
-  name: Set Viewport View
-  description: "Change the Liveview on the specified Viewport Device"
+  name: DEPRECATED Set Viewport View
+  description: "Change the Liveview on the specified Viewport Device. DEPRECATED: Will be removed in next version."
   fields:
     entity_id:
       name: Viewport ID

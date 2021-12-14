@@ -51,6 +51,7 @@ CONF_POSITION = "position"
 CONF_SENSITIVITY = "sensitivity"
 CONF_VALUE = "value"
 CONF_ALL_UPDATES = "all_updates"
+CONF_OVERRIDE_CHOST = "override_connection_host"
 
 CONFIG_OPTIONS = [
     CONF_ALL_UPDATES,
@@ -84,6 +85,8 @@ SERVICE_PROFILE_WS = "profile_ws_messages"
 SERVICE_ADD_DOORBELL_TEXT = "add_doorbell_text"
 SERVICE_REMOVE_DOORBELL_TEXT = "remove_doorbell_text"
 SERVICE_SET_DEFAULT_DOORBELL_TEXT = "set_default_doorbell_text"
+SERVICE_SET_DOORBELL_MESSAGE = "set_doorbell_message"
+
 SERVICE_LIGHT_SETTINGS = "light_settings"
 SERVICE_SET_RECORDING_MODE = "set_recording_mode"
 SERVICE_SET_IR_MODE = "set_ir_mode"

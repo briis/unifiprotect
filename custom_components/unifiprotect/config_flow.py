@@ -24,6 +24,7 @@ import voluptuous as vol
 from .const import (
     CONF_ALL_UPDATES,
     CONF_DISABLE_RTSP,
+    CONF_OVERRIDE_CHOST,
     DEFAULT_PORT,
     DEFAULT_VERIFY_SSL,
     DOMAIN,
@@ -59,6 +60,7 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             options={
                 CONF_DISABLE_RTSP: False,
                 CONF_ALL_UPDATES: False,
+                CONF_OVERRIDE_CHOST: False,
             },
         )
 
@@ -205,6 +207,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_ALL_UPDATES,
                         default=self.config_entry.options.get(CONF_ALL_UPDATES, False),
+                    ): bool,
+                    vol.Optional(
+                        CONF_OVERRIDE_CHOST,
+                        default=self.config_entry.options.get(
+                            CONF_OVERRIDE_CHOST, False
+                        ),
                     ): bool,
                 }
             ),

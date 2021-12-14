@@ -190,74 +190,19 @@ Event Type | Description | Data
 
 ## Automating Services
 
-Below is a couple of examples on how you can automate some of the things you might do with this Integration.
+As part of the integration, we provide a couple of blueprints that you can use or extend to automate stuff.
 
-### SEND A NOTIFICATION WHEN THE DOORBELL IS PRESSED
+### Doorbell Notifications
 
-Below is a very basic example on how to perform an action when the doorbell is pressed. Modify the action part to what you want to happen.
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbriis%2Funifiprotect%2Fmaster%2Fblueprints%2Fautomation%2Funifiprotect%2Fpush_notification_doorbell_event.yaml)
 
-```yaml
-alias: Detect Doorbell Pressed
-description: Notify User when the doorbell is pressed
-mode: single
-trigger:
-  - platform: event
-    event_type: unifiprotect_doorbell
-condition: []
-action:
-  - service: notify.notify
-    data:
-      message: There is somebody at your door
-      title: The doorbell has been pressed
-```
+### Motion Notifications
 
-### AUTOMATE PERSON DETECTION
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbriis%2Funifiprotect%2Fmaster%2Fblueprints%2Fautomation%2Funifiprotect%2Fpush_notification_motion_event.yaml)
 
-If you have G4 Series Cameras, it is possible to do object detection directly on the Camera. Currently they only seem to support detecting a Person, but maybe Cars, Animals etc. will be added in the future.
-Here is an example of how you can use this to send a notification to your phone if a Person is detected on a Camera, where Recording mode is set to `motion` or `always`. In this example the camera is called `camera.outdoor`, so the corresponding Binary Motion Sensor is called `binary_sensor.motion_outdoor`. It is a very basic example, sending a Notification via the Notify Service Pushover, when a person has been detected, but it can be used to illustrate the use case.
+### Smart Detection Notifications
 
-```yaml
-- id: '1603355532588'
-  alias: Send message when person detected
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.motion_outdoor
-    to: person
-    attribute: event_object
-  condition: []
-  action:
-  - service: notify.pushover
-    data:
-      message: A person has been detected on the Camera
-  mode: single
-```
-
-### CREATE INPUT SLIDER FOR DOORBELL CHIME DURATION
-
-To set the Doorbell chime duration you can use the Service `unifiprotect.set_doorbell_chime_duration` but if you want to be able to do this from Lovelace, you can add a Input Slider for each doorbell and then do it from there. This shows you how you can do that.
-
-* Go to *Configuration* and select *Helpers*.
-* Click `+ ADD HELPER` and select *Number*.
-* Name your Slider, set Min to 0, Max to 10000 and step to 100 and then click CREATE.
-
-Now create a new Automation, that reacts to a value change of the above slider. In this case I named the slider `input_number.doorbell_chime` and the Camera is called `camera.test_doorbell`.
-
-```yaml
-alias: Adjust Doorbell Chime Durationon Test Doorbell
-description: ''
-trigger:
-  - platform: state
-    entity_id: input_number.doorbell_chime
-condition: []
-action:
-  - service: unifiprotect.set_doorbell_chime_duration
-    data:
-      entity_id: camera.test_doorbell
-      chime_duration: '{{ states(''input_number.doorbell_chime'') | int }}'
-    entity_id: ' camera.test_doorbell'
-mode: single
-```
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbriis%2Funifiprotect%2Fmaster%2Fblueprints%2Fautomation%2Funifiprotect%2Fpush_notification_smart_event.yaml)
 
 ### Enable Debug Logging
 

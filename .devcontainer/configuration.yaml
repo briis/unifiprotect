@@ -19,3 +19,5 @@ logger:
   logs:
     pyunifiprotect: debug
     custom_components.unifiprotect: debug
+
+automation: !include automations.yaml

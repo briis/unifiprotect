@@ -1,0 +1,325 @@
+blueprint:
+  name: UniFi Protect Motion Notifications
+  description: |
+    ## UniFi Protect Motion Notifications
+
+    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a motion event is fired.
+
+    This blueprint is _only_ for **motion** events, not smart detections.
+
+    ### Required Settings
+
+      - UniFi Protect Motion Sensor
+
+    ### Optional Settings
+
+      - Precense filter for only sending notifications for when you are not home
+      - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2] as well as toggles for both
+      - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
+      - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
+      - Cooldown before sending another notification
+      - Silence timer for muting notifications via Actionable Notification (docs: [HTML5][6], [Mobile][7])
+      - Configurable HA Internal / External Base URLs
+      - Configurable Lovelace view from notification
+
+    ### Requirements
+
+    To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
+
+    - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
+    - The [unifiprotect][8] integration version 0.11-beta3 or newer
+    - A UniFi camera pair with your NVR
+    - A valid HTTPS certificate and public facing Home Assistant instance
+      - If you do not have these, the actionable notifications and images will not appear in the notifications.
+      - You do not need your _whole_ Home Assistant to be publicly accessible. Only the paths `/api/camera_proxy/*` and`/api/webhook/*` need to be accessible outside of your network.
+
+    [1]: https://www.home-assistant.io/integrations/html5
+    [2]: https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
+    [3]: https://www.home-assistant.io/integrations/html5#tag
+    [4]: https://companion.home-assistant.io/docs/notifications/notifications-basic/#notification-channels
+    [5]: https://companion.home-assistant.io/docs/notifications/notifications-basic/#replacing
+    [6]: https://www.home-assistant.io/integrations/html5#actions
+    [7]: https://companion.home-assistant.io/docs/notifications/actionable-notifications/
+    [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
+  domain: automation
+  input:
+    motion_entity:
+      name: Motion Entity
+      description: >
+        The camera motion sensor for you want to fire events for.
+      selector:
+        entity:
+          integration: unifiprotect
+          domain: binary_sensor
+          device_class: motion
+    presence_filter:
+      name: (Optional) Presence Filter
+      description: Only notify if selected presence entity is not "home".
+      default: ""
+      selector:
+        entity:
+    send_mobile:
+      name: (Optional) Send Mobile App Notifications
+      description: Send mobile app push notifications
+      default: true
+      selector:
+        boolean:
+    notify_target_app:
+      name: (Optional) Notification Target (Mobile App)
+      description: >
+        The notification target for mobile apps notifications. Should be only the
+        specific service name in the notify domain.
+        https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
+      default: notify
+      selector:
+        text:
+    send_html5:
+      name: (Optional) Send HTML5 Notifications
+      description: >
+        Send HTML5 push notifications. Requires you to have configured push
+        notifications on at least one device.
+      default: false
+      selector:
+        boolean:
+    notify_target_html5:
+      name: (Optional) Notification Target (HTML5 Push)
+      description: >
+        The notification target for HTML5 push notifications. Should be only the
+        specific service name in the notify domain.
+        https://www.home-assistant.io/integrations/html5
+      default: push_notification
+      selector:
+        text:
+    channel:
+      name: (Optional) Notification Channel
+      description: >
+        Notification channel/tag to use. Will automatically be prepended with
+        "Manual " if action is triggered manually.
+        https://companion.home-assistant.io/docs/notifications/notifications-basic#notification-channels
+      default: Motion
+      selector:
+        text:
+    time_format:
+      name: (Optional) Time Format String
+      description: >
+        Python datetime format code string for the event trigger time. This string is 
+        the actual time the moton event was triggered in case the automation or 
+        notification is delayed. Manual triggers will cause this to always be the time 
+        of the previous event.
+        https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+      default: "%I:%M %p"
+      selector:
+        text:
+    cooldown:
+      name: (Optional) Cooldown
+      description: >
+        Delay before sending another notification for this camera after the last event.
+        Is also the interval you have to choose to silence the notifications.
+      default: 30
+      selector:
+        number:
+          max: 300
+          min: 0
+          unit_of_measurement: seconds
+    silence_timer:
+      name: (Optional) Silence Notifications
+      description: >
+        How long to silence notifications for this camera when requested as part of the
+        actionable notification.
+      default: 30
+      selector:
+        number:
+          max: 300
+          min: 0
+          unit_of_measurement: minutes
+    base_ha_url:
+      name: (Optional) Base Home Assistant URL
+      description: Base URL to use for opening HA links in HTML5 push notifications.
+      default: http://homeassistant.local:8123
+      selector:
+        text:
+    base_image_url:
+      name: (Optional) Base Image URL
+      description: >
+        Publicly accessible base URL for your Home Assistant instance. If you are using
+        Nabu Casa, it should be that URL. May be different from your Base Home Assistant
+        URL if your HA instance not publicly accessible.
+        Must be an HTTPS URL with a valid certificate.
+      default: ""
+      selector:
+        text:
+    lovelace_view:
+      name: (Optional) Lovelace View
+      description: |
+        Home Assistant Lovelace view to open when clicking notification.
+        If left blank, URI Notification actions will not be generated.
+      default: ""
+      selector:
+        text:
+    debug_enabled:
+      name: (Optional) Debug
+      description: >
+        Enable debugging for automation. If enabled, will send persistent notifications
+        with extra data.
+      default: false
+      selector:
+        boolean:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  # input vars
+  input_motion_entity: !input motion_entity
+  input_channel: !input channel
+  input_base_image_url: !input base_image_url
+  input_base_ha_url: !input base_ha_url
+  input_lovelace_view: !input lovelace_view
+  input_debug_enabled: !input debug_enabled
+  input_notify_target_app: !input notify_target_app
+  input_notify_target_html5: !input notify_target_html5
+  input_silence_timer: !input silence_timer
+  input_send_mobile: !input send_mobile
+  input_send_html5: !input send_html5
+  input_time_format: !input time_format
+  input_presence_filter: !input presence_filter
+  # automation data
+  camera_entities: '[{% for eid in device_entities(device_id(input_motion_entity)) %}{%if eid.startswith(''camera'') and not is_state(eid, ''unavailable'') %}"{{ eid }}",{% endif %}{% endfor %}]'
+  # automation variables
+  lovelace_view: "{{ input_lovelace_view | trim }}"
+  camera_entity_id: "{{ camera_entities | default([None]) | first }}"
+  trigger_time: |
+    {% if states[input_motion_entity] == None %}
+      None
+    {% else %}
+      {{ as_local(states[input_motion_entity].last_changed).strftime(input_time_format) }}
+    {% endif %}
+  notification_channel: |
+    {% if "event" in trigger %}
+      {{ input_channel }}
+    {% else %}
+      Manual {{ input_channel }}
+    {% endif %}
+  notification_tag: "{{ notification_channel.lower().replace(' ', '-') }}"
+  notification_title: "{{ device_attr(input_motion_entity, 'name') }}"
+  notification_url: |
+    {% if lovelace_view == "" %}
+      None
+    {% else %}
+      {{ input_base_ha_url | trim }}{{ lovelace_view }}
+    {% endif %}
+  notification_message: "Motion detected by {{ notification_title }}{% if trigger_time != None %} at {{ trigger_time }}{% endif %}."
+  notification_message_html5: |
+    {{ notification_message }}{% if notification_url != None %}
+
+    Tap to open camera in Home Assistant.
+    {% endif %}
+  notification_image: |
+    {% if camera_entity_id == None %}
+      None
+    {% else %}
+      {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
+    {% endif %}
+  silence_action: "silence-{{ input_motion_entity }}"
+
+trigger:
+  - platform: state
+    entity_id: !input motion_entity
+    from: "off"
+    to: "on"
+
+condition:
+  - "{{ not input_presence_filter or not is_state(input_presence_filter, 'home') }}"
+
+action:
+  - choose:
+      - conditions: "{{ input_debug_enabled }}"
+        sequence:
+          - service: notify.persistent_notification
+            data:
+              title: "Debug: {{ notification_title }}"
+              message: |
+                Entity ID: `{{ input_motion_entity }}`
+                Camera: `{{ camera_entity_id }}`
+                Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
+                Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
+
+                Channel: {{ notification_channel }}
+                Tag: {{ notification_tag }}
+                Message: {{ notification_message }}
+                Image: {{ notification_image }}
+                URL: {{ notification_url }}
+
+  - choose:
+      - conditions: "{{ input_send_mobile }}"
+        sequence:
+          - service: notify.{{ input_notify_target_app }}
+            data:
+              message: "{{ notification_message }}"
+              title: "{{ notification_title }}"
+              data:
+                # Android/iOS notification tag
+                tag: "{{ notification_tag }}"
+                # Android notification Channel
+                channel: "{{ notification_channel }}"
+                # Android high prority
+                ttl: 0
+                priority: high
+                # iOS high prority
+                time-sensitive: 1
+                # Android image
+                image: "{{ notification_image }}"
+                # iOS image
+                attachment:
+                  url: "{{ notification_image }}"
+                actions: >
+                  [{% if notification_url != None %}
+                  { "action": "URI", "title": "Open Camera", "uri": "{{ lovelace_view }}" },
+                  {% endif %}
+                  {% if input_silence_timer > 0 %}
+                  { "action": "{{ silence_action }}", "title": "Silence", "destructive": True },
+                  {% endif %}]
+  - choose:
+      - conditions: "{{ input_send_html5 }}"
+        sequence:
+          - service: notify.{{ input_notify_target_html5 }}
+            data:
+              message: "{{ notification_message_html5 }}"
+              title: "{{ notification_title }}"
+              data:
+                # HTML5 Notification tag
+                tag: "{{ notification_tag }}"
+                image: "{{ notification_image }}"
+                url: "{{ notification_url }}"
+                actions: >
+                  [{% if input_silence_timer > 0 %}
+                  { "action": "{{ silence_action }}", "title": "Silence" },
+                  {% endif %}]
+  - wait_for_trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "{{ silence_action }}"
+      - platform: event
+        event_type: html5_notification.clicked
+        event_data:
+          action: "{{ silence_action }}"
+    timeout:
+      seconds: !input cooldown
+    continue_on_timeout: false
+  - choose:
+      - conditions: "{{ input_debug_enabled }}"
+        sequence:
+          - service: notify.persistent_notification
+            data:
+              title: "Debug: {{ notification_title }}"
+              message: Silence started.
+  - delay:
+      minutes: "{{ input_silence_timer }}"
+  - choose:
+      - conditions: "{{ input_debug_enabled }}"
+        sequence:
+          - service: notify.persistent_notification
+            data:
+              title: "Debug: {{ notification_title }}"
+              message: Silence ended.

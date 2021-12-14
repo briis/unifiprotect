@@ -3,13 +3,9 @@ blueprint:
   description: |
     ## UniFi Protect Dynamic Doorbell
 
-    This blueprint will dynamically update the text on the LCD display for your UniFi Protect 
-    Doorbell. Will automatically run once per minute and update your Doorbell LCD Screen.
+    This blueprint will dynamically update the text on the LCD display for your UniFi Protect Doorbell. Will automatically run once per minute and update your Doorbell LCD Screen.
 
-    For this automation to run, you need to ensure your doorbell LCD display is set to the 
-    "Default Message" option, otherwise it will never run. This is to still allow you to set 
-    static custom messages like "LEAVE PACKAGE AT THE DOOR" without being overriden by the 
-    automation. This behavior can be disabled in the options.
+    For this automation to run, you need to ensure your doorbell LCD display is set to the "Default Message" option. This is to still allow you to set static custom messages like "LEAVE PACKAGE AT THE DOOR" without being overridden by the automation. This behavior can be disabled in the options.
 
     ### Required Settings
 
@@ -70,7 +66,7 @@ blueprint:
     always_run:
       name: (Optional) Ignore current state?
       description: >
-        Ingore the current state of the doorbell text message. If true, will always run every 
+        Ingore the current state of the doorbell text message. If true, will always run every
         minute, potietnally resetting a custom static message you set. If false, will only
         run every minute if the current text is the "Default Message" option or the
         "unknown" (meaning it is already set to a dynamic value).

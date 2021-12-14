@@ -3,7 +3,7 @@ blueprint:
   description: |
     ## UniFi Protect Dynamic Doorbell
 
-    This blueprint will dynamically update the text on the LCD display for your UniFi Protect Doorbell
+    This blueprint will dynamically update the text on the LCD display for your UniFi Protect Doorbell. Will automatically run once per minute and update your Doorbell LCD Screen.
 
     ### Required Settings
 
@@ -13,7 +13,6 @@ blueprint:
 
       - Text template format you want to display (see more below)
       - Temperature sensor entity so you can display temperature on screen
-      - How often to update screen
       - Time formatting string for formatting `{ctime}` template (see more below)
 
     ### Requirements
@@ -47,8 +46,7 @@ blueprint:
           domain: select
     temp_entity:
       name: (Optional) Temperature Sensor Entity
-      description: >
-        Temperature sensor to use. Adds `{temp}` var to template.
+      description: Temperature sensor to use. Adds `{temp}` var to template.
       default: ""
       selector:
         entity:
@@ -66,23 +64,11 @@ blueprint:
     time_format:
       name: (Optional) Time Format String
       description: >
-        Python datetime format code string for the event trigger time. This string is
-        the actually time the doorbell event was triggered in case the automation or
-        notification is delayed. Manual triggers will cause this to always be the time
-        of the previous event.
+        Python datetime format code string for the `{ctime}` variable.
         https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
       default: "%I:%M %p"
       selector:
         text:
-    update_interval:
-      name: (Optional) Update Interval
-      description: How often to update screen.
-      default: 1
-      selector:
-        number:
-          max: 120
-          min: 1
-          unit_of_measurement: minutes
 
 mode: single
 max_exceeded: silent
@@ -95,7 +81,7 @@ variables:
 
 trigger:
   - platform: time_pattern
-    minutes: !input update_interval
+    minutes: "*"
 
 action:
   - service: unifiprotect.set_doorbell_message

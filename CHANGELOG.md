@@ -13,6 +13,8 @@
 * `FIX`: Change unit for signal strength from db to dbm. (fixes Camera Wifi Signal Strength should be dBm not dB)
   * Closes #394
 
+* `NEW`: Added Dark Mode brand images to https://github.com/home-assistant/brands.
+
 ## 0.11.0-beta.3
 
 * `DEPRECATION`: The Motion binary sensor will stop showing details about smart detections in the next version. Use the new separate Detected Object sensor. `event_object` attribute will be removed as well.

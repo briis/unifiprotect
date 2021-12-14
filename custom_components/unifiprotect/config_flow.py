@@ -40,6 +40,7 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 2
 
     def __init__(self) -> None:
+        """Init the config flow."""
         super().__init__()
 
         self.entry: config_entries.ConfigEntry | None = None
@@ -115,7 +116,7 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_reauth_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-
+        """Confirm reauth."""
         errors: dict[str, str] = {}
         assert self.entry is not None
 

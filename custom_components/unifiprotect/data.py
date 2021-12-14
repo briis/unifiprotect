@@ -51,6 +51,7 @@ class ProtectData:
 
     @property
     def disable_stream(self) -> bool:
+        """Check if RTSP is disabled."""
         return self._entry.options.get(CONF_DISABLE_RTSP, False)
 
     def get_by_types(
@@ -63,8 +64,7 @@ class ProtectData:
             devices: dict[str, ProtectAdoptableDeviceModel] = getattr(
                 self.api.bootstrap, attr
             )
-            for device in devices.values():
-                yield device
+            yield from devices.values()
 
     async def async_setup(self) -> None:
         """Subscribe and do the refresh."""
@@ -172,7 +172,7 @@ class ProtectData:
 
     @callback
     def async_get_or_create_access_tokens(self, entity_id: str) -> collections.deque:
-        """Wrapper around access_tokens to automatically create underlaying data structure if missing."""
+        """Wrap access_tokens to automatically create underlying data structure if missing."""
         if entity_id not in self.access_tokens:
             self.access_tokens[entity_id] = collections.deque([], 2)
         return self.access_tokens[entity_id]

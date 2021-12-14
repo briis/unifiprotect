@@ -1,3 +1,4 @@
+"""UniFi Protect Integration utils."""
 from __future__ import annotations
 
 import asyncio
@@ -19,6 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def get_nested_attr(obj: Any, attr: str) -> Any:
+    """Fetch a nested attribute."""
     attrs = attr.split(".")
 
     value = obj
@@ -39,7 +41,7 @@ async def profile_ws_messages(
     seconds: int,
     device_entry: DeviceEntry,
 ) -> None:
-
+    """Profile the websocket."""
     if protect.bootstrap.capture_ws_stats:
         raise HomeAssistantError("Profile already in progress")
 
@@ -79,7 +81,7 @@ async def profile_ws_messages(
 
 
 def above_ha_version(major: int, minor: int) -> bool:
-    """Checks if current Home Assistant version if above a specificed one
+    """Check if current Home Assistant version if above a specified one.
 
     CORE: Remove this before merging to core.
     """

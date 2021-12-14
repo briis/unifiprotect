@@ -209,7 +209,7 @@ class ProtectSelects(ProtectDeviceEntity, SelectEntity):
 
     @callback
     def _async_set_dynamic_options(self) -> None:
-        """These options do not actually update dynamically.
+        """Options that do not actually update dynamically.
 
         This is due to possible downstream platforms dependencies on these options.
         """

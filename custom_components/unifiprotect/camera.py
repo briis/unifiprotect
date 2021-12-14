@@ -70,7 +70,7 @@ _LOGGER = logging.getLogger(__name__)
 def get_camera_channels(
     protect: ProtectApiClient,
 ) -> Generator[tuple[UFPCamera, CameraChannel, bool], None, None]:
-
+    """Get all the camera channels."""
     for camera in protect.bootstrap.cameras.values():
         is_default = True
         for channel in camera.channels:
@@ -292,7 +292,7 @@ class ProtectCamera(ProtectDeviceEntity, Camera):
         await self.device.set_hdr(hdr_on)
 
     async def async_set_doorbell_chime_duration(self, chime_duration: int) -> None:
-        """Set Doorbell Chime duration"""
+        """Set Doorbell Chime duration."""
         await self.device.set_chime_duration(chime_duration)
 
     async def async_set_highfps_video_mode(self, high_fps_on: bool) -> None:

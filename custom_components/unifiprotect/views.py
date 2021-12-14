@@ -1,3 +1,4 @@
+"""UniFi Protect Integration views."""
 from __future__ import annotations
 
 import collections
@@ -18,14 +19,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ThumbnailProxyView(HomeAssistantView):
-    """View to proxy event thumbnails from UniFi Protect"""
+    """View to proxy event thumbnails from UniFi Protect."""
 
     requires_auth = False
     url = "/api/ufp/thumbnail/{event_id}"
     name = "api:ufp_thumbnail"
 
     def __init__(self, hass: HomeAssistant) -> None:
-        """Initialize a thumbnail proxy view"""
+        """Initialize a thumbnail proxy view."""
         self.hass = hass
         self.data = hass.data[DOMAIN]
 

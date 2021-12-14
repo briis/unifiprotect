@@ -388,6 +388,7 @@ class ProtectAccessTokenBinarySensor(ProtectDeviceBinarySensor, AccessTokenMixin
         device: Camera,
         description: ProtectBinaryEntityDescription,
     ) -> None:
+        """Init a binary sensor that uses access tokens."""
         self.device: Camera = device
         super().__init__(data, description=description)
         self._event: Event | None = None

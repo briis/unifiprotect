@@ -396,6 +396,8 @@ def _async_motion_entities(
 
 
 class SensorValueMixin(Entity):
+    """A mixin to provide sensor values."""
+
     @callback
     def _clean_sensor_value(self, value: Any) -> Any:
         if isinstance(value, timedelta):
@@ -481,6 +483,7 @@ class ProtectAccessTokenSensor(ProtectDeviceSensor, AccessTokenMixin):
         device: Camera,
         description: ProtectSensorEntityDescription,
     ) -> None:
+        """Init an sensor that uses access tokens."""
         self.device: Camera = device
         super().__init__(data, device, description)
         self._event: Event | None = None

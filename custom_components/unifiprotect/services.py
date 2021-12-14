@@ -1,3 +1,4 @@
+"""UniFi Protect Integration services."""
 from __future__ import annotations
 
 import asyncio
@@ -16,7 +17,7 @@ from .utils import profile_ws_messages
 
 
 def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
-    """All active HomeKit instances."""
+    """All active UFP instances."""
     return [
         data.api for data in hass.data[DOMAIN].values() if isinstance(data, ProtectData)
     ]
@@ -87,24 +88,28 @@ async def _async_call_nvr(
 
 
 async def add_doorbell_text(hass: HomeAssistant, call: ServiceCall) -> None:
+    """Add a custom doorbell text message."""
     message: str = call.data[CONF_MESSAGE]
     instances = _async_get_protect_from_call(hass, call)
     await _async_call_nvr(instances, "add_custom_doorbell_message", message)
 
 
 async def remove_doorbell_text(hass: HomeAssistant, call: ServiceCall) -> None:
+    """Remove a custom doorbell text message."""
     message: str = call.data[CONF_MESSAGE]
     instances = _async_get_protect_from_call(hass, call)
     await _async_call_nvr(instances, "remove_custom_doorbell_message", message)
 
 
 async def set_default_doorbell_text(hass: HomeAssistant, call: ServiceCall) -> None:
+    """Set the default doorbell text message."""
     message: str = call.data[CONF_MESSAGE]
     instances = _async_get_protect_from_call(hass, call)
     await _async_call_nvr(instances, "set_default_doorbell_message", message)
 
 
 async def profile_ws(hass: HomeAssistant, call: ServiceCall) -> None:
+    """Profile the websocket."""
     duration: int = call.data[CONF_DURATION]
     instances = _async_get_protect_from_call(hass, call)
     await asyncio.gather(

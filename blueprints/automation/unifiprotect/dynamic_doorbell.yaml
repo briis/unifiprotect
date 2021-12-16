@@ -57,17 +57,16 @@ blueprint:
     text_template:
       name: (Optional) Text Template
       description: >
-        The notification target for mobile apps notifications. Should be only the
-        specific service name in the notify domain.
-        https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
+        Message template to disable on doorbell. Can be any HA template string.
+        Final generated string must be 30 characters or less.
       default: "Welcome | {ctime}"
       selector:
         text:
     always_run:
       name: (Optional) Ignore current state?
       description: >
-        Ingore the current state of the doorbell text message. If true, will always run every
-        minute, potietnally resetting a custom static message you set. If false, will only
+        Ignore the current state of the doorbell text message. If true, will always run every
+        minute, potentially resetting a custom static message you set. If false, will only
         run every minute if the current text is the "Default Message" option or the
         "unknown" (meaning it is already set to a dynamic value).
       default: false

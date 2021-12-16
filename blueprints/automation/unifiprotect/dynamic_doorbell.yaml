@@ -57,7 +57,7 @@ blueprint:
     text_template:
       name: (Optional) Text Template
       description: >
-        Message template to disable on doorbell. Can be any HA template string.
+        Message template to display on doorbell. Can be any HA template string.
         Final generated string must be 30 characters or less.
       default: "Welcome | {ctime}"
       selector:

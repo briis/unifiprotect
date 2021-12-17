@@ -119,6 +119,8 @@ All of following attributes should be duplicated data that can be gotten from ot
 
 * More clean up and improvements for upcoming Home Assistant core merge.
 
+* Adds various new blueprints to help users automate UniFi Protect. New [Blueprints can be found in the README](https://github.com/briis/unifiprotect#automating-services)
+
 ## 0.11.0-beta.5
 
 * `FIX`: Fixes motion events and sensors for UP-Sense devices (#405)

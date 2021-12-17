@@ -16,7 +16,7 @@ blueprint:
 
       - Precense filter for only sending notifications for when you are not home
       - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2] as well as toggles for both
-      - Telegram Notification option, including toggle
+      - [Telegram Notification][9] option, including toggle
       - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
       - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
       - Cooldown before sending another notification
@@ -43,6 +43,7 @@ blueprint:
     [6]: https://www.home-assistant.io/integrations/html5#actions
     [7]: https://companion.home-assistant.io/docs/notifications/actionable-notifications/
     [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
+    [9]: https://www.home-assistant.io/integrations/telegram/
   domain: automation
   input:
     smart_entity:
@@ -117,7 +118,9 @@ blueprint:
         boolean:
     notify_telegram:
       name: (Optional) Notification Target (Telegram)
-      description: "The notification target for Telegram notifications. Should be name of the Telegram bot you have configured. https://www.home-assistant.io/integrations/telegram/"
+      description: >
+        The notification target for Telegram notifications. Should be name of the Telegram bot you have configured.
+        https://www.home-assistant.io/integrations/telegram/
       default: telegrambot
       selector:
         text:
@@ -214,7 +217,6 @@ variables:
   smart_detect_objs: "{{ (input_objects | lower).split(',') | map('trim') | list | select('in', ['person', 'vehicle']) | list }}"
   # automation variables
   lovelace_view: "{{ input_lovelace_view | trim }}"
-  base_url: "{{ input_base_ha_url | trim }}"
   camera_entity_id: "{{ camera_entities | default([None]) | first }}"
   trigger_object: "{{ states[input_smart_entity].state }}"
   trigger_time: |
@@ -285,9 +287,7 @@ action:
                 Tag: {{ notification_tag }}
                 Message: {{ notification_message }}
                 Image: {{ notification_image }}
-                Base URL: {{ base_url }}
                 URL: {{ notification_url }}
-
   - choose:
       - conditions: "{{ input_send_mobile }}"
         sequence:
@@ -342,7 +342,9 @@ action:
               message: "{{ notification_message }}"
               data:
                 photo:
-                  url: "{{ base_url }}{{ notification_image }}"
+                  url: "{{ notification_image }}"
+                inline_keyboard:
+                  - '/silence'
   - wait_for_trigger:
       - platform: event
         event_type: mobile_app_notification_action
@@ -352,10 +354,19 @@ action:
         event_type: html5_notification.clicked
         event_data:
           action: "{{ silence_action }}"
+      - platform: event
+        event_type: telegram_callback
+        event_data:
+          data: '/silence'
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false
   - choose:
+      - conditions: "{{ input_send_telegram }}"
+        sequence:
+          - service: notify.{{ input_notify_telegram }}
+            data:
+              message: "Smart Detections silenced for {{ input_silence_timer }} minutes"
       - conditions: "{{ input_debug_enabled }}"
         sequence:
           - service: notify.persistent_notification

@@ -1,6 +1,131 @@
 # // Changelog
 
-## 0.11.0-dev (master)
+## 0.11.0
+
+### Deprecations
+
+0.11 is last major release planned before we merge the `unifiprotect` integration into core. As a result, a number of features are being removed when we merged into core.
+
+The following services will be removed in the next version:
+
+* `unifiprotect.set_recording_mode` -- use the select introduced in 0.10 instead
+* `unifiprotect.set_ir_mode` -- use the select entity introduced in 0.10 instead
+* `unifiprotect.set_status_light` -- use the switch entity on the camera device instead
+* `unifiprotect.set_hdr_mode` -- use the switch entity on the camera device instead
+* `unifiprotect.set_highfps_video_mode` -- use the switch entity on the camera device instead
+* `unifiprotect.set_doorbell_lcd_message` -- use the select entity introduced in 0.10 instead
+* `unifiprotect.set_mic_volume` -- use the number entity introduced in 0.10 instead
+* `unifiprotect.set_privacy_mode` -- use the switch entity introduced in 0.10 instead
+* `unifiprotect.set_zoom_position` -- use the number entity introduced in 0.10 instead
+* `unifiprotect.set_wdr_value` -- use the number entity introduced in 0.10 instead
+* `unifiprotect.light_settings` -- use the select entity introduced in 0.10 instead
+* `unifiprotect.set_viewport_view` -- use the select entity introduced in 0.10 instead
+
+The following events will be removed in the next version:
+
+* `unifiprotect_doorbell` -- use a State Changed event on "Doorbell" binary sensor on the device instead
+* `unifiprotect_motion` -- use a State Changed event on the "Motion" binary sensor on the device instead
+
+The following entities will be removed in the next version:
+
+* The "Motion Recording" sensor for cameras (in favor of the "Recording Mode" select)
+* The "Light Turn On" sensor for flood lights (in favor of the "Lighting" select)
+
+All of following attributes should be duplicated data that can be gotten from other devices/entities and as such, they will be removed in the next version.
+
+* `device_model` will be removed from all entities -- provided in the UI as part of the "Device Info"
+* `last_tripped_time` will be removed from binary sensor entities -- use the `last_changed` value provided by the [HA state instead](https://www.home-assistant.io/docs/configuration/state_object/)
+* `up_since` will be removed from camera and light entities -- now has its own sensor. The sensor is disabled by default so you will need to enable it if you want to use it.
+* `enabled_at` will be removed from light entities -- now has its own sensor
+* `camera_id` will be removed from camera entities -- no services need the camera ID anymore so it does not need to be exposed as an attribute. You can still get device IDs for testing/debugging from the Configuration URL in the "Device Info" section
+* `chime_duration`, `is_dark`, `mic_sensitivity`, `privacy_mode`, `wdr_value`, and `zoom_position`  will be removed from camera entities -- all of them have now have their own sensors
+* `event_object` will be removed from the Motion binary sensor. Use the dedicated Detected Object sensor.
+
+### Breaking Changes in this release
+
+* `CHANGE`: **BREAKING CHANGE** The internal name of the Privacy Zone controlled by the "Privacy Mode" switch has been changed. Make sure you turn off all of your privacy mode switches before upgrading. If you do not, you will need to manually delete the old Privacy Zone from your UniFi Protect app.
+
+* `CHANGE`: **BREAKING CHANGE** WDR `number` entity has been removed from Cameras that have HDR. This is inline with changes made to Protect as you can no longer control WDR for cameras with HDR.
+
+* `CHANGE`: **BREAKING CHANGE** the `event_length` attribute has been removed from the motion and door binary sensors. The value was previously calculated in memory and not reliable between restarts.
+
+* `CHANGE`: **BREAKING CHANGE** the `event_object` attribute for binary motion sensors has changed the value for no object detected from "None Identified" (string) to "None" (NoneType/null)
+
+* `CHANGE`: **BREAKING CHANGE** The Doorbell Text select entity for Doorbells has been overhauled. The Config Flow option for Doorbell Messages has been removed. You now can use the the  `unifiprotect.add_doorbell_text` and `unifiprotect.remove_doorbell_text` services to add/remove Doorbell messages. This will persist the messages in UniFi Protect and the choices will now be the same ones that appear in the UniFi Protect iOS/Android app. **NOTE**: After running one of these services, you must restart Home Assistant for the updated options to appear.
+
+### Other Changes in this release
+
+* `CHANGE`: Migrates `UpvServer` to new `ProtectApiClient` from `pyunifiprotect`.
+    * This should lead to a number of behind-the-scenes reliability improvements.
+      * Should fix/close the following issues: #248, #255, #297, #317, #341, and #360 (TODO: Verify)
+
+* `CHANGE`: Overhaul Config Flow
+    * Adds Reauthentication support
+    * Adds "Verify SSL"
+    * Updates Setup / Reauth / Options flows to pre-populate forms from existing settings
+    * Removes changing username/password as part of the options flow as it is redundant with Reauthentication support
+    * Removes Doorbell Text option since it is handled directly by UniFi Protect now
+    * Adds new config option to update all metrics (storage stat usage, uptimes, CPU usage, etc.) in realtime. **WARNING**: Enabling this option will greatly increase your CPU usage. ~2x is what we were seeing in our testing. It is recommended to leave it disabled for now as we do not have a lot of diagnostic sensors using this data yet.
+
+* `CHANGE`: The state of the camera entities now reflects on whether the camera is actually recording. If you set your Recording Mode to "Detections", your camera will switch back and forth between "Idle" and "Recording" based on if the camera is actually recording.
+  * Closes #337
+
+* `CHANGE`: Configuration URLs for UFP devices will now take you directly to the device in the UFP Web UI.
+
+* `CHANGE`: Default names for all entities have been updated from `entity_name device_name` to `device_name entity_name` to match how Home Assistant expects them in 2021.11+
+
+* `CHANGE`: The Bluetooth strength sensor for the UP Sense is now disabled by default (will not effect anyone that already has the sensor).
+
+* `NEW`: Adds `unifiprotect.set_doorbell_message` service. This is just like the `unifiprotect.set_doorbell_lcd_message`, but it is not deprecated and it requires the Doorbell Text Select entity instead of the Camera entity. Should **only** be used to set dynamic doorbell text messages (i.e. setting the current outdoor temperate on your doorbell). If you want to use static custom messages, use the Doorbell Text Select entity and the `unifiprotect.add_doorbell_text` / `unifiprotect.remove_doorbell_text` service. `unifiprotect.set_doorbell_lcd_message` is still deprecated and will still be removed in the next release.
+  * Closes #396
+
+* `NEW`: Adds "Override Connection Host" config option. This will force your RTSP(S) connection IP address to be the same as everything else. Should only be used if you need to forcibly use a different IP address.
+  * For sure closes #248
+
+* `NEW`: Added Dark Mode brand images to https://github.com/home-assistant/brands.
+
+* `NEW`: Adds `phy_rate` and `wifi_signal` sensors so all connection states (BLE, WiFi and Wired) should have a diagnostic sensor. Disabled by default. Requires "Realtime metrics" option to update in realtime.
+
+* `NEW`: Added Detected Object sensor for cameras with smart detections. Values are `none`, `person` or `vehicle`. Contains `event_score` and `event_thumb` attributes.
+  * Closes #342
+
+* `NEW`: Adds Paired Camera select entity for Viewports
+
+* `NEW`: Adds "Received Data", "Transferred Data", "Oldest Recording", "Storage Used", and "Disk Write Rate" sensors for cameras. Disabled by default. Requires "Realtime metrics" option to update in realtime.
+
+* `NEW`: (requires UniFi Protect 1.20.1) Adds "Voltage" sensor for doorbells. Disabled by default.
+
+* `NEW`: Adds "System Sounds" switch for cameras with speakers
+
+* `NEW`: Adds switches to toggle overlay information for video feeds on all cameras
+
+* `NEW`: Adds switches to toggle smart detection types on cameras with smart detections
+
+* `NEW`: Adds event thumbnail proxy view.
+  * URL is `/api/ufp/thumbnail/{thumb_id}`. `thumb_id` is the ID of the thumbnail from UniFi Protect.
+  * `entity_id` is a required query parameters. `entity_id` be for an sensor that has event thumbnails on it (like the Motion binary sensor)
+  * `token` is a required query parameter is you are _not_ authenticated. It is an attribute on the motion sensor for the Camera
+  * `w` and `h` are optional query string params for thumbnail resizing.
+
+* `NEW`: Adds `event_thumbnail` attribute to Motion binary sensor that uses above mentioned event thumbnail proxy view.
+
+* `NEW`: Adds NVR sensors. All of them are disabled by default. All of the sensors will only update every ~15 minutes unless the "Realtime metrics" config option is turned on. List of all sensors:
+    * Disk Health (one per disk)
+    * System Info: CPU Temp, CPU, Memory and Storage Utilization
+    * Uptime
+    * Recording Capacity (in seconds)
+    * Distributions of stored video for Resolution (4K/HD/Free)
+    * Distributions of stored video for Type (Continuous/Detections/Timelapse)
+
+* More clean up and improvements for upcoming Home Assistant core merge.
+
+## 0.11.0-beta.5
+
+* `FIX`: Fixes motion events and sensors for UP-Sense devices (#405)
+
+* `FIX`: Fixes error on start up for G4 Domes (#408)
+
+## 0.11.0-beta.4
 
 * `NEW`: Adds `unifiprotect.set_doorbell_message` service. This is just like the `unifiprotect.set_doorbell_lcd_message`, but it is not deprecated and it requires the Doorbell Text Select entity instead of the Camera entity. Should **only** be used to set dynamic doorbell text messages (i.e. setting the current outdoor temperate on your doorbell). If you want to use static custom messages, use the Doorbell Text Select entity and the `unifiprotect.add_doorbell_text` / `unifiprotect.remove_doorbell_text` service. `unifiprotect.set_doorbell_lcd_message` is still deprecated and will still be removed in the next release.
   * Closes #396

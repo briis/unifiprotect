@@ -102,9 +102,9 @@ blueprint:
     time_format:
       name: (Optional) Time Format String
       description: >
-        Python datetime format code string for the event trigger time. This string is 
-        the actual time the moton event was triggered in case the automation or 
-        notification is delayed. Manual triggers will cause this to always be the time 
+        Python datetime format code string for the event trigger time. This string is
+        the actual time the motion event was triggered in case the automation or
+        notification is delayed. Manual triggers will cause this to always be the time
         of the previous event.
         https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
       default: "%I:%M %p"

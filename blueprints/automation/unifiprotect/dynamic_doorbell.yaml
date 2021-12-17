@@ -1,0 +1,115 @@
+blueprint:
+  name: UniFi Protect Dynamic Doorbell
+  description: |
+    ## UniFi Protect Dynamic Doorbell
+
+    This blueprint will dynamically update the text on the LCD display for your UniFi Protect Doorbell. Will automatically run once per minute and update your Doorbell LCD Screen.
+
+    For this automation to run, you need to ensure your doorbell LCD display is set to the "Default Message" option. This is to still allow you to set static custom messages like "LEAVE PACKAGE AT THE DOOR" without being overridden by the automation. This behavior can be disabled in the options.
+
+    ### Required Settings
+
+      - UniFi Protect Doorbell Sensor
+
+    ### Optional Settings
+
+      - Text template format you want to display (see more below)
+      - Temperature sensor entity so you can display temperature on screen
+      - Time formatting string for formatting `{ctime}` template (see more below)
+
+    ### Requirements
+
+    To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
+
+    - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
+    - The [unifiprotect][1] integration version 0.11-beta4 or newer
+    - A UniFi G4 Doorbell
+
+    ### Text Template
+
+    The text that is display on your doorbell is configurable using the templating engine. Any [Home Assistant Templating][2] _should_ work in the template.
+
+    The follow variables will injected and replaced at render time as well (note the _single_ curly bracket, not 2):
+
+      - `{ctime}` -- current time, formatting according to "Time Format String" option
+      - `{temp}` -- current temperature from the "Temperature Sensor Entity" option
+
+    [1]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
+    [2]: https://www.home-assistant.io/docs/configuration/templating/
+  domain: automation
+  input:
+    doorbell:
+      name: Doorbell Entity
+      description: >
+        The doorbell sensor you want to trigger notifications for.
+      selector:
+        entity:
+          integration: unifiprotect
+          domain: select
+    temp_entity:
+      name: (Optional) Temperature Sensor Entity
+      description: Temperature sensor to use. Adds `{temp}` var to template.
+      default: ""
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    text_template:
+      name: (Optional) Text Template
+      description: >
+        Message template to display on doorbell. Can be any HA template string.
+        Final generated string must be 30 characters or less.
+      default: "Welcome | {ctime}"
+      selector:
+        text:
+    always_run:
+      name: (Optional) Ignore current state?
+      description: >
+        Ignore the current state of the doorbell text message. If true, will always run every
+        minute, potentially resetting a custom static message you set. If false, will only
+        run every minute if the current text is the "Default Message" option or the
+        "unknown" (meaning it is already set to a dynamic value).
+      default: false
+      selector:
+        boolean:
+    time_format:
+      name: (Optional) Time Format String
+      description: >
+        Python datetime format code string for the `{ctime}` variable.
+        https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+      default: "%I:%M %p"
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  # input vars
+  input_doorbell: !input doorbell
+  input_time_format: !input time_format
+  input_text_template: !input text_template
+  input_temp_entity: !input temp_entity
+  input_always_run: !input always_run
+
+trigger:
+  - platform: time_pattern
+    minutes: "*"
+
+condition:
+  - "{{ input_always_run or is_state(input_doorbell, 'unknown') or states[input_doorbell].state.startswith('Default Message') }}"
+
+action:
+  - service: unifiprotect.set_doorbell_message
+    data:
+      entity_id: !input doorbell
+      message: |
+        {%- set ctime=as_local(now()).strftime(input_time_format) -%}
+        {%- if input_temp_entity != "" -%}
+          {%- if is_state(input_temp_entity, 'unavailable') -%}
+            {%- set temp="" %}
+          {%- else -%}
+            {%- set temp="{}{}".format(int(states[input_temp_entity].state), state_attr(input_temp_entity, "unit_of_measurement")) -%}
+          {%- endif -%}
+        {%- endif -%}
+        {{ input_text_template.replace("{ctime}", ctime).replace("{temp}", temp) }}

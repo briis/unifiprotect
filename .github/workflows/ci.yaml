@@ -45,4 +45,4 @@ jobs:
         run: find . ! -path "./hass/*" -name "*.py" | xargs pyupgrade
 
       - name: pylint
-        run: pylint custom_components/unifiprotect
+        run: pylint --rcfile pyproject.toml custom_components/unifiprotect

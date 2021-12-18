@@ -18,6 +18,11 @@ from .data import ProtectData
 _LOGGER = logging.getLogger(__name__)
 
 
+def _404(message: Any) -> web.Response:
+    _LOGGER.error("Error on load thumbnail: %s", message)
+    return web.Response(status=HTTPStatus.NOT_FOUND)
+
+
 class ThumbnailProxyView(HomeAssistantView):
     """View to proxy event thumbnails from UniFi Protect."""
 
@@ -40,10 +45,6 @@ class ThumbnailProxyView(HomeAssistantView):
                 return entry.access_tokens[entity_id], entry.api
         return None
 
-    def _404(self, message: Any) -> web.Response:
-        _LOGGER.error("Error on load thumbnail: %s", message)
-        return web.Response(status=HTTPStatus.NOT_FOUND)
-
     async def get(self, request: web.Request, event_id: str) -> web.Response:
         """Start a get request."""
 
@@ -56,18 +57,18 @@ class ThumbnailProxyView(HomeAssistantView):
             try:
                 width = int(width)
             except ValueError:
-                return self._404("Invalid width param")
+                return _404("Invalid width param")
         if height is not None:
             try:
                 height = int(height)
             except ValueError:
-                return self._404("Invalid height param")
+                return _404("Invalid height param")
 
         access_tokens: list[str] = []
         if entity_id is not None:
             items = self._get_access_tokens(entity_id)
             if items is None:
-                return self._404(f"Could not find entity with device_id {entity_id}")
+                return _404(f"Could not find entity with device_id {entity_id}")
 
             access_tokens = list(items[0])
             instance = items[1]
@@ -81,9 +82,9 @@ class ThumbnailProxyView(HomeAssistantView):
                 event_id, width=width, height=height
             )
         except NvrError as err:
-            return self._404(err)
+            return _404(err)
 
         if thumbnail is None:
-            return self._404("Event thumbnail not found")
+            return _404("Event thumbnail not found")
 
         return web.Response(body=thumbnail, content_type="image/jpeg")

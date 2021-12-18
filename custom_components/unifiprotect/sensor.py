@@ -29,10 +29,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
-from pyunifiprotect.data import NVR, Camera, Event, Light
+from pyunifiprotect.data import NVR, Camera, Event
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
-from .const import ATTR_ENABLED_AT, ATTR_EVENT_SCORE, ATTR_EVENT_THUMB, DOMAIN
+from .const import ATTR_EVENT_SCORE, ATTR_EVENT_THUMB, DOMAIN
 from .data import ProtectData
 from .entity import (
     AccessTokenMixin,
@@ -41,7 +41,7 @@ from .entity import (
     async_all_device_entities,
 )
 from .models import ProtectRequiredKeysMixin
-from .utils import above_ha_version, get_nested_attr
+from .utils import get_nested_attr
 from .views import ThumbnailProxyView
 
 _LOGGER = logging.getLogger(__name__)
@@ -109,13 +109,6 @@ ALL_DEVICES_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
 
 CAMERA_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
     ProtectSensorEntityDescription(
-        key="motion_recording",
-        name="Motion Recording",
-        icon="mdi:video-outline",
-        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_value="recording_settings.mode",
-    ),
-    ProtectSensorEntityDescription(
         key="stats_rx",
         name="Received Data",
         native_unit_of_measurement=DATA_BYTES,
@@ -166,16 +159,6 @@ CAMERA_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
         # voltage will be null if device is not camera or not on 1.20.1+
         ufp_required_field="voltage",
         precision=2,
-    ),
-)
-
-LIGHT_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
-    ProtectSensorEntityDescription(
-        key="light_turn_on",
-        name="Light Turn On",
-        icon="mdi:leak",
-        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
-        ufp_value="light_mode_settings.mode",
     ),
 )
 
@@ -353,7 +336,6 @@ async def async_setup_entry(
         ProtectDeviceSensor,
         all_descs=ALL_DEVICES_SENSORS,
         camera_descs=CAMERA_SENSORS,
-        light_descs=LIGHT_SENSORS,
         sense_descs=SENSE_SENSORS,
     )
     entities += _async_nvr_entities(data)
@@ -406,8 +388,6 @@ class SensorValueMixin(Entity):
             # UniFi Protect value can vary slightly over time
             # truncate to ensure no extra state_change events fire
             value = value.replace(second=0, microsecond=0)
-            if not above_ha_version(2021, 12):
-                value = value.isoformat()
 
         assert isinstance(self.entity_description, ProtectSensorEntityDescription)
         if isinstance(value, float) and self.entity_description.precision:
@@ -428,14 +408,6 @@ class ProtectDeviceSensor(SensorValueMixin, ProtectDeviceEntity, SensorEntity):
         """Initialize an UniFi Protect sensor."""
         self.entity_description: ProtectSensorEntityDescription = description
         super().__init__(data, device)
-
-    @callback
-    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
-        if isinstance(self.device, Light):
-            return {
-                ATTR_ENABLED_AT: self.device.light_mode_settings.enable_at.value,
-            }
-        return {}
 
     @callback
     def _async_update_device_from_protect(self) -> None:

@@ -6,28 +6,40 @@ The UniFi Protect Integration adds support for retrieving Camera feeds and Senso
 
 There is support for the following device types within Home Assistant:
 * Camera
-  * A camera entity for each camera found on the NVR device will be created
+  * A camera entity for each camera channel and RTSP(S) combination found on the NVR device will be created
 * Sensor
-  * A sensor for each camera found will be created. This sensor will hold the current recording mode.
-  * A sensor for each Floodlight device found will be created. This sensor will hold the status of when light will turn on.
+  * **Cameras**: (only for cameras with Smart Detections) Currently detected object
+  * **Sensors**: Sensors for battery level, light level, humidity and temperate
+  * **All Devices** (Disabled by default): a sensor for uptime, BLE signal (only for bluetooth devices), link speed (only for wired devices), WiFi signal (only for WiFi devices)
+  * **Cameras** (Disabled by default): sensors for bytes transferred, bytes received, oldest recording, storage used by camera recordings, write rate for camera recordings
+  * **Doorbells** (Disabled by default, requires UniFi Protect 1.20.1+) current voltage sensor
+  * **NVR** (Disabled by default): sensors for uptime, CPU utilization, CPU temp, memory utilization, storage utilization, percent distribution of timelapse, continuos, and detections video on disk, percentage of HD video, 4K video and free space of disk, estimated recording capacity
 * Binary Sensor
-  * One to two binary sensors will be created per camera found. There will always be a binary sensor recording if motion is detected per camera. If the camera is a doorbell, there will also be a binary sensor created that records if the doorbell is pressed.
+  * **Cameras** and **Flood Lights**: sensors for if it is dark, if motion is detected
+  * **Doorbells**: sensor if the doorbell is currently being rung
+  * **Sensors**: sensors for if the door is open, battery is low and if motion is detected
+  * **NVR** (Disabled by default): a sensor for the disk health for each disk
+    * **NOTE**: The disk numbers here are _not guaranteed to match up to the disk numbers shown in UniFiOS_
 * Switch
-  * For each camera supporting High Dynamic Range (HDR) a switch will be created to turn this setting on or off.
-  * For each camera supporting High Frame Rate recording a switch will be created to turn this setting on or off.
-  * For each camera a switch will be created to turn the status light on or off.
+  * **Cameras**: switches to enabled/disable status light, HDR, High FPS mode, "Privacy Mode", System Sounds (if the camera has speakers), toggles for the Overlay information, toggles for smart detections objects (if the camera has smart detections)
+    * **Privacy Mode**: Turning on Privacy Mode adds a privacy zone that blacks out the camera so nothing can be seen, turn microphone sensitivity to 0 and turns off recording
+  * **Flood Lights**: switch to enable/disable status light
+  * **All Devices** (Disabled by default): Switch to enable/disable SSH access
 * Light
   * A light entity will be created for each UniFi Floodlight found. This works as a normal light entity, and has a brightness scale also.
 * Select
-  * For each Camera found there will be a Select entity created from where you can set the cameras recording mode.
-  * For each Doorbell found, there will be a Select entity created that makes it possible to set the LCD Text. If you make a list of Texts in the Integration configuration, you can both set the standard texts and custom text that you define here.
-  * For each Camera found there will be a Select entity created from where you can set the behaviour of the Infrared light on the Camera
-  * For each Viewport found, there will be a Select entity from where you change the active View being displayed on the Viewport.
-  * For each Floodlight device there be a Select entity to set the behaviour of the built-in motion sensor.
+  * **Cameras**: selects to choose between the recording mode and the current infrared settings (if the camera has IR LEDs)
+  * **Doorbells**: select to choose between the currently disable text options on the LCD screen
+  * **Flood Lights**: select to choose between the light turn on mode and the paired camera (used for motion detections)
+  * **Viewports**: select to choose between the currently active Liveview display on the Viewport
 * Number
-  * For each camera supporting WDR, a number entity will be setup to set the active value.
-  * For each camera a number entity will be created from where you can set the microphone sensitivity level.
-  * For each camera supporting Optical Zoom, a number entity will be setup to set the zoom position.
+  * **Cameras**: number entities for the current WDR setting (only if the camera does not have HDR), current microphone sensitivity level, current optical zoom level (if camera has optical zoom),
+  * **Doorbells**: number entity for the current chime duration
+  * **Flood Lights**: number entities for the current motion sensitivity level and auto-shutdown duration after the light triggers on
+* Media Player
+  * A media player entity is added for any camera that has speakers that allow talkback
+* Button
+  * A button entity is added for every adoptable device (anything except the UniFiOS console) to allow you to reboot the device
 
 It supports both regular Ubiquiti Cameras and the UniFi Doorbell. Camera feeds, Motion Sensors, Doorbell Sensors, Motion Setting Sensors and Switches will be created automatically for each Camera found, once the Integration has been configured.
 
@@ -152,13 +164,21 @@ When you upgrade your CloudKey+ from FW V1.x to 2.x, your CK wil move to UniFiOS
   *(string)(Required)*<br>
   The local password you setup under the *Prerequisites* section.
 
+**verify ssl**:<br>
+  *(bool)(Required)*<br>
+  If your UniFi Protect instance has a value HTTPS cert, you can enforce validation of the cert
+
 **deactivate rtsp stream**<br>
   *(bool)Optional*<br>
   If this box is checked, the camera stream will not use the RTSP stream, but instead jpeg push. This gives a realtime stream, but does not include Audio.
 
-**doorbell text**<br>
-  *(string)Optional*<br>
-  If a Doorbell is attached to UniFi Protect, you can use this field to write a list of Custom Texts that can be displayed on the Doorbell LCD Screen. The list must be comma separated and will be truncated to 30 characters per item. Example: `RING THE BELL, WE ARE SLEEPING, GO AWAY`
+**realtime metrics**<br>
+  *(bool)Optional*<br>
+  Enable processing of all Websocket events from UniFi Protect. This enables realtime updates for many sensors that are disabled by default. If this is disabled, those sensors will only update once every 15 minutes. **Will greatly increase CPU usage**, do not enable unless you plan to use it.
+
+**override connection host**
+  *(bool)Optional*<br>
+  By default uses the connection host provided by your UniFi Protect instance for connecting to cameras for RTSP(S) streams. If you would like to force the integration to use the same IP address you provided above, set this to true.
 
 ## Special UniFi Protect Services
 
@@ -166,27 +186,15 @@ The Integration adds specific *UniFi Protect* services and supports the standard
 
 Service | Parameters | Description
 :------------ | :------------ | :-------------
-`unifiprotect.set_recording_mode` | `entity_id` - Name of entity to set recording mode for.<br>`recording_mode` - always, detections or never| Set the recording mode for each Camera.
-`unifiprotect.set_ir_mode` | `entity_id` - Name of entity to set infrared mode for.<br>`ir_mode` - auto, autoFilterOnly, on, off | Set the infrared mode for each Camera.
-`unifiprotect.set_status_light` | `entity_id` - Name of entity to toggle status light for.<br>`light_on` - true or false | Turn the status light on or off for each Camera.
-`unifiprotect.set_doorbell_lcd_message` | `entity_id` - Name of doorbell to display message on.<br>`message` - The message to display. (Will be truncated to 30 Characters)<br>`duration` - The time in minutes the message should display. Leave blank to display always. | Display a Custom message on the LCD display on a G4 Doorbell
-`unifiprotect.set_highfps_video_mode` | `entity_id` - Name of entity to toggle High FPS for.<br>`high_fps_on`  - true or false | Toggle High FPS on supported Cameras.
-`unifiprotect.set_hdr_mode` | `entity_id` - Name of entity to toggle HDR for.<br>`hdr_on`  - true or false | Toggle HDR mode on supported Cameras.
-`unifiprotect.set_mic_volume` | `entity_id` - Name of entity to adjust microphone volume for.<br>`level`  - a value between 0 and 100| Set Microphone sensitivity on Cameras.
-`unifiprotect.set_privacy_mode` | `entity_id` - Name of entity to adjust privacy mode for.<br>`privacy_mode`  - true to enable, false to disable<br>`mic_level` - 0 to 100, where 0 is off<br>`recording_mode` - always, detections or never| Set Privacy mode for a camera, where the screen goes black when enabled.
-`unifiprotect.light_settings` | `entity_id` - Name of entity to adjust settings for.<br>`mode`  - When to turn on light at Motion, where off is never, motion is on motion detection and dark is only when it is dark outside.<br>`enable_at` - When motion is selected as mode, one can adjust if light turns on motion detection. Where fulltime is always, and dark is only when dark.<br>`duration` - Number of seconds the light stays turned on. Must be one of these values: 15, 30, 60, 300, 900.<br>`sensitivity` - Motion sensitivity of the PIR. Must be a number between 1 and 100. | Adjust settings for the PIR motion sensor in the Floodlight.
-`unifiprotect.set_doorbell_chime_duration` | `entity_id` - The Doorbell attached to the Chime.<br>`chime_duration`  - 0 to 10000 | Set Doorbell Chime duration.
+`unifiprotect.add_doorbell_text` | `device_id` - A device for your current UniFi Protect instance (in case you have multiple).<br>`message` - custom message text to add| Adds a new custom message for Doorbells.\*
+`unifiprotect.remove_doorbell_text` | `device_id` - A device for your current UniFi Protect instance (in case you have multiple).<br>`message` - custom message text to remove| Remove an existing custom message for Doorbells.\*
+`unifiprotect.set_default_doorbell_text` | `device_id` - A device for your current UniFi Protect instance (in case you have multiple).<br>`message` - default text for doorbell| Sets the "default" text for when a message is reset or none is set.\*
+`unifiprotect.set_doorbell_message` | `device_id` - A device for your current UniFi Protect instance (in case you have multiple).<br>`message` - text for doorbell| Dynamically sets text for doorbell.\*\*
+`unifiprotect.profile_ws_messages` | `device_id` - A device for your current UniFi Protect instance (in case you have multiple).<br>`duration` - how long to provide| Debug service to help profile the processing of Websocket messages from UniFi Protect.
 
-**Note:** When using the HA Service *camera.enable_motion_detection*, Recording in UniFi Protect will be set to *detections*. If you want to have the cameras recording all the time, you have to set that in UniFi Protect App or use the service `unifiprotect.set_recording_mode`.
+\*: Adding, removing or changing a doorbell text option requires you to restart your Home Assistant instance to be able to use the new ones. This is a limitation of how downstream entities and integrations subscribe to options for select entities. They cannot be dynamic.
 
-## UniFi Protect Events
-
-The following UniFi Protect events are triggered when running this Integration:
-
-Event Type | Description | Data
-:------------ | :------------ | :-------------
-`unifiprotect_doorbell` | Triggers when the doorbell button is pressed | `ring`: true, `entity_id`: The entity that triggers the event
-`unifiprotect_motion` | Triggers when motion is detected on a camera | `motion_on`: true, `entity_id`: The entity that triggers the event
+\*\*: The `unifiprotect.set_doorbell_message` service should _only_ be used for setting the text of your doorbell dynamically. i.e. if you want to set the current time or outdoor temp on it. If you want to set a static message, use the select entity already provided. See the [Dynamic Doorbell](#dynamic-doorbell-messages) blueprint for an example.
 
 ## Automating Services
 

@@ -165,8 +165,12 @@ class ProtectDeviceEntity(RestoreEntity):
         )
 
     @callback
-    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
-        """Calculate extra state attributes."""
+    def _async_update_extra_attrs_from_protect(  # pylint: disable=no-self-use
+        self,
+    ) -> dict[str, Any]:
+        """Calculate extra state attributes.
+        Primally for overriding in child Protect Entities
+        """
         return {}
 
     @callback

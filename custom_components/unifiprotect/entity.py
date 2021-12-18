@@ -16,6 +16,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
+from homeassistant.helpers.restore_state import RestoreEntity
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
 from pyunifiprotect.data.nvr import NVR
@@ -99,7 +100,7 @@ def async_all_device_entities(
     )
 
 
-class ProtectDeviceEntity(Entity):
+class ProtectDeviceEntity(RestoreEntity):
     """Base class for unifi protect entities."""
 
     def __init__(

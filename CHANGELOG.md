@@ -1,5 +1,15 @@
 # // Changelog
 
+## 0.11.1
+
+### Deprecations
+
+As an amended to the deprecations from 0.11.0, the `last_tripped_time` is _no longer_ deprecated as `last_changed` is not a full replacement (#411)
+
+### Other changes
+
+* `FIX`: Bumps version of `pyunifiprotect` to 1.3.4. This will fix talkback for all cameras that was not working as expected
+
 ## 0.11.0
 
 ### Deprecations

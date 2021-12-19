@@ -208,7 +208,7 @@ variables:
       {{ as_local(states[input_smart_entity].last_changed).strftime(input_time_format) }}
     {% endif %}
   notification_channel: |
-    {% if "event" in trigger %}
+    {% if "from_state" in trigger %}
       {{ input_channel }}
     {% else %}
       Manual {{ input_channel }}
@@ -242,13 +242,7 @@ trigger:
 
 condition:
   - "{{ not input_presence_filter or not is_state(input_presence_filter, 'home') }}"
-  - condition: template
-    value_template: >
-      {% if trigger_object != "none" %}
-        true
-      {% else %}
-        false
-      {% endif %}
+  - "{{ trigger_object != 'none' and trigger_object != 'unavailable' }}"
 
 action:
   - choose:

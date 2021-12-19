@@ -195,7 +195,7 @@ variables:
       {{ as_local(states[input_motion_entity].last_changed).strftime(input_time_format) }}
     {% endif %}
   notification_channel: |
-    {% if "event" in trigger %}
+    {% if "from_state" in trigger %}
       {{ input_channel }}
     {% else %}
       Manual {{ input_channel }}

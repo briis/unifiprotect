@@ -37,7 +37,6 @@ from .const import (
     DOORBELL_TEXT_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
     PLATFORMS,
-    PLATFORMS_NEXT,
     PROFILE_WS_SCHEMA,
     SERVICE_ADD_DOORBELL_TEXT,
     SERVICE_PROFILE_WS,
@@ -51,7 +50,6 @@ from .services import (
     remove_doorbell_text,
     set_default_doorbell_text,
 )
-from .utils import above_ha_version
 from .views import ThumbnailProxyView
 
 _LOGGER = logging.getLogger(__name__)
@@ -212,11 +210,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryNotReady
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = data_service
-
-    platforms = PLATFORMS
-    if above_ha_version(2021, 12):
-        platforms = PLATFORMS_NEXT
-    hass.config_entries.async_setup_platforms(entry, platforms)
+    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     services = [
         (
@@ -258,11 +252,7 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload UniFi Protect config entry."""
-    platforms = PLATFORMS
-    if above_ha_version(2021, 12):
-        platforms = PLATFORMS_NEXT
-
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, platforms):
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         data: ProtectData = hass.data[DOMAIN][entry.entry_id]
         await data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)

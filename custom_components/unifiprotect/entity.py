@@ -21,13 +21,7 @@ from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
 from pyunifiprotect.data.nvr import NVR
 from pyunifiprotect.data.types import ModelType
 
-from .const import (
-    ATTR_DEVICE_MODEL,
-    DEFAULT_ATTRIBUTION,
-    DEFAULT_BRAND,
-    DOMAIN,
-    EVENT_UPDATE_TOKENS,
-)
+from .const import DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN, EVENT_UPDATE_TOKENS
 from .data import ProtectData
 from .models import ProtectRequiredKeysMixin
 from .utils import get_nested_attr
@@ -100,7 +94,7 @@ def async_all_device_entities(
 
 
 class ProtectDeviceEntity(Entity):
-    """Base class for unifi protect entities."""
+    """Base class for UniFi protect entities."""
 
     def __init__(
         self,
@@ -147,7 +141,6 @@ class ProtectDeviceEntity(Entity):
         return {
             **attrs,
             ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            ATTR_DEVICE_MODEL: self.device.type,
             **self._extra_state_attributes,
         }
 
@@ -164,8 +157,10 @@ class ProtectDeviceEntity(Entity):
         )
 
     @callback
-    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
-        """Calculate extra state attributes."""
+    def _async_update_extra_attrs_from_protect(  # pylint: disable=no-self-use
+        self,
+    ) -> dict[str, Any]:
+        """Calculate extra state attributes. Primarily for subclass to override."""
         return {}
 
     @callback

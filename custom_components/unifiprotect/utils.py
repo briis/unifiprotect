@@ -9,7 +9,6 @@ import logging
 import time
 from typing import Any
 
-from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -78,15 +77,3 @@ async def profile_ws_messages(
         title=f"{name}: WS Profile Completed",
         notification_id=message_id,
     )
-
-
-def above_ha_version(major: int, minor: int) -> bool:
-    """Check if current Home Assistant version if above a specified one.
-
-    CORE: Remove this before merging to core.
-    """
-    if MAJOR_VERSION > major:
-        return True
-    if MAJOR_VERSION < major:
-        return False
-    return MINOR_VERSION >= minor

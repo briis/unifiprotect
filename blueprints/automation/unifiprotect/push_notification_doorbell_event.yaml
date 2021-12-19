@@ -19,17 +19,29 @@ blueprint:
       - Configurable HA Internal / External Base URLs
       - Configurable lovelace view from notification
       - Optional Actionable Notification to unlock door entity for camera
+      - Optional TTS messages (requires [TTS integration][9] to be configured):
+        - TTS message to play through the doorbell when unlocking door
+        - Actionable Notification to play audio message through doorbell to respond to guest.
 
     ### Requirements
 
     To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
 
     - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
-    - The [unifiprotect][8] integration
+    - The [unifiprotect][8] integration (requires version 0.11.1 or newer for TTS)
     - A UniFi camera pair with your NVR that has a chime (like the G4 Doorbell)
     - A valid HTTPS certificate and public facing Home Assistant instance
       - If you do not have these, the actionable notifications and images will not appear in the notifications.
       - You do not need your _whole_ Home Assistant to be publicly accessible. Only the paths `/api/camera_proxy/*` and `/api/webhook/*` need to be accessible outside of your network.
+    - TTS messages require Home Assistant to be able to communicate to your cameras directly (**not** to your NVR). It will _not_ work if the internal LAN IP of the camera is not routable by Home Assistant.
+
+    ### Caveat About Actionable Notifications Limits
+
+    HTML5 Push notification can only have a max of 2 actionable notifications. If you enable Slience, Unlock Door and Respond, Slience will not appear.
+
+    Android Push notifications likewise have a limit of 3 actionable notifications. So if you have Open Camera, Slience, Unlock Door and Respond, Slience will not appear.
+
+    iOS is not affected by the limit (limit = 10).
 
     [1]: https://www.home-assistant.io/integrations/html5
     [2]: https://companion.home-assistant.io/docs/notifications/notifications-basic#sending-notifications-to-multiple-devices
@@ -39,6 +51,7 @@ blueprint:
     [6]: https://www.home-assistant.io/integrations/html5#actions
     [7]: https://companion.home-assistant.io/docs/notifications/actionable-notifications/
     [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
+    [9]: https://www.home-assistant.io/integrations/tts/
   domain: automation
   input:
     doorbell:
@@ -59,6 +72,28 @@ blueprint:
       selector:
         entity:
           domain: lock
+    tts_target:
+      name: (Optional) TTS Service
+      description: >
+        The TTS service you want to use to generate TTS messages
+        https://www.home-assistant.io/integrations/tts/
+      default: ""
+      selector:
+        text:
+    lock_tts:
+      name: (Optional) Unlock TTS message
+      description: >
+        TTS Message for play through doorbell when door is unlocked.
+      default: ""
+      selector:
+        text:
+    wait_tts:
+      name: (Optional) TTS message
+      description: >
+        Adds actionable notification to play TTS message to respond to guest.
+      default: ""
+      selector:
+        text:
     send_mobile:
       name: (Optional) Send Mobile App Notifications
       description: Send mobile app push notifications
@@ -184,17 +219,16 @@ variables:
   input_send_mobile: !input send_mobile
   input_send_html5: !input send_html5
   input_time_format: !input time_format
+  input_lock_tts: !input lock_tts
+  input_wait_tts: !input wait_tts
+  input_tts_target: !input tts_target
   # automation data
   camera_entities: '[{% for eid in device_entities(device_id(input_doorbell)) %}{%if eid.startswith(''camera'') and not is_state(eid, ''unavailable'') %}"{{ eid }}",{% endif %}{% endfor %}]'
+  media_entities: '[{% for eid in device_entities(device_id(input_doorbell)) %}{%if eid.startswith(''media_player'') and not is_state(eid, ''unavailable'') %}"{{ eid }}",{% endif %}{% endfor %}]'
   # automation variables
   lovelace_view: "{{ input_lovelace_view | trim }}"
-  trigger_entity_id: |
-    {% if "event" in trigger %}
-      {{ trigger.event.data.entity_id }}
-    {% else %}
-      {{ doorbell_entity_ids | first }}
-    {% endif %}
   camera_entity_id: "{{ camera_entities | default([None]) | first }}"
+  media_entity_id: "{{ media_entities | default([None]) | first }}"
   lock_entity_id: "{{ input_lock_entity or '' }}"
   trigger_time: |
     {% if states[input_doorbell] == None %}
@@ -230,6 +264,9 @@ variables:
     {% endif %}
   silence_action: "silence-{{ input_doorbell }}"
   unlock_action: "unlock-{{ lock_entity_id }}"
+  tts_action: "tts-{{ input_doorbell }}"
+  lock_tts_enabled: "{{ input_tts_target != '' and input_lock_tts != '' and media_entity_id != None }}"
+  wait_tts_enabled: "{{ input_tts_target != '' and input_wait_tts != '' and media_entity_id != None }}"
 
 trigger:
   - platform: state
@@ -247,7 +284,11 @@ action:
               message: |
                 Entity ID: `{{ input_doorbell }}`
                 Camera: `{{ camera_entity_id }}`
+                Media Player: `{{ media_entity_id }}`
                 Lock: `{{ lock_entity_id }}`
+                Lock TTS: `{{ input_lock_tts }}` | `{{ lock_tts_enabled }}`
+                Wait TTS: `{{ input_wait_tts }}` | `{{ wait_tts_enabled }}`
+                TTS Service: `{{ input_tts_target }}`
                 Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
                 Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
 
@@ -280,15 +321,20 @@ action:
                 attachment:
                   url: "{{ notification_image }}"
                 actions: >
-                  [{% if notification_url != None %}
+                  [
+                  {% if notification_url != None %}
                   { "action": "URI", "title": "Open Camera", "uri": "{{ lovelace_view }}" },
                   {% endif %}
                   {% if lock_entity_id != "" %}
                   { "action": "{{ unlock_action }}", "title": "Unlock Door" },
                   {% endif %}
+                  {% if wait_tts_enabled %}
+                  { "action": "{{ tts_action }}", "title": "Respond" },
+                  {% endif %}
                   {% if input_silence_timer > 0 %}
                   { "action": "{{ silence_action }}", "title": "Silence", "destructive": True },
-                  {% endif %}]
+                  {% endif %}
+                  ]
   - choose:
       - conditions: "{{ input_send_html5 }}"
         sequence:
@@ -302,12 +348,17 @@ action:
                 image: "{{ notification_image }}"
                 url: "{{ notification_url }}"
                 actions: >
-                  [{% if lock_entity_id != "" %}
+                  [
+                  {% if lock_entity_id != "" %}
                   { "action": "{{ unlock_action }}", "title": "Unlock Door" },
+                  {% endif %}
+                  {% if wait_tts_enabled %}
+                  { "action": "{{ tts_action }}", "title": "Respond" },
                   {% endif %}
                   {% if input_silence_timer > 0 %}
                   { "action": "{{ silence_action }}", "title": "Silence" },
-                  {% endif %}]
+                  {% endif %}
+                  ]
   - wait_for_trigger:
       - platform: event
         event_type: mobile_app_notification_action
@@ -325,6 +376,14 @@ action:
         event_type: html5_notification.clicked
         event_data:
           action: "{{ unlock_action }}"
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "{{ tts_action }}"
+      - platform: event
+        event_type: html5_notification.clicked
+        event_data:
+          action: "{{ tts_action }}"
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false
@@ -338,7 +397,7 @@ action:
                 Callback: `{{ wait.trigger.event.event_type }}`
                 Actions: `{{ wait.trigger.event.data.action }}`
   - choose:
-      - conditions: "{{ lock_entity_id != '' and wait.trigger.event.data.action == unlock_action }}"
+      - conditions: "{{ wait.trigger.event.data.action == unlock_action and lock_entity_id != '' }}"
         sequence:
           - choose:
               - conditions: "{{ input_debug_enabled }}"
@@ -350,7 +409,21 @@ action:
           - service: lock.unlock
             data:
               entity_id: "{{ lock_entity_id }}"
-      - conditions: "{{wait.trigger.event.data.action == silence_action }}"
+          - choose:
+              - conditions: "{{ lock_tts_enabled }}"
+                sequence:
+                  - choose:
+                      - conditions: "{{ input_debug_enabled }}"
+                        sequence:
+                          - service: notify.persistent_notification
+                            data:
+                              title: "Debug: {{ notification_title }}"
+                              message: "Sending TTS: {{ input_lock_tts }}."
+                  - service: tts.{{ input_tts_target }}
+                    data:
+                      entity_id: "{{ media_entity_id }}"
+                      message: "{{ input_lock_tts }}"
+      - conditions: "{{ wait.trigger.event.data.action == silence_action }}"
         sequence:
           - choose:
               - conditions: "{{ input_debug_enabled }}"
@@ -368,3 +441,16 @@ action:
                     data:
                       title: "Debug: {{ notification_title }}"
                       message: Silence ended.
+      - conditions: "{{ wait.trigger.event.data.action == tts_action and wait_tts_enabled }}"
+        sequence:
+          - choose:
+              - conditions: "{{ input_debug_enabled }}"
+                sequence:
+                  - service: notify.persistent_notification
+                    data:
+                      title: "Debug: {{ notification_title }}"
+                      message: "Sending TTS: {{ input_wait_tts }}."
+          - service: tts.{{ input_tts_target }}
+            data:
+              entity_id: "{{ media_entity_id }}"
+              message: "{{ input_wait_tts }}"

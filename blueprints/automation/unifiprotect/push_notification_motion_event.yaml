@@ -27,7 +27,7 @@ blueprint:
     To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
 
     - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
-    - The [unifiprotect][8] integration version 0.11-beta3 or newer
+    - The [unifiprotect][8] integration version 0.11.0 or newer
     - A UniFi camera pair with your NVR
     - A valid HTTPS certificate and public facing Home Assistant instance
       - If you do not have these, the actionable notifications and images will not appear in the notifications.

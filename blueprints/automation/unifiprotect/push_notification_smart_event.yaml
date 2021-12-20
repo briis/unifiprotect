@@ -377,7 +377,8 @@ action:
         sequence:
           - service: notify.{{ input_notify_telegram }}
             data:
-              message: "Smart Detections silenced for {{ input_silence_timer }} minutes"
+              message: "Smart Detections notifications silenced for {{ input_silence_timer }} minutes"
+  - choose:
       - conditions: "{{ input_debug_enabled }}"
         sequence:
           - service: notify.persistent_notification

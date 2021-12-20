@@ -15,8 +15,10 @@ blueprint:
     ### Optional Settings
 
       - Precense filter for only sending notifications for when you are not home
-      - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2] as well as toggles for both
-      - [Telegram Notification][9] option, including toggle
+      - Notification targets and toggles for following notifications types:
+        - [HTML5 Push Notification][1]
+        - [Mobile App Notification][2]
+        - [Telegram Notification][9]
       - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
       - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
       - Cooldown before sending another notification
@@ -29,7 +31,7 @@ blueprint:
     To take full effect of this automation blueprint, your Home Assistant instance needs some setup beforehand.
 
     - A UniFi Protect NVR running on a UDM Pro, UNVR or other Protect Console
-    - The [unifiprotect][8] integration version 0.11.0 or newer
+    - The [unifiprotect][8] integration version 0.11-beta3 or newer
     - A UniFi camera pair with your NVR that has Smart Detections. This is any G4 series camera _except_ the EA G4 Instant.
     - A valid HTTPS certificate and public facing Home Assistant instance
       - If you do not have these, the actionable notifications and images will not appear in the notifications.
@@ -112,7 +114,8 @@ blueprint:
         text:
     send_telegram:
       name: (Optional) Telegram Notification
-      description: "Send a notification via Telegram"
+      description: >
+        Send a notification via Telegram. Telegram notification will not have a link to Home Assistant like the mobile apps.
       default: false
       selector:
         boolean:
@@ -127,9 +130,9 @@ blueprint:
     time_format:
       name: (Optional) Time Format String
       description: >
-        Python datetime format code string for the event trigger time. This string is
-        the actual time the motion event was triggered in case the automation or
-        notification is delayed. Manual triggers will cause this to always be the time
+        Python datetime format code string for the event trigger time. This string is 
+        the actual time the moton event was triggered in case the automation or 
+        notification is delayed. Manual triggers will cause this to always be the time 
         of the previous event.
         https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
       default: "%I:%M %p"
@@ -226,7 +229,7 @@ variables:
       {{ as_local(states[input_smart_entity].last_changed).strftime(input_time_format) }}
     {% endif %}
   notification_channel: |
-    {% if "from_state" in trigger %}
+    {% if "event" in trigger %}
       {{ input_channel }}
     {% else %}
       Manual {{ input_channel }}
@@ -246,7 +249,7 @@ variables:
     Tap to open camera in Home Assistant.
     {% endif %}
   notification_image: |
-    {% if camera_entity_id == None %}
+    {% if camera_entity_id == None or input_base_image_url == "" %}
       None
     {% else %}
       {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
@@ -260,7 +263,13 @@ trigger:
 
 condition:
   - "{{ not input_presence_filter or not is_state(input_presence_filter, 'home') }}"
-  - "{{ trigger_object != 'none' and trigger_object != 'unavailable' }}"
+  - condition: template
+    value_template: >
+      {% if trigger_object != "none" %}
+        true
+      {% else %}
+        false
+      {% endif %}
 
 action:
   - choose:
@@ -334,11 +343,19 @@ action:
             data:
               title: "{{ notification_title }}"
               message: "{{ notification_message }}"
-              data:
-                photo:
-                  url: "{{ notification_image }}"
-                inline_keyboard:
-                  - '/silence'
+              data: >
+                {
+                  {%- if notification_image != None -%}
+                  "photo": {
+                    "url": "{{ notification_image }}",
+                    "caption": "{{ notification_message }}",
+                    "message_tag": "{{ notification_tag }}",
+                  },
+                  {%- endif -%}
+                  {%- if input_silence_timer > 0 -%}
+                  "inline_keyboard": ["/silence"],
+                  {%- endif -%}
+                }
   - wait_for_trigger:
       - platform: event
         event_type: mobile_app_notification_action
@@ -351,7 +368,7 @@ action:
       - platform: event
         event_type: telegram_callback
         event_data:
-          data: '/silence'
+          data: "/silence"
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false

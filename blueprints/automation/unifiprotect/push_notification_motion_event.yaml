@@ -334,7 +334,7 @@ action:
                   },
                   {%- endif -%}
                   {%- if input_silence_timer > 0 -%}
-                  "inline_keyboard": ["/silence"],
+                  "inline_keyboard": ["Silence:/{{ silence_action }}"],
                   {%- endif -%}
                 }
   - wait_for_trigger:
@@ -349,16 +349,17 @@ action:
       - platform: event
         event_type: telegram_callback
         event_data:
-          data: "/silence"
+          data: "/{{ silence_action }}"
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false
   - choose:
       - conditions: "{{ input_send_telegram }}"
         sequence:
-          - service: notify.{{ input_notify_telegram }}
+          - service: telegram_bot.answer_callback_query
             data:
               message: "Motion notifications silenced for {{ input_silence_timer }} minutes"
+              callback_query_id: "{{ wait.trigger.event.data.id }}"
   - choose:
       - conditions: "{{ input_debug_enabled }}"
         sequence:

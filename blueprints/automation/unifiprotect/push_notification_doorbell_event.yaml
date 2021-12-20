@@ -3,7 +3,7 @@ blueprint:
   description: |
     ## UniFi Protect Doorbell Notifications
 
-    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a UniFi Chime is rung.
+    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps / Telegram when a UniFi Chime is rung.
 
     ### Required Settings
 
@@ -12,14 +12,17 @@ blueprint:
     ### Optional Settings
 
       - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2]
-      - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
+      - Notification targets and toggles for following notifications types:
+        - [HTML5 Push Notification][1]
+        - [Mobile App Notification][2]
+        - [Telegram Notification][9]
       - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
       - Cooldown before sending another notification
       - Silence timer for muting notifications via Actionable Notification (docs: [HTML5][6], [Mobile][7])
       - Configurable HA Internal / External Base URLs
       - Configurable lovelace view from notification
       - Optional Actionable Notification to unlock door entity for camera
-      - Optional TTS messages (requires [TTS integration][9] to be configured):
+      - Optional TTS messages (requires [TTS integration][10] to be configured):
         - TTS message to play through the doorbell when unlocking door
         - Actionable Notification to play audio message through doorbell to respond to guest.
 
@@ -51,7 +54,8 @@ blueprint:
     [6]: https://www.home-assistant.io/integrations/html5#actions
     [7]: https://companion.home-assistant.io/docs/notifications/actionable-notifications/
     [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
-    [9]: https://www.home-assistant.io/integrations/tts/
+    [9]: https://www.home-assistant.io/integrations/telegram/
+    [10]: https://www.home-assistant.io/integrations/tts/
   domain: automation
   input:
     doorbell:
@@ -67,7 +71,8 @@ blueprint:
       name: (Optional) Door Lock Entity
       description: >
         The Lock entity to provide an actionable notification to unlock on doorbell
-        ring.
+        ring. The time interval you have to respond to the unlock action is controlled 
+        by "Cooldown". Short Cooldown timers may prevent you from unlocking the door.
       default: ""
       selector:
         entity:
@@ -90,7 +95,9 @@ blueprint:
     wait_tts:
       name: (Optional) TTS message
       description: >
-        Adds actionable notification to play TTS message to respond to guest.
+        Adds actionable notification to play TTS message to respond to guest. The time 
+        interval you have to respond to the TTS action is controlled by "Cooldown". 
+        Short Cooldown timers may prevent you from sending a TTS message the door.
       default: ""
       selector:
         text:
@@ -135,6 +142,21 @@ blueprint:
       default: Doorbell
       selector:
         text:
+    send_telegram:
+      name: (Optional) Telegram Notification
+      description: >
+        Send a notification via Telegram. Telegram notification will not have a link to Home Assistant like the mobile apps.
+      default: false
+      selector:
+        boolean:
+    notify_telegram:
+      name: (Optional) Notification Target (Telegram)
+      description: >
+        The notification target for Telegram notifications. Should be name of the Telegram bot you have configured.
+        https://www.home-assistant.io/integrations/telegram/
+      default: telegrambot
+      selector:
+        text:
     time_format:
       name: (Optional) Time Format String
       description: >
@@ -150,7 +172,7 @@ blueprint:
       name: (Optional) Cooldown
       description: >
         Delay before sending another notification for this camera after the last event.
-        It is also the interval you have to silence the notifications or unlock the door.
+        Is also the interval you have to respond to actions in notification.
       default: 30
       selector:
         number:
@@ -161,7 +183,9 @@ blueprint:
       name: (Optional) Silence Notifications
       description: >
         How long to silence notifications for this camera when requested as part of the
-        actionable notification.
+        actionable notification. The time interval you have to respond to the slient 
+        action is controlled by "Cooldown". Short Cooldown timers may prevent you from 
+        silencing.
       default: 30
       selector:
         number:
@@ -214,10 +238,12 @@ variables:
   input_debug_enabled: !input debug_enabled
   input_notify_target_app: !input notify_target_app
   input_notify_target_html5: !input notify_target_html5
+  input_notify_telegram: !input notify_telegram
   input_silence_timer: !input silence_timer
   input_lock_entity: !input lock_entity
   input_send_mobile: !input send_mobile
   input_send_html5: !input send_html5
+  input_send_telegram: !input send_telegram
   input_time_format: !input time_format
   input_lock_tts: !input lock_tts
   input_wait_tts: !input wait_tts
@@ -257,7 +283,7 @@ variables:
     Tap to open camera in Home Assistant.
     {% endif %}
   notification_image: |
-    {% if camera_entity_id == None %}
+    {% if camera_entity_id == None or input_base_image_url == "" %}
       None
     {% else %}
       {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
@@ -291,6 +317,7 @@ action:
                 TTS Service: `{{ input_tts_target }}`
                 Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
                 Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
+                Notification Service (Telegram): `notify.{{ input_notify_telegram }}`
 
                 Channel: {{ notification_channel }}
                 Tag: {{ notification_tag }}
@@ -359,6 +386,34 @@ action:
                   { "action": "{{ silence_action }}", "title": "Silence" },
                   {% endif %}
                   ]
+  - choose:
+      - conditions: "{{ input_send_telegram }}"
+        sequence:
+          - service: notify.{{ input_notify_telegram }}
+            data:
+              title: "{{ notification_title }}"
+              message: "{{ notification_message }}"
+              data: >
+                {
+                  {%- if notification_image != None -%}
+                  "photo": {
+                    "url": "{{ notification_image }}",
+                    "caption": "{{ notification_message }}",
+                    "message_tag": "{{ notification_tag }}",
+                  },
+                  {%- endif -%}
+                  "inline_keyboard": [
+                  {% if lock_entity_id != "" %}
+                    "Unlock Door:/{{ unlock_action }}",
+                  {% endif %}
+                  {% if wait_tts_enabled %}
+                    "Respond:/{{ tts_action }}",
+                  {% endif %}
+                  {%- if input_silence_timer > 0 -%}
+                    "Silence:/{{ silence_action }}"
+                  {%- endif -%}
+                  ]
+                }
   - wait_for_trigger:
       - platform: event
         event_type: mobile_app_notification_action
@@ -369,6 +424,10 @@ action:
         event_data:
           action: "{{ silence_action }}"
       - platform: event
+        event_type: telegram_callback
+        event_data:
+          data: "/{{ silence_action }}"
+      - platform: event
         event_type: mobile_app_notification_action
         event_data:
           action: "{{ unlock_action }}"
@@ -377,6 +436,10 @@ action:
         event_data:
           action: "{{ unlock_action }}"
       - platform: event
+        event_type: telegram_callback
+        event_data:
+          data: "/{{ unlock_action }}"
+      - platform: event
         event_type: mobile_app_notification_action
         event_data:
           action: "{{ tts_action }}"
@@ -384,6 +447,10 @@ action:
         event_type: html5_notification.clicked
         event_data:
           action: "{{ tts_action }}"
+      - platform: event
+        event_type: telegram_callback
+        event_data:
+          data: "/{{ tts_action }}"
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false
@@ -395,9 +462,10 @@ action:
               title: "Debug: {{ notification_title }}"
               message: |
                 Callback: `{{ wait.trigger.event.event_type }}`
-                Actions: `{{ wait.trigger.event.data.action }}`
+                Action : `{{ wait.trigger.event.data.action | default("") }}`
+                Action (Telegram): `{{ wait.trigger.event.data.data | default("") }}`
   - choose:
-      - conditions: "{{ wait.trigger.event.data.action == unlock_action and lock_entity_id != '' }}"
+      - conditions: "{{ (wait.trigger.event.data.action == unlock_action or wait.trigger.event.data.data.endswith(unlock_action)) and lock_entity_id != '' }}"
         sequence:
           - choose:
               - conditions: "{{ input_debug_enabled }}"
@@ -423,8 +491,22 @@ action:
                     data:
                       entity_id: "{{ media_entity_id }}"
                       message: "{{ input_lock_tts }}"
-      - conditions: "{{ wait.trigger.event.data.action == silence_action }}"
+          - choose:
+              - conditions: "{{ input_send_telegram }}"
+                sequence:
+                  - service: telegram_bot.answer_callback_query
+                    data:
+                      message: 'Unlocked door{% if lock_tts_enabled %} and played "{{ input_lock_tts }}" TTS message{% endif %}'
+                      callback_query_id: "{{ wait.trigger.event.data.id }}"
+      - conditions: "{{ (wait.trigger.event.data.action == silence_action or wait.trigger.event.data.data.endswith(silence_action)) }}"
         sequence:
+          - choose:
+              - conditions: "{{ input_send_telegram }}"
+                sequence:
+                  - service: telegram_bot.answer_callback_query
+                    data:
+                      message: "Doorbell notifications silenced for {{ input_silence_timer }} minutes"
+                      callback_query_id: "{{ wait.trigger.event.data.id }}"
           - choose:
               - conditions: "{{ input_debug_enabled }}"
                 sequence:
@@ -441,7 +523,7 @@ action:
                     data:
                       title: "Debug: {{ notification_title }}"
                       message: Silence ended.
-      - conditions: "{{ wait.trigger.event.data.action == tts_action and wait_tts_enabled }}"
+      - conditions: "{{ (wait.trigger.event.data.action == tts_action or wait.trigger.event.data.data.endswith(tts_action)) and wait_tts_enabled }}"
         sequence:
           - choose:
               - conditions: "{{ input_debug_enabled }}"
@@ -454,3 +536,10 @@ action:
             data:
               entity_id: "{{ media_entity_id }}"
               message: "{{ input_wait_tts }}"
+          - choose:
+              - conditions: "{{ input_send_telegram }}"
+                sequence:
+                  - service: telegram_bot.answer_callback_query
+                    data:
+                      message: 'Played "{{ input_wait_tts }}" TTS message'
+                      callback_query_id: "{{ wait.trigger.event.data.id }}"

@@ -3,7 +3,7 @@ blueprint:
   description: |
     ## UniFi Protect Motion Notifications
 
-    This blueprint will send push notifications to desktop browser / mobile Home Assistant apps when a motion event is fired.
+    This blueprint will send push notifications to desktop browser / mobile Home Assistant / Telegram apps when a motion event is fired.
 
     This blueprint is _only_ for **motion** events, not smart detections.
 
@@ -14,7 +14,10 @@ blueprint:
     ### Optional Settings
 
       - Precense filter for only sending notifications for when you are not home
-      - [HTML5 Push Notification Target][1] and/or [Mobile App Notification Target][2] as well as toggles for both
+      - Notification targets and toggles for following notifications types:
+        - [HTML5 Push Notification][1]
+        - [Mobile App Notification][2]
+        - [Telegram Notification][9]
       - Time formatting strings. Timestamp is injected into the notification in case the notification is delay.
       - Notification Channel / Tag (docs: [HTML5 Tag][3], [Android Channels][4], [Mobile Tag][5])
       - Cooldown before sending another notification
@@ -41,6 +44,7 @@ blueprint:
     [6]: https://www.home-assistant.io/integrations/html5#actions
     [7]: https://companion.home-assistant.io/docs/notifications/actionable-notifications/
     [8]: https://community.home-assistant.io/t/custom-component-unifi-protect/158041
+    [9]: https://www.home-assistant.io/integrations/telegram/
   domain: automation
   input:
     motion_entity:
@@ -99,6 +103,21 @@ blueprint:
       default: Motion
       selector:
         text:
+    send_telegram:
+      name: (Optional) Telegram Notification
+      description: >
+        Send a notification via Telegram. Telegram notification will not have a link to Home Assistant like the mobile apps.
+      default: false
+      selector:
+        boolean:
+    notify_telegram:
+      name: (Optional) Notification Target (Telegram)
+      description: >
+        The notification target for Telegram notifications. Should be name of the Telegram bot you have configured.
+        https://www.home-assistant.io/integrations/telegram/
+      default: telegrambot
+      selector:
+        text:
     time_format:
       name: (Optional) Time Format String
       description: >
@@ -114,7 +133,7 @@ blueprint:
       name: (Optional) Cooldown
       description: >
         Delay before sending another notification for this camera after the last event.
-        Is also the interval you have to choose to silence the notifications.
+        Is also the interval you have to respond to actions in notification.
       default: 30
       selector:
         number:
@@ -125,7 +144,9 @@ blueprint:
       name: (Optional) Silence Notifications
       description: >
         How long to silence notifications for this camera when requested as part of the
-        actionable notification.
+        actionable notification. The time interval you have to respond to the slient 
+        action is controlled by "Cooldown". Short Cooldown timers may prevent you from 
+        silencing.
       default: 30
       selector:
         number:
@@ -178,9 +199,11 @@ variables:
   input_debug_enabled: !input debug_enabled
   input_notify_target_app: !input notify_target_app
   input_notify_target_html5: !input notify_target_html5
+  input_notify_telegram: !input notify_telegram
   input_silence_timer: !input silence_timer
   input_send_mobile: !input send_mobile
   input_send_html5: !input send_html5
+  input_send_telegram: !input send_telegram
   input_time_format: !input time_format
   input_presence_filter: !input presence_filter
   # automation data
@@ -215,7 +238,7 @@ variables:
     Tap to open camera in Home Assistant.
     {% endif %}
   notification_image: |
-    {% if camera_entity_id == None %}
+    {% if camera_entity_id == None or input_base_image_url == "" %}
       None
     {% else %}
       {{ input_base_image_url | trim }}{{ state_attr(camera_entity_id, 'entity_picture') }}
@@ -243,6 +266,7 @@ action:
                 Camera: `{{ camera_entity_id }}`
                 Notification Service (Mobile): `notify.{{ input_notify_target_app }}`
                 Notification Service (HTML5): `notify.{{ input_notify_target_html5 }}`
+                Notification Service (Telegram): `notify.{{ input_notify_telegram }}`
 
                 Channel: {{ notification_channel }}
                 Tag: {{ notification_tag }}
@@ -295,6 +319,26 @@ action:
                   [{% if input_silence_timer > 0 %}
                   { "action": "{{ silence_action }}", "title": "Silence" },
                   {% endif %}]
+  - choose:
+      - conditions: "{{ input_send_telegram }}"
+        sequence:
+          - service: notify.{{ input_notify_telegram }}
+            data:
+              title: "{{ notification_title }}"
+              message: "{{ notification_message }}"
+              data: >
+                {
+                  {%- if notification_image != None -%}
+                  "photo": {
+                    "url": "{{ notification_image }}",
+                    "caption": "{{ notification_message }}",
+                    "message_tag": "{{ notification_tag }}",
+                  },
+                  {%- endif -%}
+                  {%- if input_silence_timer > 0 -%}
+                  "inline_keyboard": ["Silence:/{{ silence_action }}"],
+                  {%- endif -%}
+                }
   - wait_for_trigger:
       - platform: event
         event_type: mobile_app_notification_action
@@ -304,9 +348,20 @@ action:
         event_type: html5_notification.clicked
         event_data:
           action: "{{ silence_action }}"
+      - platform: event
+        event_type: telegram_callback
+        event_data:
+          data: "/{{ silence_action }}"
     timeout:
       seconds: !input cooldown
     continue_on_timeout: false
+  - choose:
+      - conditions: "{{ input_send_telegram }}"
+        sequence:
+          - service: telegram_bot.answer_callback_query
+            data:
+              message: "Motion notifications silenced for {{ input_silence_timer }} minutes"
+              callback_query_id: "{{ wait.trigger.event.data.id }}"
   - choose:
       - conditions: "{{ input_debug_enabled }}"
         sequence:

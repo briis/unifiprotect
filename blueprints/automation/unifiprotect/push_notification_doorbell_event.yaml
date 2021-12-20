@@ -71,7 +71,8 @@ blueprint:
       name: (Optional) Door Lock Entity
       description: >
         The Lock entity to provide an actionable notification to unlock on doorbell
-        ring.
+        ring. The time interval you have to respond to the unlock action is controlled 
+        by "Cooldown". Short Cooldown timers may prevent you from unlocking the door.
       default: ""
       selector:
         entity:
@@ -94,7 +95,9 @@ blueprint:
     wait_tts:
       name: (Optional) TTS message
       description: >
-        Adds actionable notification to play TTS message to respond to guest.
+        Adds actionable notification to play TTS message to respond to guest. The time 
+        interval you have to respond to the TTS action is controlled by "Cooldown". 
+        Short Cooldown timers may prevent you from sending a TTS message the door.
       default: ""
       selector:
         text:
@@ -169,7 +172,7 @@ blueprint:
       name: (Optional) Cooldown
       description: >
         Delay before sending another notification for this camera after the last event.
-        It is also the interval you have to silence the notifications or unlock the door.
+        Is also the interval you have to respond to actions in notification.
       default: 30
       selector:
         number:
@@ -180,7 +183,9 @@ blueprint:
       name: (Optional) Silence Notifications
       description: >
         How long to silence notifications for this camera when requested as part of the
-        actionable notification.
+        actionable notification. The time interval you have to respond to the slient 
+        action is controlled by "Cooldown". Short Cooldown timers may prevent you from 
+        silencing.
       default: 30
       selector:
         number:

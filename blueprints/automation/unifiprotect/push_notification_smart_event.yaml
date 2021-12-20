@@ -142,7 +142,7 @@ blueprint:
       name: (Optional) Cooldown
       description: >
         Delay before sending another notification for this camera after the last event.
-        Is also the interval you have to choose to silence the notifications.
+        Is also the interval you have to respond to actions in notification.
       default: 30
       selector:
         number:
@@ -153,7 +153,9 @@ blueprint:
       name: (Optional) Silence Notifications
       description: >
         How long to silence notifications for this camera when requested as part of the
-        actionable notification.
+        actionable notification. The time interval you have to respond to the slient 
+        action is controlled by "Cooldown". Short Cooldown timers may prevent you from 
+        silencing.
       default: 30
       selector:
         number:

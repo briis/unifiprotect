@@ -153,8 +153,8 @@ blueprint:
       name: (Optional) Silence Notifications
       description: >
         How long to silence notifications for this camera when requested as part of the
-        actionable notification. The time interval you have to respond to the slient 
-        action is controlled by "Cooldown". Short Cooldown timers may prevent you from 
+        actionable notification. The time interval you have to respond to the slient
+        action is controlled by "Cooldown". Short Cooldown timers may prevent you from
         silencing.
       default: 30
       selector:
@@ -265,13 +265,7 @@ trigger:
 
 condition:
   - "{{ not input_presence_filter or not is_state(input_presence_filter, 'home') }}"
-  - condition: template
-    value_template: >
-      {% if trigger_object != "none" %}
-        true
-      {% else %}
-        false
-      {% endif %}
+  - "{{ trigger_object != 'none' and trigger_object != 'unavailable' }}"
 
 action:
   - choose:

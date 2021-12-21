@@ -1,6 +1,7 @@
 """Support for Ubiquiti's UniFi Protect NVR."""
 from __future__ import annotations
 
+import logging
 from typing import Any, Callable, Generator, Sequence
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
@@ -22,12 +23,20 @@ from .const import (
 from .data import ProtectData
 from .entity import ProtectDeviceEntity
 
+_LOGGER = logging.getLogger(__name__)
+
 
 def get_camera_channels(
     protect: ProtectApiClient,
 ) -> Generator[tuple[UFPCamera, CameraChannel, bool], None, None]:
     """Get all the camera channels."""
     for camera in protect.bootstrap.cameras.values():
+        if len(camera.channels) == 0:
+            _LOGGER.warning(
+                "Camera does not have any channels: %s (id: %s)", camera.name, camera.id
+            )
+            continue
+
         is_default = True
         for channel in camera.channels:
             if channel.is_rtsp_enabled:

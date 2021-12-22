@@ -427,13 +427,11 @@ class ProtectAccessTokenBinarySensor(ProtectDeviceBinarySensor, AccessTokenMixin
             attrs[ATTR_EVENT_OBJECT] = self._event.smart_detect_types[0].value
 
         if len(self.access_tokens) > 0:
-            # thumbnail_id is never updated via WS, but it is always e-{event.id}
             params = urlencode(
                 {"entity_id": self.entity_id, "token": self.access_tokens[-1]}
             )
             attrs[ATTR_EVENT_THUMB] = (
-                ThumbnailProxyView.url.format(event_id=f"e-{self._event.id}")
-                + f"?{params}"
+                ThumbnailProxyView.url.format(event_id=self._event.id) + f"?{params}"
             )
 
         return attrs

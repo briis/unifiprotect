@@ -108,8 +108,13 @@ class ProtectData:
                     "Doorbell settings updated. Restart Home Assistant to update Viewport select options"
                 )
         # trigger updates for camera that the event references
-        elif isinstance(message.new_obj, Event) and message.new_obj.camera is not None:
-            self.async_signal_device_id_update(message.new_obj.camera.id)
+        elif isinstance(message.new_obj, Event):
+            if message.new_obj.camera is not None:
+                self.async_signal_device_id_update(message.new_obj.camera.id)
+            elif message.new_obj.light is not None:
+                self.async_signal_device_id_update(message.new_obj.light.id)
+            elif message.new_obj.sensor is not None:
+                self.async_signal_device_id_update(message.new_obj.sensor.id)
         # trigger update for all viewports when a liveview updates
         elif len(self.api.bootstrap.viewers) > 0 and isinstance(
             message.new_obj, Liveview

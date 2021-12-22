@@ -515,13 +515,11 @@ class ProtectAccessTokenSensor(ProtectDeviceSensor, AccessTokenMixin):
         thumb_url: str | None = None
         if len(self.access_tokens) > 0:
             assert self.device_info is not None
-            # thumbnail_id is never updated via WS, but it is always e-{event.id}
             params = urlencode(
                 {"entity_id": self.entity_id, "token": self.access_tokens[-1]}
             )
             thumb_url = (
-                ThumbnailProxyView.url.format(event_id=f"e-{self._event.id}")
-                + f"?{params}"
+                ThumbnailProxyView.url.format(event_id=self._event.id) + f"?{params}"
             )
 
         return {

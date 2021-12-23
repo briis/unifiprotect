@@ -6,6 +6,14 @@ The 0.12-beta is designed to be a "beta only" release. There will not be a stabl
 
 * `CHANGE`: **BREAKING CHANGE** Removes all deprecations outlined in the 0.11.x release.
 
+## 0.11.2
+
+* `FIX`: Setting up camera entities will no longer error if a camera does not have a channel. Will now result in log and continue
+
+* `FIX`: Unadopted entities are ignored (fixes #420)
+
+* `FIX`: Event thumbnails now return instantly using newer endpoint from UniFi Protect. They appear to come back as a camera snapshot until after the events ends, but they should always return an image now.
+
 ## 0.11.1
 
 ### Deprecations

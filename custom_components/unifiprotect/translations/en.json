@@ -40,7 +40,7 @@
                     "disable_rtsp": "Disable the RTSP stream",
                     "override_connection_host": "Override Connection Host"
                 },
-                "description": "Custom Doorbell Texts should be a comma separated list of texts that will usable in a select for your doorbell. These will be in addition to the ones provided by UniFi Protect. Leave blank if you do not have a doorbell camera.",
+                "description": "Realtime metrics option should only be enabled if you have enabled the diagnostics sensors and want them updated in realtime. If if not enabled, they will only update once every 15 minutes.",
                 "title": "UniFi Protect Options"
             }
         }

@@ -1,8 +1,8 @@
 # // Changelog
 
-## 0.12 (dev)
+## 0.12.0-beta1
 
-The 0.12-beta is designed to be a "beta only" release. There will not be a stable release for it. It is designed to test the final changes needed to merge the unifiprotect into Home Assistant core.
+The 0.12.0-beta is designed to be a "beta only" release. There will not be a stable release for it. It is designed to test the final changes needed to merge the unifiprotect into Home Assistant core.
 
 * `CHANGE`: **BREAKING CHANGE** Removes all deprecations outlined in the 0.11.x release.
 

@@ -1,5 +1,15 @@
 # // UniFi Protect for Home Assistant
 
+-----
+## ⚠️ ⚠️ WARNING ABOUT Home Assistant v2022.2
+The `unifiprotect` integration will be in Home Assistant core v2022.2. If you are running **0.10.x or older** of the HACS integration, **do not install v2022.2.x of Home Assistant core**.
+
+If you are running 0.11.x or the 0.12.0-beta, you should be safe to delete the HACS version as part of your upgrade. The 0.11.x branch is designed to be compatible with the 0.12.0-beta and the HA core version. The latest version of 0.12.0-beta will be the version of `unifiprotect` in HA core in v2022.0.
+
+After v2022.2 comes out, this repo will be **deprecated** in favor of the Home Assistant core version.
+
+-----
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/briis/unifiprotect?style=flat-square) [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/custom-components/hacs) [![](https://img.shields.io/badge/COMMUNITY-FORUM-success?style=flat-square)](https://community.home-assistant.io/t/custom-component-unifi-protect/158041)
 
 The UniFi Protect Integration adds support for retrieving Camera feeds and Sensor data from a UniFi Protect installation on either an Ubiquiti CloudKey+, Ubiquiti UniFi Dream Machine Pro or UniFi Protect Network Video Recorder.

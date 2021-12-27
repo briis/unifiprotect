@@ -237,7 +237,7 @@ class AccessTokenMixin(Entity):
         return self.data.async_get_or_create_access_tokens(self.entity_id)
 
     @callback
-    def _async_update_and_write_token(self):
+    def _async_update_and_write_token(self) -> None:
         _LOGGER.debug("Updating access tokens for %s", self.entity_id)
         self.async_update_token()
         self.async_write_ha_state()
@@ -250,7 +250,7 @@ class AccessTokenMixin(Entity):
         )
 
     @callback
-    def _trigger_update_tokens(self, *args, **kwargs):
+    def _trigger_update_tokens(self, *args: Any, **kwargs: Any) -> None:
         assert isinstance(self, ProtectDeviceEntity)
         async_dispatcher_send(
             self.hass,

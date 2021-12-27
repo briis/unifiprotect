@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Any
 
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
@@ -76,9 +77,9 @@ def _async_get_protect_from_call(
 async def _async_call_nvr(
     instances: list[tuple[dr.DeviceEntry, ProtectApiClient]],
     method: str,
-    *args,
-    **kwargs,
-):
+    *args: Any,
+    **kwargs: Any,
+) -> None:
     try:
         await asyncio.gather(
             *(getattr(i.bootstrap.nvr, method)(*args, **kwargs) for _, i in instances)

@@ -19,7 +19,7 @@ from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
 from pyunifiprotect.data.nvr import NVR
-from pyunifiprotect.data.types import ModelType
+from pyunifiprotect.data.types import ModelType, StateType
 
 from .const import DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN, EVENT_UPDATE_TOKENS
 from .data import ProtectData
@@ -172,7 +172,7 @@ class ProtectDeviceEntity(Entity):
             self.device = devices[self.device.id]
 
         self._attr_available = (
-            self.data.last_update_success and self.device.is_connected
+            self.data.last_update_success and self.device.state == StateType.CONNECTED
         )
         self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 

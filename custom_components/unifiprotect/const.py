@@ -53,6 +53,7 @@ DEVICES_FOR_SUBSCRIBE = DEVICES_WITH_ENTITIES | {ModelType.EVENT}
 EVENT_UPDATE_TOKENS = "unifiprotect_update_tokens"
 
 MIN_REQUIRED_PROTECT_V = Version("1.20.0")
+OUTDATED_LOG_MESSAGE = "You are running v%s of UniFi Protect. Minimum required version is v%s. Please upgrade UniFi Protect and then retry"
 
 SERVICE_PROFILE_WS = "profile_ws_messages"
 SERVICE_ADD_DOORBELL_TEXT = "add_doorbell_text"

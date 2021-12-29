@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable, Sequence
 
 from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity import Entity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
 from .const import DEVICES_THAT_ADOPT, DOMAIN
@@ -20,7 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: Callable[[Sequence[Entity]], None],
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Discover devices on a UniFi Protect NVR."""
     data: ProtectData = hass.data[DOMAIN][entry.entry_id]
@@ -43,14 +42,13 @@ class ProtectButton(ProtectDeviceEntity, ButtonEntity):
         self,
         data: ProtectData,
         device: ProtectAdoptableDeviceModel,
-    ):
+    ) -> None:
         """Initialize an UniFi camera."""
         super().__init__(data, device)
         self._attr_name = f"{self.device.name} Reboot Device"
         self._attr_entity_registry_enabled_default = False
         self._attr_device_class = ButtonDeviceClass.RESTART
 
-    @callback
     async def async_press(self) -> None:
         """Press the button."""
 

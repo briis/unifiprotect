@@ -29,6 +29,7 @@ from .const import (
     DEFAULT_VERIFY_SSL,
     DOMAIN,
     MIN_REQUIRED_PROTECT_V,
+    OUTDATED_LOG_MESSAGE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
     @callback
-    async def _async_create_entry(self, title: str, data: dict[str, Any]) -> FlowResult:
+    def _async_create_entry(self, title: str, data: dict[str, Any]) -> FlowResult:
         return self.async_create_entry(
             title=title,
             data={**data, CONF_ID: title},
@@ -65,7 +66,6 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             },
         )
 
-    @callback
     async def _async_get_nvr_data(
         self,
         user_input: dict[str, Any],
@@ -74,12 +74,9 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.hass, cookie_jar=CookieJar(unsafe=True)
         )
 
-        if CONF_HOST in user_input:
-            host = user_input[CONF_HOST]
-            port = user_input.get(CONF_PORT, DEFAULT_PORT)
-            verify_ssl = user_input.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL)
-        else:
-            return None, {}
+        host = user_input[CONF_HOST]
+        port = user_input.get(CONF_PORT, DEFAULT_PORT)
+        verify_ssl = user_input.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL)
 
         protect = ProtectApiClient(
             session=session,
@@ -99,10 +96,14 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors[CONF_PASSWORD] = "invalid_auth"
         except NvrError as ex:
             _LOGGER.debug(ex)
-            errors["base"] = "nvr_error"
+            errors["base"] = "cannot_connect"
         else:
             if nvr_data.version < MIN_REQUIRED_PROTECT_V:
-                _LOGGER.debug("UniFi Protect Version not supported")
+                _LOGGER.debug(
+                    OUTDATED_LOG_MESSAGE,
+                    nvr_data.version,
+                    MIN_REQUIRED_PROTECT_V,
+                )
                 errors["base"] = "protect_version"
 
         return nvr_data, errors
@@ -158,7 +159,7 @@ class ProtectFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(nvr_data.mac)
                 self._abort_if_unique_id_configured()
 
-                return await self._async_create_entry(nvr_data.name, user_input)
+                return self._async_create_entry(nvr_data.name, user_input)
 
         user_input = user_input or {}
         return self.async_show_form(

@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Generator, Sequence
+from typing import Any, Generator
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.data import Camera as UFPCamera
 from pyunifiprotect.data.devices import CameraChannel
@@ -31,7 +31,7 @@ def get_camera_channels(
 ) -> Generator[tuple[UFPCamera, CameraChannel, bool], None, None]:
     """Get all the camera channels."""
     for camera in protect.bootstrap.cameras.values():
-        if len(camera.channels) == 0:
+        if not camera.channels:
             _LOGGER.warning(
                 "Camera does not have any channels: %s (id: %s)", camera.name, camera.id
             )
@@ -51,26 +51,27 @@ def get_camera_channels(
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: Callable[[Sequence[Entity]], None],
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Discover cameras on a UniFi Protect NVR."""
     data: ProtectData = hass.data[DOMAIN][entry.entry_id]
     disable_stream = data.disable_stream
 
-    items = []
+    entities = []
     for camera, channel, is_default in get_camera_channels(data.api):
-        if channel.is_rtsp_enabled:
-            items.append(
-                ProtectCamera(
-                    data,
-                    camera,
-                    channel,
-                    is_default,
-                    True,
-                    disable_stream,
-                )
+        entities.append(
+            ProtectCamera(
+                data,
+                camera,
+                channel,
+                is_default,
+                True,
+                disable_stream,
             )
-            items.append(
+        )
+
+        if channel.is_rtsp_enabled:
+            entities.append(
                 ProtectCamera(
                     data,
                     camera,
@@ -80,19 +81,7 @@ async def async_setup_entry(
                     disable_stream,
                 )
             )
-        else:
-            items.append(
-                ProtectCamera(
-                    data,
-                    camera,
-                    channel,
-                    is_default,
-                    True,
-                    disable_stream,
-                )
-            )
-
-    async_add_entities(items)
+    async_add_entities(entities)
 
 
 class ProtectCamera(ProtectDeviceEntity, Camera):

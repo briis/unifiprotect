@@ -1,5 +1,21 @@
 # // Changelog
 
+## 0.12.0-beta2
+
+The 0.12.0-beta is designed to be a "beta only" release. There will not be a stable release for it. It is designed to test the final changes needed to merge the unifiprotect into Home Assistant core.
+
+Backports fixes from Home Assistant core merge process:
+
+* `FIX`: Improves relibility of entities when UniFi Protect goes offline and/or a device goes offline. Everything recovery seemlessly when UniFi Protect upgrades or firmware updates are applied (fixes https://github.com/briis/unifiprotect/issues/432).
+
+* `FIX`: Improves relibility of `media_player` entities so they should report state better and be able to play longer audio clips.
+
+* `FIX`: Fixes stopping in progress audio for `media_player` entities.
+
+* `FIX`: Allows DNS hosts in addition to IP addresses (fixes https://github.com/briis/unifiprotect/issues/431).
+
+* `FIX`: Fixes selection of default camera entity for when it is not the High Quality channel.
+
 ## 0.12.0-beta1
 
 The 0.12.0-beta is designed to be a "beta only" release. There will not be a stable release for it. It is designed to test the final changes needed to merge the unifiprotect into Home Assistant core.

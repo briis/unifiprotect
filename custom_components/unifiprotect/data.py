@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import collections
+from collections.abc import Generator, Iterable
 from datetime import timedelta
 import logging
-from typing import Any, Generator, Iterable
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -33,7 +34,7 @@ class ProtectData:
         protect: ProtectApiClient,
         update_interval: timedelta,
         entry: ConfigEntry,
-    ):
+    ) -> None:
         """Initialize an subscriber."""
         super().__init__()
 
@@ -85,18 +86,27 @@ class ProtectData:
 
     async def async_refresh(self, *_: Any, force: bool = False) -> None:
         """Update the data."""
+
+        # if last update was failure, force until success
+        if not self.last_update_success:
+            force = True
+
         try:
-            self._async_process_updates(await self.api.update(force=force))
-            self.last_update_success = True
+            updates = await self.api.update(force=force)
         except NvrError:
             if self.last_update_success:
                 _LOGGER.exception("Error while updating")
             self.last_update_success = False
+            # manually trigger update to mark entities unavailable
+            self._async_process_updates(self.api.bootstrap)
         except NotAuthorized:
             await self.async_stop()
             _LOGGER.exception("Reauthentication required")
             self._entry.async_start_reauth(self._hass)
             self.last_update_success = False
+        else:
+            self.last_update_success = True
+            self._async_process_updates(updates)
 
     @callback
     def _async_process_ws_message(self, message: WSSubscriptionMessage) -> None:

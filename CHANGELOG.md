@@ -1,5 +1,9 @@
 # // Changelog
 
+## 0.12.0-beta5
+
+* `FIX`: Fixes `connection_host` for Cameras so it can have DNS hosts in addition to IPs.
+
 ## 0.12.0-beta4
 
 Backports fixes from Home Assistant core merge process:

@@ -1,8 +1,6 @@
 # // Changelog
 
-## 0.12.0-beta2
-
-The 0.12.0-beta is designed to be a "beta only" release. There will not be a stable release for it. It is designed to test the final changes needed to merge the unifiprotect into Home Assistant core.
+## 0.12.0-beta4
 
 Backports fixes from Home Assistant core merge process:
 
@@ -15,6 +13,14 @@ Backports fixes from Home Assistant core merge process:
 * `FIX`: Allows DNS hosts in addition to IP addresses (fixes https://github.com/briis/unifiprotect/issues/431).
 
 * `FIX`: Fixes selection of default camera entity for when it is not the High Quality channel.
+
+## 0.12.0-beta3
+
+* `FIX`: Fixes https://github.com/briis/unifiprotect/issues/428. All string enums are now case insensitive.
+
+## 0.12.0-beta2
+
+* `FIX`: Fixes https://github.com/briis/unifiprotect/issues/427, affected cameras will automatically be converted to Detections recording mode.
 
 ## 0.12.0-beta1
 

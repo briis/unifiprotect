@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
@@ -11,7 +11,7 @@ from homeassistant.components.light import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyunifiprotect.data import Light
 
 from .const import DOMAIN
@@ -20,13 +20,11 @@ from .entity import ProtectDeviceEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-ON_STATE = True
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: Callable[[Sequence[Entity]], None],
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up lights for UniFi Protect integration."""
     data: ProtectData = hass.data[DOMAIN][entry.entry_id]
@@ -57,16 +55,17 @@ def hass_to_unifi_brightness(value: int) -> int:
 class ProtectLight(ProtectDeviceEntity, LightEntity):
     """A Ubiquiti UniFi Protect Light Entity."""
 
+    _attr_icon = "mdi:spotlight-beam"
+    _attr_supported_features = SUPPORT_BRIGHTNESS
+
     def __init__(
         self,
         data: ProtectData,
         device: Light,
-    ):
+    ) -> None:
         """Initialize an UniFi light."""
         self.device: Light = device
         super().__init__(data)
-        self._attr_icon = "mdi:spotlight-beam"
-        self._attr_supported_features = SUPPORT_BRIGHTNESS
 
     @callback
     def _async_update_device_from_protect(self) -> None:

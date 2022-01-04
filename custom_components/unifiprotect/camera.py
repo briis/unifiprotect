@@ -1,8 +1,8 @@
 """Support for Ubiquiti's UniFi Protect NVR."""
 from __future__ import annotations
 
+from collections.abc import Generator
 import logging
-from typing import Any, Generator
 
 from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.config_entries import ConfigEntry
@@ -135,28 +135,19 @@ class ProtectCamera(ProtectDeviceEntity, Camera):
     def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
         self.channel = self.device.channels[self.channel.id]
-        self._async_set_stream_source()
+        self._attr_motion_detection_enabled = (
+            self.device.is_connected and self.device.feature_flags.has_motion_zones
+        )
+        self._attr_is_recording = self.device.is_connected and self.device.is_recording
 
-    @callback
-    def _async_update_extra_attrs_from_protect(self) -> dict[str, Any]:
-        """Add additional Attributes to Camera."""
-        return {
+        self._async_set_stream_source()
+        self._attr_extra_state_attributes = {
             ATTR_WIDTH: self.channel.width,
             ATTR_HEIGHT: self.channel.height,
             ATTR_FPS: self.channel.fps,
             ATTR_BITRATE: self.channel.bitrate,
             ATTR_CHANNEL_ID: self.channel.id,
         }
-
-    @property
-    def motion_detection_enabled(self) -> bool:
-        """Camera Motion Detection Status."""
-        return self.device.feature_flags.has_motion_zones and super().available
-
-    @property
-    def is_recording(self) -> bool:
-        """Return true if the device is recording."""
-        return self.device.is_connected and self.device.is_recording
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None

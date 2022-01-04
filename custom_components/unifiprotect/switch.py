@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyunifiprotect.data import Camera, RecordingMode, VideoMode
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
 
@@ -48,7 +48,7 @@ ALL_DEVICES_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         name="SSH Enabled",
         icon="mdi:lock",
         entity_registry_enabled_default=False,
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_value="is_ssh_enabled",
         ufp_set_function="set_ssh",
     ),
@@ -59,7 +59,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_STATUS_LIGHT,
         name="Status Light On",
         icon="mdi:led-on",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_required_field="feature_flags.has_led_status",
         ufp_value="led_settings.is_enabled",
         ufp_set_function="set_status_light",
@@ -68,7 +68,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_HDR_MODE,
         name="HDR Mode",
         icon="mdi:brightness-7",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_required_field="feature_flags.has_hdr",
         ufp_value="hdr_mode",
         ufp_set_function="set_hdr",
@@ -77,7 +77,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_HIGH_FPS,
         name="High FPS",
         icon="mdi:video-high-definition",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_required_field="feature_flags.has_highfps",
         ufp_value="video_mode",
     ),
@@ -85,7 +85,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_PRIVACY_MODE,
         name="Privacy Mode",
         icon="mdi:eye-settings",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=None,
         ufp_required_field="feature_flags.has_privacy_mask",
         ufp_value="is_privacy_on",
     ),
@@ -93,7 +93,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_SYSTEM_SOUNDS,
         name="System Sounds",
         icon="mdi:speaker",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_required_field="feature_flags.has_speaker",
         ufp_value="speaker_settings.are_system_sounds_enabled",
         ufp_set_function="set_system_sounds",
@@ -102,7 +102,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_OSD_NAME,
         name="Overlay: Show Name",
         icon="mdi:fullscreen",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_value="osd_settings.is_name_enabled",
         ufp_set_function="set_osd_name",
     ),
@@ -110,7 +110,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_OSD_DATE,
         name="Overlay: Show Date",
         icon="mdi:fullscreen",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_value="osd_settings.is_date_enabled",
         ufp_set_function="set_osd_date",
     ),
@@ -118,7 +118,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_OSD_LOGO,
         name="Overlay: Show Logo",
         icon="mdi:fullscreen",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_value="osd_settings.is_logo_enabled",
         ufp_set_function="set_osd_logo",
     ),
@@ -126,7 +126,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_OSD_BITRATE,
         name="Overlay: Show Bitrate",
         icon="mdi:fullscreen",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_value="osd_settings.is_debug_enabled",
         ufp_set_function="set_osd_bitrate",
     ),
@@ -134,7 +134,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_SMART_PERSON,
         name="Detections: Person",
         icon="mdi:walk",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_required_field="feature_flags.has_smart_detect",
         ufp_value="is_person_detection_on",
         ufp_set_function="set_person_detection",
@@ -143,7 +143,7 @@ CAMERA_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_SMART_VEHICLE,
         name="Detections: Vehicle",
         icon="mdi:car",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_required_field="feature_flags.has_smart_detect",
         ufp_value="is_vehicle_detection_on",
         ufp_set_function="set_vehicle_detection",
@@ -156,8 +156,9 @@ LIGHT_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
         key=_KEY_STATUS_LIGHT,
         name="Status Light On",
         icon="mdi:led-on",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_value="light_device_settings.is_indicator_enabled",
+        ufp_set_function="set_status_light",
     ),
 )
 
@@ -165,7 +166,7 @@ LIGHT_SWITCHES: tuple[ProtectSwitchEntityDescription, ...] = (
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: Callable[[Sequence[Entity]], None],
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensors for UniFi Protect integration."""
     data: ProtectData = hass.data[DOMAIN][entry.entry_id]
@@ -187,7 +188,7 @@ class ProtectSwitch(ProtectDeviceEntity, SwitchEntity):
         data: ProtectData,
         device: ProtectAdoptableDeviceModel,
         description: ProtectSwitchEntityDescription,
-    ):
+    ) -> None:
         """Initialize an UniFi Protect Switch."""
         self.entity_description: ProtectSwitchEntityDescription = description
         super().__init__(data, device)
@@ -197,18 +198,18 @@ class ProtectSwitch(ProtectDeviceEntity, SwitchEntity):
         if not isinstance(self.device, Camera):
             return
 
-        if self.device.is_privacy_on:
-            self._previous_mic_level = 100
-            self._previous_record_mode = RecordingMode.ALWAYS
-        else:
-            self._previous_mic_level = self.device.mic_volume
-            self._previous_record_mode = self.device.recording_settings.mode
+        if self.entity_description.key == _KEY_PRIVACY_MODE:
+            if self.device.is_privacy_on:
+                self._previous_mic_level = 100
+                self._previous_record_mode = RecordingMode.ALWAYS
+            else:
+                self._previous_mic_level = self.device.mic_volume
+                self._previous_record_mode = self.device.recording_settings.mode
 
     @property
     def is_on(self) -> bool:
         """Return true if device is on."""
-        if self.entity_description.ufp_value is None:
-            return False
+        assert self.entity_description.ufp_value is not None
 
         ufp_value = get_nested_attr(self.device, self.entity_description.ufp_value)
         if self._switch_type == _KEY_HIGH_FPS:

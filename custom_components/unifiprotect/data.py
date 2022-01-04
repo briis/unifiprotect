@@ -16,9 +16,10 @@ from pyunifiprotect.data import (
     Event,
     Liveview,
     ModelType,
+    ProtectAdoptableDeviceModel,
     WSSubscriptionMessage,
 )
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
+from pyunifiprotect.data.base import ProtectDeviceModel
 
 from .const import CONF_DISABLE_RTSP, DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
 
@@ -114,9 +115,13 @@ class ProtectData:
             self.async_signal_device_id_update(message.new_obj.id)
             # trigger update for all Cameras with LCD screens when NVR Doorbell settings updates
             if "doorbell_settings" in message.changed_data:
-                _LOGGER.error(
-                    "Doorbell settings updated. Restart Home Assistant to update Viewport select options"
+                _LOGGER.debug(
+                    "Doorbell messages updated. Updating devices with LCD screens"
                 )
+                self.api.bootstrap.nvr.update_all_messages()
+                for camera in self.api.bootstrap.cameras.values():
+                    if camera.feature_flags.has_lcd_screen:
+                        self.async_signal_device_id_update(camera.id)
         # trigger updates for camera that the event references
         elif isinstance(message.new_obj, Event):
             if message.new_obj.camera is not None:
@@ -125,11 +130,11 @@ class ProtectData:
                 self.async_signal_device_id_update(message.new_obj.light.id)
             elif message.new_obj.sensor is not None:
                 self.async_signal_device_id_update(message.new_obj.sensor.id)
-        # trigger update for all viewports when a liveview updates
+        # alert user viewport needs restart so voice clients can get new options
         elif len(self.api.bootstrap.viewers) > 0 and isinstance(
             message.new_obj, Liveview
         ):
-            _LOGGER.error(
+            _LOGGER.warning(
                 "Liveviews updated. Restart Home Assistant to update Viewport select options"
             )
 
@@ -182,6 +187,7 @@ class ProtectData:
         if not self._subscriptions.get(device_id):
             return
 
+        _LOGGER.debug("Updating device: %s", device_id)
         for update_callback in self._subscriptions[device_id]:
             update_callback()
 

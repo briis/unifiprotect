@@ -4,13 +4,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 import logging
-from typing import Callable, Sequence
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyunifiprotect.data.devices import Camera, Light
 
 from .const import DOMAIN
@@ -51,7 +50,7 @@ CAMERA_NUMBERS: tuple[ProtectNumberEntityDescription, ...] = (
         key=_KEY_WDR,
         name="Wide Dynamic Range",
         icon="mdi:state-machine",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_min=0,
         ufp_max=3,
         ufp_step=1,
@@ -63,7 +62,7 @@ CAMERA_NUMBERS: tuple[ProtectNumberEntityDescription, ...] = (
         key=_KEY_MIC_LEVEL,
         name="Microphone Level",
         icon="mdi:microphone",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_min=0,
         ufp_max=100,
         ufp_step=1,
@@ -73,9 +72,9 @@ CAMERA_NUMBERS: tuple[ProtectNumberEntityDescription, ...] = (
     ),
     ProtectNumberEntityDescription(
         key=_KEY_ZOOM_POS,
-        name="Zoom Position",
+        name="Zoom Level",
         icon="mdi:magnify-plus-outline",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_min=0,
         ufp_max=100,
         ufp_step=1,
@@ -85,9 +84,9 @@ CAMERA_NUMBERS: tuple[ProtectNumberEntityDescription, ...] = (
     ),
     ProtectNumberEntityDescription(
         key=_KEY_CHIME,
-        name="Duration",
+        name="Chime Duration",
         icon="mdi:camera-timer",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_min=0,
         ufp_max=10000,
         ufp_step=100,
@@ -102,7 +101,7 @@ LIGHT_NUMBERS: tuple[ProtectNumberEntityDescription, ...] = (
         key=_KEY_SENSITIVITY,
         name="Motion Sensitivity",
         icon="mdi:walk",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_min=0,
         ufp_max=100,
         ufp_step=1,
@@ -112,9 +111,9 @@ LIGHT_NUMBERS: tuple[ProtectNumberEntityDescription, ...] = (
     ),
     ProtectNumberEntityDescription(
         key=_KEY_DURATION,
-        name="Duration",
+        name="Auto-shutoff Duration",
         icon="mdi:camera-timer",
-        entity_category=ENTITY_CATEGORY_CONFIG,
+        entity_category=EntityCategory.CONFIG,
         ufp_min=15,
         ufp_max=900,
         ufp_step=15,
@@ -128,7 +127,7 @@ LIGHT_NUMBERS: tuple[ProtectNumberEntityDescription, ...] = (
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: Callable[[Sequence[Entity]], None],
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up number entities for UniFi Protect integration."""
     data: ProtectData = hass.data[DOMAIN][entry.entry_id]
@@ -163,8 +162,7 @@ class ProtectNumbers(ProtectDeviceEntity, NumberEntity):
     def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
 
-        if self.entity_description.ufp_value is None:
-            return
+        assert self.entity_description.ufp_value is not None
 
         value: float | timedelta = get_nested_attr(
             self.device, self.entity_description.ufp_value
@@ -179,7 +177,7 @@ class ProtectNumbers(ProtectDeviceEntity, NumberEntity):
         """Set new value."""
         function = self.entity_description.ufp_set_function
         _LOGGER.debug(
-            "Calling %s to set %s for Camera %s",
+            "Calling %s to set %s for %s",
             function,
             value,
             self.device.name,

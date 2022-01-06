@@ -1,5 +1,5 @@
-generate_data:
-  name: Generate UniFi Protect Sample Data
+take_sample:
+  name: Sample UniFi Protect Data
   description: Generates Sample Data from a given UniFi Protect instance. Useful for debugging or reporting issues.
   fields:
     device_id:
@@ -20,10 +20,10 @@ generate_data:
           max: 600
           step: 10
           unit_of_measurement: seconds
-    actual:
-      name:  Actual Data?
-      description: Generate actual data from UniFi Protect. Otherwise data is automatically anonymized to make safe for distribution.
-      default: false
+    anonymize:
+      name:  Anonymize Data
+      description: Data is anonymized by default to make safe for distribution.
+      default: true
       required: true
       selector:
         boolean:

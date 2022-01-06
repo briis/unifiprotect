@@ -48,10 +48,10 @@ from .const import (
 from .data import ProtectData
 from .services import (
     add_doorbell_text,
-    generate_data,
     profile_ws,
     remove_doorbell_text,
     set_default_doorbell_text,
+    take_sample,
 )
 from .views import ThumbnailProxyView
 
@@ -234,7 +234,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         (SERVICE_PROFILE_WS, functools.partial(profile_ws, hass), PROFILE_WS_SCHEMA),
         (
             SERVICE_GENERATE_DATA,
-            functools.partial(generate_data, hass),
+            functools.partial(take_sample, hass),
             GENERATE_DATA_SCHEMA,
         ),
     ]

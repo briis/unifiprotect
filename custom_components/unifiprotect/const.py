@@ -39,8 +39,6 @@ DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_SCAN_INTERVAL = 2
 DEFAULT_VERIFY_SSL = False
 
-RING_INTERVAL = timedelta(seconds=3)
-
 DEVICE_TYPE_CAMERA = "camera"
 DEVICES_THAT_ADOPT = {
     ModelType.CAMERA,

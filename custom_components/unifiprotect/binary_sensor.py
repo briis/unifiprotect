@@ -247,13 +247,6 @@ class ProtectDeviceBinarySensor(ProtectDeviceEntity, BinarySensorEntity):
         self._attr_is_on = get_nested_attr(
             self.device, self.entity_description.ufp_value
         )
-        if self.entity_description.key == _KEY_DOORBELL:
-            print(
-                self.entity_description.name,
-                self._attr_is_on,
-                self.device.is_ringing,
-                self.device.last_ring,
-            )
 
     @callback
     async def _async_wait_for_doorbell(self, end_time: datetime) -> None:

@@ -21,7 +21,7 @@ take_sample:
           step: 10
           unit_of_measurement: seconds
     anonymize:
-      name:  Anonymize Data
+      name: Anonymize Data
       description: Data is anonymized by default to make safe for distribution.
       default: true
       required: true

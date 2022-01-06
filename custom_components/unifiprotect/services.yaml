@@ -1,3 +1,32 @@
+take_sample:
+  name: Sample UniFi Protect Data
+  description: Generates Sample Data from a given UniFi Protect instance. Useful for debugging or reporting issues.
+  fields:
+    device_id:
+      name: UniFi Protect NVR
+      description: Main NVR for the UniFi Protect instance you would like to target.
+      required: true
+      selector:
+        device:
+          integration: unifiprotect
+    duration:
+      name: Websocket Capture Time
+      description: How long to capture Websocket messages for.
+      default: 30
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 600
+          step: 10
+          unit_of_measurement: seconds
+    anonymize:
+      name: Anonymize Data
+      description: Data is anonymized by default to make safe for distribution.
+      default: true
+      required: true
+      selector:
+        boolean:
 profile_ws_messages:
   name: Profile UniFi Protect WS Messages
   description: Profiles UniFi Protect Web Socket messages and prints out summary afterwards.

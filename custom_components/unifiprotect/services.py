@@ -12,9 +12,9 @@ from pydantic import ValidationError
 from pyunifiprotect.api import ProtectApiClient
 from pyunifiprotect.exceptions import BadRequest
 
-from .const import CONF_DURATION, CONF_MESSAGE, DOMAIN
+from .const import CONF_ANONYMIZE, CONF_DURATION, CONF_MESSAGE, DOMAIN
 from .data import ProtectData
-from .utils import profile_ws_messages
+from .utils import generate_sample_data, profile_ws_messages
 
 
 def _async_all_ufp_instances(hass: HomeAssistant) -> list[ProtectApiClient]:
@@ -116,6 +116,19 @@ async def profile_ws(hass: HomeAssistant, call: ServiceCall) -> None:
     await asyncio.gather(
         *(
             profile_ws_messages(hass, i, duration, device_entry)
+            for device_entry, i in instances
+        )
+    )
+
+
+async def take_sample(hass: HomeAssistant, call: ServiceCall) -> None:
+    """Generate sample data."""
+    duration: int = call.data[CONF_DURATION]
+    anonymize: bool = call.data[CONF_ANONYMIZE]
+    instances = _async_get_protect_from_call(hass, call)
+    await asyncio.gather(
+        *(
+            generate_sample_data(hass, i, duration, anonymize, device_entry)
             for device_entry, i in instances
         )
     )

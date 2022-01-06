@@ -265,7 +265,7 @@ trigger:
 
 condition:
   - "{{ not input_presence_filter or not is_state(input_presence_filter, 'home') }}"
-  - "{{ trigger_object != 'none' and trigger_object != 'unavailable' }}"
+  - "{{ trigger_object in smart_detect_objs }}"
 
 action:
   - choose:

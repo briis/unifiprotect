@@ -35,10 +35,12 @@ from .const import (
     DEVICES_THAT_ADOPT,
     DOMAIN,
     DOORBELL_TEXT_SCHEMA,
+    GENERATE_DATA_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
     PLATFORMS,
     PROFILE_WS_SCHEMA,
     SERVICE_ADD_DOORBELL_TEXT,
+    SERVICE_GENERATE_DATA,
     SERVICE_PROFILE_WS,
     SERVICE_REMOVE_DOORBELL_TEXT,
     SERVICE_SET_DEFAULT_DOORBELL_TEXT,
@@ -46,6 +48,7 @@ from .const import (
 from .data import ProtectData
 from .services import (
     add_doorbell_text,
+    generate_data,
     profile_ws,
     remove_doorbell_text,
     set_default_doorbell_text,
@@ -229,6 +232,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             DOORBELL_TEXT_SCHEMA,
         ),
         (SERVICE_PROFILE_WS, functools.partial(profile_ws, hass), PROFILE_WS_SCHEMA),
+        (
+            SERVICE_GENERATE_DATA,
+            functools.partial(generate_data, hass),
+            GENERATE_DATA_SCHEMA,
+        ),
     ]
     for name, method, schema in services:
         if hass.services.has_service(DOMAIN, name):

@@ -1,5 +1,21 @@
 # // Changelog
 
+## 0.12.0-beta6
+
+* `CHANGE`: Switches Doorbell binary_sensor to use `is_ringing` attr, should great improve relaiability of the sensor
+
+* `NEW`: Adds `take_sample` service to help with debugging/issue reporting
+
+* `FIX`: Fixes voltage unit for doorbell voltage sensor
+
+Backports changes from Home Assistant core merge process:
+
+* `CHANGE`: Dynamic select options for Doorbell Text
+
+* `CHANGE`: Improves names for a number of entities
+
+* `CHANGE`: Adds a bunch of extra debug logging for entity updates
+
 ## 0.12.0-beta5
 
 * `FIX`: Fixes `connection_host` for Cameras so it can have DNS hosts in addition to IPs.

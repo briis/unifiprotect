@@ -1,8 +1,5 @@
 """Constant definitions for UniFi Protect Integration."""
 
-# from typing_extensions import Required
-from datetime import timedelta
-
 from homeassistant.const import ATTR_ENTITY_ID, CONF_DEVICE_ID
 from homeassistant.helpers import config_validation as cv
 from pyunifiprotect.data.types import ModelType, Version
@@ -38,8 +35,6 @@ DEFAULT_ATTRIBUTION = "Powered by UniFi Protect Server"
 DEFAULT_BRAND = "Ubiquiti"
 DEFAULT_SCAN_INTERVAL = 2
 DEFAULT_VERIFY_SSL = False
-
-RING_INTERVAL = timedelta(seconds=3)
 
 DEVICE_TYPE_CAMERA = "camera"
 DEVICES_THAT_ADOPT = {

@@ -29,7 +29,7 @@ from homeassistant.helpers.entity import Entity
 from pyunifiprotect.data import NVR, Camera, Event, Light, Sensor
 from pyunifiprotect.utils import utc_now
 
-from .const import ATTR_EVENT_SCORE, ATTR_EVENT_THUMB, DOMAIN, RING_INTERVAL
+from .const import ATTR_EVENT_SCORE, ATTR_EVENT_THUMB, DOMAIN
 from .data import ProtectData
 from .entity import (
     AccessTokenMixin,
@@ -72,7 +72,7 @@ CAMERA_SENSORS: tuple[ProtectBinaryEntityDescription, ...] = (
         device_class=DEVICE_CLASS_OCCUPANCY,
         icon="mdi:doorbell-video",
         ufp_required_field="feature_flags.has_chime",
-        ufp_value="last_ring",
+        ufp_value="is_ringing",
     ),
     ProtectBinaryEntityDescription(
         key=_KEY_DARK,
@@ -244,24 +244,9 @@ class ProtectDeviceBinarySensor(ProtectDeviceEntity, BinarySensorEntity):
         if self.entity_description.ufp_value is None:
             return
 
-        if self.entity_description.key == _KEY_DOORBELL:
-            last_ring = get_nested_attr(self.device, self.entity_description.ufp_value)
-            now = utc_now()
-
-            is_ringing = (
-                False if last_ring is None else (now - last_ring) < RING_INTERVAL
-            )
-            if is_ringing:
-                if self._doorbell_callback is not None:
-                    self._doorbell_callback.cancel()
-                self._doorbell_callback = asyncio.ensure_future(
-                    self._async_wait_for_doorbell(last_ring + RING_INTERVAL)
-                )
-            self._attr_is_on = is_ringing
-        else:
-            self._attr_is_on = get_nested_attr(
-                self.device, self.entity_description.ufp_value
-            )
+        self._attr_is_on = get_nested_attr(
+            self.device, self.entity_description.ufp_value
+        )
 
     @callback
     async def _async_wait_for_doorbell(self, end_time: datetime) -> None:

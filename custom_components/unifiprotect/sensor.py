@@ -308,7 +308,7 @@ NVR_SENSORS: tuple[ProtectSensorEntityDescription, ...] = (
     ),
     ProtectSensorEntityDescription(
         key=_KEY_CAPACITY,
-        name="Recording Capcity",
+        name="Recording Capacity",
         native_unit_of_measurement=TIME_SECONDS,
         icon="mdi:record-rec",
         entity_registry_enabled_default=False,
@@ -441,7 +441,10 @@ class ProtectNVRSensor(SensorValueMixin, ProtectNVREntity, SensorEntity):
 
         if self.entity_description.ufp_value is None:
             memory = self.device.system_info.memory
-            value = (1 - memory.available / memory.total) * 100
+            if memory.available is None or memory.total is None:
+                self._attr_available = False
+            else:
+                value = (1 - memory.available / memory.total) * 100
         else:
             value = get_nested_attr(self.device, self.entity_description.ufp_value)
 

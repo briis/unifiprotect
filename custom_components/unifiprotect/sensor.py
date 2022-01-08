@@ -443,6 +443,7 @@ class ProtectNVRSensor(SensorValueMixin, ProtectNVREntity, SensorEntity):
             memory = self.device.system_info.memory
             if memory.available is None or memory.total is None:
                 self._attr_available = False
+                return
             else:
                 value = (1 - memory.available / memory.total) * 100
         else:

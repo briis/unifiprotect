@@ -444,8 +444,7 @@ class ProtectNVRSensor(SensorValueMixin, ProtectNVREntity, SensorEntity):
             if memory.available is None or memory.total is None:
                 self._attr_available = False
                 return
-            else:
-                value = (1 - memory.available / memory.total) * 100
+            value = (1 - memory.available / memory.total) * 100
         else:
             value = get_nested_attr(self.device, self.entity_description.ufp_value)
 

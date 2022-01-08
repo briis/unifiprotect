@@ -1,5 +1,11 @@
 # // Changelog
 
+## 0.12.0-beta7
+
+* `FIX`: Improve relibility of Websocket reconnects
+
+* `FIX`: Further improves relibility of Doorbell binary_sensor
+
 ## 0.12.0-beta6
 
 * `CHANGE`: Switches Doorbell binary_sensor to use `is_ringing` attr, should great improve relaiability of the sensor

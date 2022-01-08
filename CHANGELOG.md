@@ -2,6 +2,16 @@
 
 ## 0.12.0-beta7
 
+* `FIX`: Fixes NVR memory sensor if no data is reported
+
+* `FIX`: Fixes spelling typo with Recording Capacity sensor (https://github.com/briis/unifiprotect/issues/440)
+
+* `FIX`: Fixes is_connected check for cameras
+
+* `FIX`: Adds back `last_trip_time` attribute to camera motion entity
+
+## 0.12.0-beta7
+
 * `FIX`: Improve relibility of Websocket reconnects
 
 * `FIX`: Further improves relibility of Doorbell binary_sensor

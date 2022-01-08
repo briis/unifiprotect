@@ -220,9 +220,11 @@ class ProtectDeviceBinarySensor(ProtectDeviceEntity, BinarySensorEntity):
         if key == _KEY_DARK:
             return attrs
 
-        if key == _KEY_DOORBELL:
-            assert isinstance(self.device, Camera)
-            attrs[ATTR_LAST_TRIP_TIME] = self.device.last_ring
+        if isinstance(self.device, Camera):
+            if key == _KEY_DOORBELL:
+                attrs[ATTR_LAST_TRIP_TIME] = self.device.last_ring
+            elif key == _KEY_MOTION:
+                attrs[ATTR_LAST_TRIP_TIME] = self.device.last_motion
         elif isinstance(self.device, Sensor):
             if key in (_KEY_MOTION, _KEY_DOOR):
                 if key == _KEY_MOTION:

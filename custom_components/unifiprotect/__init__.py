@@ -3,12 +3,11 @@ from __future__ import annotations
 
 import asyncio
 from datetime import timedelta
-import functools
 import logging
 
 from aiohttp import CookieJar
 from aiohttp.client_exceptions import ServerDisconnectedError
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
     CONF_PASSWORD,
@@ -16,6 +15,7 @@ from homeassistant.const import (
     CONF_USERNAME,
     CONF_VERIFY_SSL,
     EVENT_HOMEASSISTANT_STOP,
+    Platform,
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
@@ -30,30 +30,15 @@ from .const import (
     CONF_OVERRIDE_CHOST,
     CONFIG_OPTIONS,
     DEFAULT_SCAN_INTERVAL,
-    DEVICE_TYPE_CAMERA,
     DEVICES_FOR_SUBSCRIBE,
     DEVICES_THAT_ADOPT,
     DOMAIN,
-    DOORBELL_TEXT_SCHEMA,
-    GENERATE_DATA_SCHEMA,
     MIN_REQUIRED_PROTECT_V,
+    OUTDATED_LOG_MESSAGE,
     PLATFORMS,
-    PROFILE_WS_SCHEMA,
-    SERVICE_ADD_DOORBELL_TEXT,
-    SERVICE_GENERATE_DATA,
-    SERVICE_PROFILE_WS,
-    SERVICE_REMOVE_DOORBELL_TEXT,
-    SERVICE_SET_DEFAULT_DOORBELL_TEXT,
 )
 from .data import ProtectData
-from .services import (
-    add_doorbell_text,
-    profile_ws,
-    remove_doorbell_text,
-    set_default_doorbell_text,
-    take_sample,
-)
-from .views import ThumbnailProxyView
+from .services import async_cleanup_services, async_setup_services
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -100,7 +85,7 @@ async def _async_migrate_data(
     entities = er.async_entries_for_config_entry(registry, entry.entry_id)
     for entity in entities:
         new_unique_id: str | None = None
-        if entity.domain != DEVICE_TYPE_CAMERA:
+        if entity.domain != Platform.CAMERA.value:
             parts = entity.unique_id.split("_")
             if len(parts) >= 2:
                 device_or_key = "_".join(parts[:-1])
@@ -190,15 +175,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         nvr_info = await protect.get_nvr()
     except NotAuthorized as err:
         raise ConfigEntryAuthFailed(err) from err
-    except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as notreadyerror:
-        raise ConfigEntryNotReady from notreadyerror
+    except (asyncio.TimeoutError, NvrError, ServerDisconnectedError) as err:
+        raise ConfigEntryNotReady from err
 
     if nvr_info.version < MIN_REQUIRED_PROTECT_V:
         _LOGGER.error(
-            (
-                "You are running v%s of UniFi Protect. Minimum required version is v%s. "
-                "Please upgrade UniFi Protect and then retry"
-            ),
+            OUTDATED_LOG_MESSAGE,
             nvr_info.version,
             MIN_REQUIRED_PROTECT_V,
         )
@@ -214,36 +196,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = data_service
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
-
-    services = [
-        (
-            SERVICE_ADD_DOORBELL_TEXT,
-            functools.partial(add_doorbell_text, hass),
-            DOORBELL_TEXT_SCHEMA,
-        ),
-        (
-            SERVICE_REMOVE_DOORBELL_TEXT,
-            functools.partial(remove_doorbell_text, hass),
-            DOORBELL_TEXT_SCHEMA,
-        ),
-        (
-            SERVICE_SET_DEFAULT_DOORBELL_TEXT,
-            functools.partial(set_default_doorbell_text, hass),
-            DOORBELL_TEXT_SCHEMA,
-        ),
-        (SERVICE_PROFILE_WS, functools.partial(profile_ws, hass), PROFILE_WS_SCHEMA),
-        (
-            SERVICE_GENERATE_DATA,
-            functools.partial(take_sample, hass),
-            GENERATE_DATA_SCHEMA,
-        ),
-    ]
-    for name, method, schema in services:
-        if hass.services.has_service(DOMAIN, name):
-            continue
-        hass.services.async_register(DOMAIN, name, method, schema=schema)
-
-    hass.http.register_view(ThumbnailProxyView(hass))
+    async_setup_services(hass)
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     entry.async_on_unload(
@@ -264,23 +217,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         data: ProtectData = hass.data[DOMAIN][entry.entry_id]
         await data.async_stop()
         hass.data[DOMAIN].pop(entry.entry_id)
-
-    loaded_entries = [
-        entry
-        for entry in hass.config_entries.async_entries(DOMAIN)
-        if entry.state == ConfigEntryState.LOADED
-    ]
-    if len(loaded_entries) == 1:
-        all_services = [
-            SERVICE_ADD_DOORBELL_TEXT,
-            SERVICE_REMOVE_DOORBELL_TEXT,
-            SERVICE_SET_DEFAULT_DOORBELL_TEXT,
-            SERVICE_PROFILE_WS,
-        ]
-        # If this is the last loaded instance of RainMachine, deregister any services
-        # defined during integration setup:
-        for name in all_services:
-            hass.services.async_remove(DOMAIN, name)
+        async_cleanup_services(hass)
 
     return bool(unload_ok)
 

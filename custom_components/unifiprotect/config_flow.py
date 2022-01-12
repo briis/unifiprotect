@@ -5,6 +5,10 @@ import logging
 from typing import Any
 
 from aiohttp import CookieJar
+from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
+from pyunifiprotect.data.nvr import NVR
+import voluptuous as vol
+
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
@@ -17,9 +21,6 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.data.nvr import NVR
-import voluptuous as vol
 
 from .const import (
     CONF_ALL_UPDATES,

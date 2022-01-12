@@ -1,33 +1,30 @@
 """Shared Entity definition for UniFi Protect Integration."""
 from __future__ import annotations
 
-import collections
-from datetime import timedelta
-import hashlib
+from collections.abc import Sequence
 import logging
-from random import SystemRandom
-from typing import Any, Final, Sequence
+from typing import Any
 
-from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import callback
 import homeassistant.helpers.device_registry as dr
-from homeassistant.helpers.dispatcher import (
-    async_dispatcher_connect,
-    async_dispatcher_send,
-)
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
-from pyunifiprotect.data.base import ProtectAdoptableDeviceModel
-from pyunifiprotect.data.devices import Camera, Light, Sensor, Viewer
+from pyunifiprotect.data import (
+    Camera,
+    Event,
+    Light,
+    ModelType,
+    ProtectAdoptableDeviceModel,
+    Sensor,
+    StateType,
+    Viewer,
+)
 from pyunifiprotect.data.nvr import NVR
-from pyunifiprotect.data.types import ModelType, StateType
 
-from .const import DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN, EVENT_UPDATE_TOKENS
+from .const import ATTR_EVENT_SCORE, DEFAULT_ATTRIBUTION, DEFAULT_BRAND, DOMAIN
 from .data import ProtectData
 from .models import ProtectRequiredKeysMixin
 from .utils import get_nested_attr
 
-TOKEN_CHANGE_INTERVAL: Final = timedelta(minutes=1)
-_RND: Final = SystemRandom()
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -96,34 +93,31 @@ def async_all_device_entities(
 class ProtectDeviceEntity(Entity):
     """Base class for UniFi protect entities."""
 
+    device: ProtectAdoptableDeviceModel
+
+    _attr_should_poll = False
+
     def __init__(
         self,
         data: ProtectData,
-        device: ProtectAdoptableDeviceModel | None = None,
+        device: ProtectAdoptableDeviceModel,
         description: EntityDescription | None = None,
     ) -> None:
         """Initialize the entity."""
         super().__init__()
-        self._attr_should_poll = False
-
         self.data: ProtectData = data
-
-        if device and not hasattr(self, "device"):
-            self.device: ProtectAdoptableDeviceModel = device
-
-        if description and not hasattr(self, "entity_description"):
-            self.entity_description = description
-        elif hasattr(self, "entity_description"):
-            description = self.entity_description
+        self.device = device
 
         if description is None:
             self._attr_unique_id = f"{self.device.id}"
             self._attr_name = f"{self.device.name}"
         else:
+            self.entity_description = description
             self._attr_unique_id = f"{self.device.id}_{description.key}"
             name = description.name or ""
             self._attr_name = f"{self.device.name} {name.title()}"
 
+        self._attr_attribution = DEFAULT_ATTRIBUTION
         self._async_set_device_info()
         self._async_update_device_from_protect()
 
@@ -133,16 +127,6 @@ class ProtectDeviceEntity(Entity):
         Only used by the generic entity update service.
         """
         await self.data.async_refresh()
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return UniFi Protect device attributes."""
-        attrs = super().extra_state_attributes or {}
-        return {
-            **attrs,
-            ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION,
-            **self._extra_state_attributes,
-        }
 
     @callback
     def _async_set_device_info(self) -> None:
@@ -157,13 +141,6 @@ class ProtectDeviceEntity(Entity):
         )
 
     @callback
-    def _async_update_extra_attrs_from_protect(  # pylint: disable=no-self-use
-        self,
-    ) -> dict[str, Any]:
-        """Calculate extra state attributes. Primarily for subclass to override."""
-        return {}
-
-    @callback
     def _async_update_device_from_protect(self) -> None:
         """Update Entity object from Protect device."""
         if self.data.last_update_success:
@@ -174,7 +151,6 @@ class ProtectDeviceEntity(Entity):
         self._attr_available = (
             self.data.last_update_success and self.device.state == StateType.CONNECTED
         )
-        self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 
     @callback
     def _async_updated_event(self) -> None:
@@ -195,6 +171,9 @@ class ProtectDeviceEntity(Entity):
 class ProtectNVREntity(ProtectDeviceEntity):
     """Base class for unifi protect entities."""
 
+    # separate subclass on purpose
+    device: NVR  # type: ignore[assignment]
+
     def __init__(
         self,
         entry: ProtectData,
@@ -202,9 +181,7 @@ class ProtectNVREntity(ProtectDeviceEntity):
         description: EntityDescription | None = None,
     ) -> None:
         """Initialize the entity."""
-        # ProtectNVREntity is intentionally a separate base class
-        self.device: NVR = device  # type: ignore
-        super().__init__(entry, description=description)
+        super().__init__(entry, device, description)  # type: ignore[arg-type]
 
     @callback
     def _async_set_device_info(self) -> None:
@@ -224,56 +201,44 @@ class ProtectNVREntity(ProtectDeviceEntity):
             self.device = self.data.api.bootstrap.nvr
 
         self._attr_available = self.data.last_update_success
-        self._extra_state_attributes = self._async_update_extra_attrs_from_protect()
 
 
-class AccessTokenMixin(Entity):
-    """Adds access_token attribute and provides access tokens for use for anonymous views."""
+class EventThumbnailMixin(ProtectDeviceEntity):
+    """Adds motion event attributes to sensor."""
 
-    @property
-    def access_tokens(self) -> collections.deque[str]:
-        """Get valid access_tokens for current entity."""
-        assert isinstance(self, ProtectDeviceEntity)
-        return self.data.async_get_or_create_access_tokens(self.entity_id)
+    def __init__(self, *args: Any, **kwarg: Any) -> None:
+        """Init an sensor that has event thumbnails."""
+        super().__init__(*args, **kwarg)
+        self._event: Event | None = None
 
     @callback
-    def _async_update_and_write_token(self) -> None:
-        _LOGGER.debug("Updating access tokens for %s", self.entity_id)
-        self.async_update_token()
-        self.async_write_ha_state()
+    def _async_get_event(self) -> Event | None:
+        """Get event from Protect device.
 
-    @callback
-    def async_update_token(self) -> None:
-        """Update the used token."""
-        self.access_tokens.append(
-            hashlib.sha256(_RND.getrandbits(256).to_bytes(32, "little")).hexdigest()
-        )
-
-    @callback
-    def _trigger_update_tokens(self, *args: Any, **kwargs: Any) -> None:
-        assert isinstance(self, ProtectDeviceEntity)
-        async_dispatcher_send(
-            self.hass,
-            f"{EVENT_UPDATE_TOKENS}-{self.entity_description.key}-{self.entity_id}",
-        )
-
-    async def async_added_to_hass(self) -> None:
-        """Run when entity about to be added to hass.
-
-        Injects callbacks to update access tokens automatically
+        To be overridden by child classes.
         """
-        await super().async_added_to_hass()
+        raise NotImplementedError()
 
-        self.async_update_token()
-        self.async_on_remove(
-            async_dispatcher_connect(
-                self.hass,
-                f"{EVENT_UPDATE_TOKENS}-{self.entity_id}",
-                self._async_update_and_write_token,
-            )
-        )
-        self.async_on_remove(
-            self.hass.helpers.event.async_track_time_interval(
-                self._trigger_update_tokens, TOKEN_CHANGE_INTERVAL
-            )
-        )
+    @callback
+    def _async_thumbnail_extra_attrs(self) -> dict[str, Any]:
+        # Camera motion sensors with object detection
+        attrs: dict[str, Any] = {
+            ATTR_EVENT_SCORE: 0,
+        }
+
+        if self._event is None:
+            return attrs
+
+        attrs[ATTR_EVENT_SCORE] = self._event.score
+        return attrs
+
+    @callback
+    def _async_update_device_from_protect(self) -> None:
+        super()._async_update_device_from_protect()
+        self._event = self._async_get_event()
+
+        attrs = self.extra_state_attributes or {}
+        self._attr_extra_state_attributes = {
+            **attrs,
+            **self._async_thumbnail_extra_attrs(),
+        }

@@ -12,6 +12,8 @@ Additionally, we could not add _every_ feature from the HACS version to the HA c
 
 * `CHANGE`: **BREAKING CHANGE** Removes `event_thumbnail` attribute and associated `ThumbnailProxyView`. After a lot of discussion, core does not want to add more attributes with access tokens inside of attributes. We plan to add back event thumbnails in some form again. If you would like to follow along with the dicussion, checkout the [architecure dicussion for it](https://github.com/home-assistant/architecture/discussions/705).
 
+Going forward, there will be some new features for the 0.12.0-beta / core version that will be developed for core version and then be backported to the HACS version. These include improvements for the G4 Doorbell Pro and the UP Sense devices.
+
 ## 0.12.0-beta8
 
 * `FIX`: Fixes NVR memory sensor if no data is reported

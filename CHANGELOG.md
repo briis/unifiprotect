@@ -1,5 +1,27 @@
 # // Changelog
 
+## 0.12.0-beta9
+
+Home Assistant core port complete! The version that is in `2022.2` will officially have all of the same features. This is the final backport version to make sure the two versions are equal. The only difference between `0.12.0-beta9` and the code in `2022.2` is
+
+* Migration code from `< 0.11.x` has been dropped. You must be on at least `0.11.0` or newer to migrate to the Home Assistant core version.
+
+Additionally, we could not add _every_ feature from the HACS version to the HA core version so there are 2 additional breaking changes in this release (sorry!):
+
+* `CHANGE`: **BREAKING CHANGE** Removes `profile_ws` and `take_sample` debug services. Core plans to add a more centralized way of getting debug information from an integration. This will be back in some form after that feature is added (estimate: 1-2 major core releases).
+
+* `CHANGE`: **BREAKING CHANGE** Removes `event_thumbnail` attribute and associated `ThumbnailProxyView`. After a lot of discussion, core does not want to add more attributes with access tokens inside of attributes. We plan to add back event thumbnails in some form again. If you would like to follow along with the dicussion, checkout the [architecure dicussion for it](https://github.com/home-assistant/architecture/discussions/705).
+
+## 0.12.0-beta8
+
+* `FIX`: Fixes NVR memory sensor if no data is reported
+
+* `FIX`: Fixes spelling typo with Recording Capacity sensor (https://github.com/briis/unifiprotect/issues/440)
+
+* `FIX`: Fixes `is_connected` check for cameras
+
+* `FIX`: Adds back `last_trip_time` attribute to camera motion entity
+
 ## 0.12.0-beta7
 
 * `FIX`: Fixes NVR memory sensor if no data is reported

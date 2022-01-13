@@ -60,7 +60,6 @@ MOUNT_TYPES = [
     {"id": MountType.WINDOW.value, "name": "Window"},
     {"id": MountType.GARAGE.value, "name": "Garage"},
     {"id": MountType.LEAK.value, "name": "Leak"},
-    
 ]
 
 LIGHT_MODE_MOTION = "On Motion - Always"

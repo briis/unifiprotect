@@ -10,9 +10,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
 from pyunifiprotect import NotAuthorized, NvrError, ProtectApiClient
-from pyunifiprotect.data import Bootstrap, ModelType, WSSubscriptionMessage
+from pyunifiprotect.data import (
+    Bootstrap,
+    Event,
+    Liveview,
+    ModelType,
+    WSSubscriptionMessage,
+)
 from pyunifiprotect.data.base import ProtectAdoptableDeviceModel, ProtectDeviceModel
-from pyunifiprotect.data.nvr import Liveview
 
 from .const import CONF_DISABLE_RTSP, DEVICES_THAT_ADOPT, DEVICES_WITH_ENTITIES
 
@@ -114,6 +119,14 @@ class ProtectData:
                 for camera in self.api.bootstrap.cameras.values():
                     if camera.feature_flags.has_lcd_screen:
                         self.async_signal_device_id_update(camera.id)
+        # trigger updates for camera that the event references
+        elif isinstance(message.new_obj, Event):
+            if message.new_obj.camera is not None:
+                self.async_signal_device_id_update(message.new_obj.camera.id)
+            elif message.new_obj.light is not None:
+                self.async_signal_device_id_update(message.new_obj.light.id)
+            elif message.new_obj.sensor is not None:
+                self.async_signal_device_id_update(message.new_obj.sensor.id)
         # alert user viewport needs restart so voice clients can get new options
         elif len(self.api.bootstrap.viewers) > 0 and isinstance(
             message.new_obj, Liveview

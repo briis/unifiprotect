@@ -1,5 +1,28 @@
 # // Changelog
 
+## 0.12.0-beta10
+
+This is the last planned release for the HACS version. This release primarily adds new features for the G4 Doorbell Pro and the Smart Sensor. This release does unfortunatly have a couple of breaking changes for people with doorbells and Smart Sensors which are avoidable due to how soon the Home Assistant core release is.
+
+* `CHANGE`: **BREAKING CHANGE** The "Chime Duration" number entity has been replaced with a "Chime Type" select entity. This makes Home Assistant work the same way as UniFi Protect. (https://github.com/briis/unifiprotect/issues/451)
+
+* `CHANGE`: **BREAKING CHANGE** Smart Sensor support has been overhauled and improved. If you have Smart Sensors, it is _highly recommended to delete your UniFi Protect integration config and re-add it_. Some of the categories for the sensors have changed and it is not easy to change those without re-adding the integration. The sensors for the Smart Sensor are may also appear unavaiable if that sensor is not configured to be abled. For example, if your have motion disabled on your Sensor in UniFi Protect, the motion sensor will be unavaiable in Home Assistnat. Full list of new Smart Sensor entites:
+
+  * Alarm Sound and Tampering binary sensors
+  * Motion Sensitivity number
+  * Mount Type and Paired Camera selects
+  * Status Light switch
+  * Configuration switches for various sensors:
+    * Motion Detection switch
+    * Temperature Sensor switch
+    * Humidity Sensor switch
+    * Light Sensor switch
+    * Alarm Sound Detection switch
+
+* `CHANGE`: Adds full support for the package camera for the G4 Doorbell Pro. It should now always be enabled by default (if you are upgrading from an older version, it will still be disabled). The snapshot for the Package Camera has also been fixed. Since the camera if only 2 FPS, _streaming is disabled_ to prevent buffering.
+
+* `FIX`: Overhaul of the Websocket code. Websocket reconnects should be drastically improved. Hopefully all reconnnect issues should be gone now.
+
 ## 0.12.0-beta9
 
 Home Assistant core port complete! The version that is in `2022.2` will officially have all of the same features. This is the final backport version to make sure the two versions are equal. The only difference between `0.12.0-beta9` and the code in `2022.2` is

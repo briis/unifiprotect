@@ -8,7 +8,7 @@ If you are running 0.11.x or the 0.12.0-beta, you should be safe to delete the H
 
 After v2022.2.0 comes out, this repo will be **deprecated** in favor of the Home Assistant core version.
 
-Steps to migrate to the Home Assistant core version:
+If you have Smart Sensor devices and you are **not** running `0.12.0-beta10`, it is recommended you just delete your UniFi Protect integration config and re-add it. If you do not have Smart Sensor devices, you can migrate to the Home Assistant core version by following the steps below:
 
 1. Upgrade to the latest 0.11.x release or the latest 0.12.0-beta release for the HACS `unifiprotect` integration and restart Home Assistant.
 2. Upgrade to Home Assistant 2022.2.x

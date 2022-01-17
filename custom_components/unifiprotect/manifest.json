@@ -5,12 +5,12 @@
   "issue_tracker": "https://github.com/briis/unifiprotect/issues",
   "config_flow": true,
   "requirements": [
-    "pyunifiprotect==3.1.0"
+    "pyunifiprotect==3.1.1"
   ],
   "dependencies": [
     "http"
   ],
-  "version": "0.12.0-beta9",
+  "version": "0.12.0-beta11",
   "codeowners": [
     "@briis",
     "@AngellusMortis",

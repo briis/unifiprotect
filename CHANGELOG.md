@@ -1,5 +1,94 @@
 # // Changelog
 
+## 0.12.0
+
+0.12.0 was originally planned as a beta only release, but after giving it more thought, I figured it would be be great to mark it as stable for the folks that cannot upgrade to the HA core version in 2022.2.
+
+This release is primarily fixes from the HA core process. There is also full support added for the G4 Doorbell Pro, the UP Sense.
+
+This will be the **last** HACS release. After this point, the HACS repo is considered deprecated. We will still take issues in the repo as if people prefer to make them here instead of the HA core repo. But after a month or 2 we plan to archive the repo and have the integration removed from HACS.
+
+### Differences between HACS version 0.12.0 and HA 2022.2.0b1 version:
+
+#### HACS Only
+
+* Migration code for updating from `0.10.x` or older still exists; this code has been _removed_ in the HA core version
+
+#### HA Core Only
+
+* Full language support. All of the languages HA core supports via Lokalise has been added to the ingration.
+
+* Auto-discovery. If you have a Dream machine or a Cloud Key/UNVR on the same VLAN, the UniFi Protect integration will automatically be discovered and prompted for setup.
+
+* UP Doorlock support. The HA core version has full support for the newly release EA UP Doorlock.
+
+### Changes
+
+* `CHANGE`: **BREAKING CHANGE** Removes all deprecations outlined in the 0.11.x release.
+
+* `CHANGE`: **BREAKING CHANGE** The "Chime Duration" number entity has been replaced with a "Chime Type" select entity. This makes Home Assistant work the same way as UniFi Protect. (https://github.com/briis/unifiprotect/issues/451)
+
+* `CHANGE`: **BREAKING CHANGE** Smart Sensor support has been overhauled and improved. If you have Smart Sensors, it is _highly recommended to delete your UniFi Protect integration config and re-add it_. Some of the categories for the sensors have changed and it is not easy to change those without re-adding the integration. The sensors for the Smart Sensor are may also appear unavaiable if that sensor is not configured to be abled. For example, if your have motion disabled on your Sensor in UniFi Protect, the motion sensor will be unavaiable in Home Assistnat. Full list of new Smart Sensor entites:
+
+  * Alarm Sound and Tampering binary sensors
+  * Motion Sensitivity number
+  * Mount Type and Paired Camera selects
+  * Status Light switch
+  * Configuration switches for various sensors:
+    * Motion Detection switch
+    * Temperature Sensor switch
+    * Humidity Sensor switch
+    * Light Sensor switch
+    * Alarm Sound Detection switch
+
+* `CHANGE`: **BREAKING CHANGE** Removes `profile_ws` debug service. Core plans to add a more centralized way of getting debug information from an integration. This will be back in some form after that feature is added (estimate: 1-2 major core releases).
+
+* `CHANGE`: **BREAKING CHANGE** Removes `event_thumbnail` attribute and associated `ThumbnailProxyView`. After a lot of discussion, core does not want to add more attributes with access tokens inside of attributes. We plan to add back event thumbnails in some form again. If you would like to follow along with the dicussion, checkout the [architecure dicussion for it](https://github.com/home-assistant/architecture/discussions/705).
+
+* `CHANGE`: Switches Doorbell binary_sensor to use `is_ringing` attr, should great improve relaiability of the sensor
+
+* `CHANGE`: Dynamic select options for Doorbell Text
+
+* `CHANGE`: Improves names for a number of entities
+
+* `CHANGE`: Adds a bunch of extra debug logging for entity updates
+
+* `NEW`: Adds full support for the package camera for the G4 Doorbell Pro. It should now always be enabled by default (if you are upgrading from an older version, it will still be disabled). The snapshot for the Package Camera has also been fixed. Since the camera if only 2 FPS, _streaming is disabled_ to prevent buffering.
+
+* `FIX`: Overhaul of the Websocket code. Websocket reconnects should be drastically improved. Hopefully all reconnnect issues should be gone now.
+
+* `FIX`: Fixes NVR memory sensor if no data is reported
+
+* `FIX`: Fixes spelling typo with Recording Capacity sensor (https://github.com/briis/unifiprotect/issues/440)
+
+* `FIX`: Fixes `is_connected` check for cameras
+
+* `FIX`: Adds back `last_trip_time` attribute to camera motion entity
+
+* `FIX`: Fixes NVR memory sensor if no data is reported
+
+* `FIX`: Fixes spelling typo with Recording Capacity sensor (https://github.com/briis/unifiprotect/issues/440)
+
+* `FIX`: Further improves relibility of Doorbell binary_sensor
+
+* `FIX`: Fixes voltage unit for doorbell voltage sensor
+
+* `FIX`: Fixes `connection_host` for Cameras so it can have DNS hosts in addition to IPs.
+
+* `FIX`: Improves relibility of entities when UniFi Protect goes offline and/or a device goes offline. Everything recovery seemlessly when UniFi Protect upgrades or firmware updates are applied (fixes https://github.com/briis/unifiprotect/issues/432).
+
+* `FIX`: Improves relibility of `media_player` entities so they should report state better and be able to play longer audio clips.
+
+* `FIX`: Fixes stopping in progress audio for `media_player` entities.
+
+* `FIX`: Allows DNS hosts in addition to IP addresses (fixes https://github.com/briis/unifiprotect/issues/431).
+
+* `FIX`: Fixes selection of default camera entity for when it is not the High Quality channel.
+
+* `FIX`: Fixes https://github.com/briis/unifiprotect/issues/428. All string enums are now case insensitive.
+
+* `FIX`: Fixes https://github.com/briis/unifiprotect/issues/427, affected cameras will automatically be converted to Detections recording mode.
+
 ## 0.12.0-beta10
 
 This is the last planned release for the HACS version. This release primarily adds new features for the G4 Doorbell Pro and the Smart Sensor. This release does unfortunatly have a couple of breaking changes for people with doorbells and Smart Sensors which are avoidable due to how soon the Home Assistant core release is.

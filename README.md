@@ -4,15 +4,31 @@
 ## ⚠️ ⚠️ WARNING ABOUT Home Assistant v2022.2
 The `unifiprotect` integration will be in Home Assistant core v2022.2. If you are running **0.10.x or older** of the HACS integration, **do not install v2022.2.x of Home Assistant core**.
 
-If you are running 0.11.x or the 0.12.0-beta, you should be safe to delete the HACS version as part of your upgrade. The 0.11.x branch is designed to be compatible with the 0.12.0-beta and the HA core version. The latest version of 0.12.0-beta will be the version of `unifiprotect` in HA core in v2022.0.
+If you are running 0.11.x or the 0.12.0, you should be safe to delete the HACS version as part of your upgrade. The 0.11.x branch is designed to be compatible with the 0.12.0-beta and the HA core version. The latest version of 0.12.0-beta will be the version of `unifiprotect` in HA core in v2022.0.
 
-After v2022.2.0 comes out, this repo will be **deprecated** in favor of the Home Assistant core version.
+This repo is now **deprecated** in favor of the Home Assistant core version. This repo will be arhived and removed from HACS after the 2022.4 release of Home Assistant.
 
-If you have Smart Sensor devices and you are **not** running `0.12.0-beta10`, it is recommended you just delete your UniFi Protect integration config and re-add it. If you do not have Smart Sensor devices, you can migrate to the Home Assistant core version by following the steps below:
+### Migration to HA Core Version Steps
+
+If you have Smart Sensor devices and you are **not** running `0.12.0-beta10` or newer, it is recommended you just delete your UniFi Protect integration config and re-add it. If you do not have Smart Sensor devices, you can migrate to the Home Assistant core version by following the steps below:
 
 1. Upgrade to the latest 0.11.x release or the latest 0.12.0-beta release for the HACS `unifiprotect` integration and restart Home Assistant.
 2. Upgrade to Home Assistant 2022.2.x
 3. Remove your HACS `unifiprotect` integration and restart Home Assistant. It is safe to ignore the warning about needing to remove your config first.
+
+### Differences between HACS version 0.12.0 and HA 2022.2.0b1 version:
+
+#### HACS Only
+
+* Migration code for updating from `0.10.x` or older still exists; this code has been _removed_ in the HA core version
+
+#### HA Core Only
+
+* Full language support. All of the languages HA core supports via Lokalise has been added to the ingration.
+
+* Auto-discovery. If you have a Dream machine or a Cloud Key/UNVR on the same VLAN, the UniFi Protect integration will automatically be discovered and prompted for setup.
+
+* UP Doorlock support. The HA core version has full support for the newly release EA UP Doorlock.
 
 -----
 

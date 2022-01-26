@@ -17,6 +17,17 @@ Steps to migrate (will remove _all_ of your existing UniFi Protect entities)
 3. Set back up the UniFi Protect integration.
 4. Fix all of your entity name references and replace any usage of `unifiprotect` with `unifi_protect` (for service calls and the like).
 
+You _may_ be able to migrate using the following below instructions without losing your entities. Very much "use at your own risk". If it works, you can just delete the HACS integration after updating. If you can just delete the config entry and we add it, we really recommend doing that.
+
+> Not recommended but this is how I migrated my setup.
+>
+> 1. Made a backup
+> 2. Stop Home Assistant if possible (I didn't)
+> 3. `docker exec -it homeassistant /bin/bash -c 'sed -i 's/"unifiprotect"/"unifi_protect"/g' .storage/core.entity_registry .storage/core.device_registry .storage/core.config_entries'`
+> 4. Restart Home Assistant
+
+(from: https://github.com/home-assistant/core/pull/64978#issuecomment-1022405275)
+
 ### Differences between HACS version 0.12.0 and HA 2022.2.0b1 version:
 
 #### HACS Only

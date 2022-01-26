@@ -4,17 +4,18 @@
 ## ⚠️ ⚠️ WARNING ABOUT Home Assistant v2022.2
 The `unifiprotect` integration will be in Home Assistant core v2022.2. If you are running **0.10.x or older** of the HACS integration, **do not install v2022.2.x of Home Assistant core**.
 
-If you are running 0.11.x or the 0.12.0, you should be safe to delete the HACS version as part of your upgrade. The 0.11.x branch is designed to be compatible with the 0.12.0-beta and the HA core version. The latest version of 0.12.0-beta will be the version of `unifiprotect` in HA core in v2022.0.
-
 This repo is now **deprecated** in favor of the Home Assistant core version. This repo will be archived and removed from HACS after the 2022.4 release of Home Assistant.
 
 ### Migration to HA Core Version Steps
 
-If you have Smart Sensor devices and you are **not** running `0.12.0-beta10` or newer, it is recommended you just delete your UniFi Protect integration config and re-add it. If you do not have Smart Sensor devices, you can migrate to the Home Assistant core version by following the steps below:
+Unfortunately the HA core team has decided that we need to change the domain of the integration from `unifiprotect` to `unifi_protect` to match the most up to date standards for HA. This means upgrading to the HA core version is **is a major breaking change** and we are deeply sorry about this. We made our best effort to avoid this.
 
-1. Upgrade to the 0.12.0 version for the HACS unifiprotect integration and restart Home Assistant.
+Steps to migrate (will remove _all_ of your existing UniFi Protect entities)
+
+1. Remove the HACS version of UniFi Protect including your config entry for the integration.
 2. Upgrade to Home Assistant 2022.2.x
-3. Remove your HACS `unifiprotect` integration and restart Home Assistant. It is safe to ignore the warning about needing to remove your config first.
+3. Set back up the UniFi Protect integration.
+4. Fix all of your entity name references and replace any usage of `unifiprotect` with `unifi_protect` (for service calls and the like).
 
 ### Differences between HACS version 0.12.0 and HA 2022.2.0b1 version:
 
@@ -23,6 +24,8 @@ If you have Smart Sensor devices and you are **not** running `0.12.0-beta10` or 
 * Migration code for updating from `0.10.x` or older still exists; this code has been _removed_ in the HA core version
 
 #### HA Core Only
+
+* **BREAKING CHANGE** The domain for the ingration has been renamed from `unifiprotect` to `unifi_protect`.
 
 * Full language support. All of the languages HA core supports via Lokalise has been added to the ingration.
 

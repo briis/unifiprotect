@@ -202,6 +202,13 @@ class ProtectDeviceBinarySensor(ProtectDeviceEntity, BinarySensorEntity):
     def _async_update_device_from_protect(self) -> None:
         super()._async_update_device_from_protect()
 
+        if self.entity_description.key == "doorbell":
+            new_value = self.entity_description.get_ufp_value(self.device)
+            if new_value != self.is_on:
+                _LOGGER.debug(
+                    "Changing doorbell sensor from %s to %s", self.is_on, new_value
+                )
+
         self._attr_is_on = self.entity_description.get_ufp_value(self.device)
         if self.entity_description.ufp_last_trip_value is not None:
             last_trip = get_nested_attr(

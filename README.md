@@ -8,6 +8,12 @@ If you are running 0.11.x or the 0.12.0, you should be safe to delete the HACS v
 
 This repo is now **deprecated** in favor of the Home Assistant core version. This repo will be archived and removed from HACS after the 2022.4 release of Home Assistant.
 
+### Reporting Issues
+
+Issues have been disabled for the repo. If you have an issue you would like to report for the `unifiprotect` ingtegration, please make you are running the HA core version of the integration provided by 2022.2.0 or new and then report your issue on the [HA core repo](https://github.com/home-assistant/core/issues/new/choose). 
+
+If you would still like to discuss the HACS version of the `unifiprotect` integration, feel free to use the [dicussions section](https://github.com/briis/unifiprotect/discussions) or the [HA Community forums thread](https://community.home-assistant.io/t/custom-component-unifi-protect/158041/865).
+
 ### Migration to HA Core Version Steps
 
 If you have Smart Sensor devices and you are **not** running `0.12.0-beta10` or newer, it is recommended you just delete your UniFi Protect integration config and re-add it. If you do not have Smart Sensor devices, you can migrate to the Home Assistant core version by following the steps below:

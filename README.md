@@ -10,7 +10,7 @@ This repo is now **deprecated** in favor of the Home Assistant core version. Thi
 
 ### Reporting Issues
 
-Issues have been disabled for the repo. If you have an issue you would like to report for the `unifiprotect` ingtegration, please make you are running the HA core version of the integration provided by 2022.2.0 or new and then report your issue on the [HA core repo](https://github.com/home-assistant/core/issues/new/choose). 
+We have disable reporting issues to the HACS Github repo for the `unifiprotect` integration. If you have an issue you would like to report for the `unifiprotect` integration, please make you are running the HA core version of the integration provided by 2022.2.0 or new and then report your issue on the [HA core repo](https://github.com/home-assistant/core/issues/new/choose). 
 
 If you would still like to discuss the HACS version of the `unifiprotect` integration, feel free to use the [dicussions section](https://github.com/briis/unifiprotect/discussions) or the [HA Community forums thread](https://community.home-assistant.io/t/custom-component-unifi-protect/158041/865).
 

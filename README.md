@@ -19,7 +19,7 @@ If you would still like to discuss the HACS version of the `unifiprotect` integr
 If you have Smart Sensor devices and you are **not** running `0.12.0-beta10` or newer, it is recommended you just delete your UniFi Protect integration config and re-add it. If you do not have Smart Sensor devices, you can migrate to the Home Assistant core version by following the steps below:
 
 1. Upgrade to the 0.12.0 version for the HACS unifiprotect integration and restart Home Assistant.
-2. Remove your HACS `unifiprotect` integration. It is safe to ignore the warning about needing to remove your config first.
+2. Remove your HACS `unifiprotect` integration from HACS (do not remove your `unifiprotect` config entry). It is safe to ignore the warning about needing to remove your config first.
 3. Do *not* restart HA yet.
 4. Upgrade to Home Assistant 2022.2.x
 

@@ -1,5 +1,9 @@
 # // UniFi Protect for Home Assistant
 
+
+## THIS REPOSITORY IS NOW ARCHIEVED AND READONLY.
+The `unifiprotect` integration is now in Home Assistant core, so no more updates will be made to this repository. Please visit the official documentation for [UniFi Protect](https://www.home-assistant.io/integrations/unifiprotect/) to read more.
+
 -----
 ## ⚠️ ⚠️ WARNING ABOUT Home Assistant v2022.2
 The `unifiprotect` integration will be in Home Assistant core v2022.2. If you are running **0.10.x or older** of the HACS integration, **do not install v2022.2.x of Home Assistant core**.
